@@ -1,0 +1,167 @@
+/* Enable smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: white;
+}
+
+/* Header specific to Group Schedule page */
+#grp-header {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.grp-container {
+  padding: 10px 10%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.grp-navbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.grp-logo-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.grp-logo {
+  width: 100px;
+}
+
+.grp-nav-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: black;
+  font-weight: 500;
+  margin-left: 20px;
+  font-size: 16px;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.grp-nav-link:hover {
+  color: #ff004f;
+  transform: translateY(-3px);
+}
+
+.grp-navbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.grp-profile-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: black;
+  margin-left: 20px;
+  transition: transform 0.3s ease;
+}
+
+.grp-profile-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Content specific to Group Schedule */
+.grp-content {
+  padding-top: 120px; /* To avoid overlap with fixed navbar */
+  text-align: center;
+  color: #555;
+}
+
+.grp-content h1 {
+  font-size: 36px;
+  color: #ff004f;
+}
+
+.grp-content p {
+  font-size: 18px;
+  max-width: 800px;
+  margin: 20px auto;
+  color: #555;
+}
+
+/* Calendar Grid Styling */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr); /* 1 for time, 7 for days */
+  gap: 5px;
+  margin: 20px;
+}
+
+.calendar-header {
+  display: contents;
+}
+
+.day-header {
+  background-color: #f7f7f7;
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.time-slot-header {
+  background-color: #f7f7f7;
+}
+
+.calendar-body {
+  display: contents;
+}
+
+.time-row {
+  display: contents;
+}
+
+.time-slot {
+  background-color: #f7f7f7;
+  padding: 10px;
+  text-align: right;
+  font-weight: bold;
+}
+
+.slot {
+  height: 40px;
+  background-color: #e7e7e7;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.slot.selected {
+  background-color: #ff004f;
+  color: white;
+}
+
+.slot:hover {
+  background-color: #f7f7f7;
+}
+
+/* Proceed Button styling */
+.btn-primary {
+  padding: 12px 20px;
+  background-color: #ff004f;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #e60045;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(255, 0, 79, 0.3);
+}
