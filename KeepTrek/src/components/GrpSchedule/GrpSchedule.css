@@ -9,6 +9,17 @@ body {
   background-color: white;
 }
 
+/* Scrollable calendar section */
+.scrollable-calendar {
+  height: 500px; /* Fixed height for the calendar section */
+  overflow-y: auto; /* Enables vertical scrolling inside the calendar */
+  border: 1px solid #ddd; /* Optional border around the calendar */
+  padding: 20px;
+  margin-bottom: 30px; /* To separate the calendar from the rest of the content */
+  position: relative; /* Relative position to allow fixed header */
+  width: calc(100% - 30px); /* Reduce width by 30px */
+}
+
 /* Header specific to Group Schedule page */
 #grp-header {
   width: 100%;
@@ -78,6 +89,9 @@ body {
 /* Content specific to Group Schedule */
 .grp-content {
   padding-top: 120px; /* To avoid overlap with fixed navbar */
+  padding-left: 50px;
+  padding-right: 50px;
+  padding-bottom: 50px;
   text-align: center;
   color: #555;
 }
@@ -94,23 +108,66 @@ body {
   color: #555;
 }
 
+/* Calendar Navigation Styling */
+.calendar-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+/* Left-aligned navigation buttons */
+.calendar-nav-left {
+  display: flex;
+  gap: 10px;
+}
+
+/* Right-aligned month display */
+.calendar-month {
+  font-size: 24px;
+  font-weight: bold;
+  color: #555;
+}
+
+/* Calendar button styling */
+.calendar-nav-button {
+  background-color: #ff004f;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.calendar-nav-button:hover {
+  background-color: #e60045;
+  transform: translateY(-3px);
+}
+
 /* Calendar Grid Styling */
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(8, 1fr); /* 1 for time, 7 for days */
-  gap: 5px;
-  margin: 20px;
+  gap: 10px;
+  position: relative;
 }
 
 .calendar-header {
   display: contents;
 }
 
+/* Fix the day headers at the top of the scrollable calendar */
 .day-header {
   background-color: #f7f7f7;
-  padding: 10px;
+  padding: 20px;
   text-align: center;
   font-weight: bold;
+  position: sticky;
+  top: 0; /* Stay fixed at the top */
+  z-index: 10; /* Ensure the header stays above the time slots */
+  border-bottom: 2px solid #ddd;
 }
 
 .time-slot-header {
@@ -127,41 +184,43 @@ body {
 
 .time-slot {
   background-color: #f7f7f7;
-  padding: 10px;
-  text-align: right;
+  padding: 20px 10px;
+  text-align: center;
   font-weight: bold;
 }
 
+.hour-slot {
+  display: flex;
+  flex-direction: column; /* Stack time slots vertically */
+}
+
 .slot {
-  height: 40px;
+  height: 10px; /* Reduce the height of each slot */
   background-color: #e7e7e7;
   border: 1px solid #ddd;
   cursor: pointer;
+  position: relative;
 }
 
+/* Hover effect for showing the time range tooltip */
+.slot:hover::after {
+  content: attr(data-tooltip); /* Show the time range */
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: black;
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* Highlight the selected slot */
 .slot.selected {
   background-color: #ff004f;
   color: white;
-}
-
-.slot:hover {
-  background-color: #f7f7f7;
-}
-
-/* Proceed Button styling */
-.btn-primary {
-  padding: 12px 20px;
-  background-color: #ff004f;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-.btn-primary:hover {
-  background-color: #e60045;
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(255, 0, 79, 0.3);
 }
