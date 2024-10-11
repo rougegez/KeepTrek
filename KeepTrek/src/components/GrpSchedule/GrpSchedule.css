@@ -13,11 +13,21 @@ body {
 .scrollable-calendar {
   height: 500px; /* Fixed height for the calendar section */
   overflow-y: auto; /* Enables vertical scrolling inside the calendar */
-  border: 1px solid #ddd; /* Optional border around the calendar */
-  padding: 20px;
   margin-bottom: 30px; /* To separate the calendar from the rest of the content */
   position: relative; /* Relative position to allow fixed header */
   width: calc(100% - 30px); /* Reduce width by 30px */
+}
+
+/* Mask above the calendar that will hide slots as they scroll under the fixed header */
+.calendar-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px; /* Adjust to the height of the fixed header */
+  background-color: white; /* Matches background so it hides scrolling content */
+  z-index: 9; /* Keep the mask below the fixed header but above the scrolling slots */
+  pointer-events: none; /* Ensure it does not block clicks or interactions */
 }
 
 /* Header specific to Group Schedule page */
@@ -113,7 +123,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  padding: 5px;
   margin-bottom: 20px;
 }
 
@@ -161,13 +171,13 @@ body {
 /* Fix the day headers at the top of the scrollable calendar */
 .day-header {
   background-color: #f7f7f7;
-  padding: 20px;
+  padding: 10px;
   text-align: center;
   font-weight: bold;
   position: sticky;
   top: 0; /* Stay fixed at the top */
-  z-index: 10; /* Ensure the header stays above the time slots */
-  border-bottom: 2px solid #ddd;
+  z-index: 10;
+  border-bottom: 2px;
 }
 
 .time-slot-header {
@@ -195,7 +205,7 @@ body {
 }
 
 .slot {
-  height: 10px; /* Reduce the height of each slot */
+  height: 15px; /* Reduce the height of each slot */
   background-color: #e7e7e7;
   border: 1px solid #ddd;
   cursor: pointer;
@@ -223,4 +233,33 @@ body {
 .slot.selected {
   background-color: #ff004f;
   color: white;
+}
+
+/* Button Group */
+.btn-group {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.btn-group button {
+  background-color: #ff004f;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease,
+    box-shadow 0.3s ease;
+  margin-left: 10px; /* Space between buttons */
+}
+
+.btn-group button:first-child {
+  margin-left: 0; /* Remove margin for the first button */
+}
+
+.btn-group button:hover {
+  background-color: #e60045;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px #e26d90; /* Consistent shadow on hover */
 }
