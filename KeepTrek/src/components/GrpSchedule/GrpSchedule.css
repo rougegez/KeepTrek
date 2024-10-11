@@ -1,4 +1,4 @@
-/* Enable smooth scrolling */
+/* General Styles */
 html {
   scroll-behavior: smooth;
 }
@@ -18,19 +18,6 @@ body {
   width: calc(100% - 30px); /* Reduce width by 30px */
 }
 
-/* Mask above the calendar that will hide slots as they scroll under the fixed header */
-.calendar-mask {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 50px; /* Adjust to the height of the fixed header */
-  background-color: white; /* Matches background so it hides scrolling content */
-  z-index: 9; /* Keep the mask below the fixed header but above the scrolling slots */
-  pointer-events: none; /* Ensure it does not block clicks or interactions */
-}
-
-/* Header specific to Group Schedule page */
 #grp-header {
   width: 100%;
   position: fixed;
@@ -118,6 +105,52 @@ body {
   color: #555;
 }
 
+/* View Toggle Container */
+.view-toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  position: relative; /* Needed for the absolute positioning of the header */
+}
+
+.calendar-nav-left {
+  display: flex;
+  gap: 10px;
+}
+
+.view-toggle-buttons {
+  display: flex;
+  gap: 20px;
+}
+
+.view-toggle {
+  background: none;
+  border: none;
+  padding: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: border-bottom 0.2s;
+}
+
+.view-toggle.active {
+  border-bottom: 3px solid #ff004f;
+}
+
+.view-toggle:not(.active):hover {
+  color: #ff004f;
+}
+
+/* Center the month heading */
+.calendar-month-header {
+  font-size: 20px;
+  font-weight: bold;
+  position: absolute; /* Position it relative to the container */
+  left: 50%;
+  transform: translateX(-50%); /* Center it horizontally */
+}
+
 /* Calendar Navigation Styling */
 .calendar-navigation {
   display: flex;
@@ -125,19 +158,6 @@ body {
   align-items: center;
   padding: 5px;
   margin-bottom: 20px;
-}
-
-/* Left-aligned navigation buttons */
-.calendar-nav-left {
-  display: flex;
-  gap: 10px;
-}
-
-/* Right-aligned month display */
-.calendar-month {
-  font-size: 24px;
-  font-weight: bold;
-  color: #555;
 }
 
 /* Calendar button styling */
@@ -175,7 +195,8 @@ body {
   text-align: center;
   font-weight: bold;
   position: sticky;
-  top: 0; /* Stay fixed at the top */
+  cursor: pointer;
+  top: 0;
   z-index: 10;
   border-bottom: 2px;
 }
@@ -196,6 +217,7 @@ body {
   background-color: #f7f7f7;
   padding: 20px 10px;
   text-align: center;
+  cursor: pointer;
   font-weight: bold;
 }
 
@@ -205,16 +227,15 @@ body {
 }
 
 .slot {
-  height: 15px; /* Reduce the height of each slot */
+  height: 15px;
   background-color: #e7e7e7;
   border: 1px solid #ddd;
   cursor: pointer;
   position: relative;
 }
 
-/* Hover effect for showing the time range tooltip */
 .slot:hover::after {
-  content: attr(data-tooltip); /* Show the time range */
+  content: attr(data-tooltip);
   position: absolute;
   bottom: 30px;
   left: 50%;
@@ -229,37 +250,68 @@ body {
   pointer-events: none;
 }
 
-/* Highlight the selected slot */
 .slot.selected {
   background-color: #ff004f;
   color: white;
 }
 
-/* Button Group */
-.btn-group {
+/* Monthly View Styles */
+.monthly-view {
   display: flex;
   justify-content: center;
   margin-top: 20px;
 }
 
-.btn-group button {
+.calendar-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr); /* 7 columns for 7 days */
+  gap: 10px;
+}
+
+.month-day {
+  background-color: #f7f7f7;
+  padding: 20px;
+  text-align: center;
+  font-weight: bold;
+  cursor: pointer;
+  border: 1px solid #ddd;
+}
+
+.month-day.selected {
   background-color: #ff004f;
   color: white;
-  padding: 10px 20px;
+}
+
+/* Prevent highlighting of month days during dragging */
+.month-day:active,
+.month-day:focus {
+  background-color: #f7f7f7; /* Keep the background color unchanged */
+  cursor: default; /* Change the cursor to default while dragging */
+}
+
+/* Override hover effect when dragging */
+.month-day:hover {
+  background-color: #f7f7f7; /* No color change on hover */
+}
+
+.btn-group {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.btn-primary {
+  background-color: #ff004f;
+  color: white;
   border: none;
+  padding: 10px 20px;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease,
-    box-shadow 0.3s ease;
-  margin-left: 10px; /* Space between buttons */
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-.btn-group button:first-child {
-  margin-left: 0; /* Remove margin for the first button */
-}
-
-.btn-group button:hover {
+.btn-primary:hover {
   background-color: #e60045;
   transform: translateY(-3px);
-  box-shadow: 0 4px 8px #e26d90; /* Consistent shadow on hover */
 }
