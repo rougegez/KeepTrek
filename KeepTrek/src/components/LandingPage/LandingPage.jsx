@@ -1,12 +1,26 @@
+// LandingPage.jsx
 import React, { useState, useEffect } from "react";
 import KeepTrek from "../../assets/KeepTrek.png";
 import { PersonIcon } from "@primer/octicons-react";
 import "./LandingPage.css";
+import { Login } from "../Authentication/Login.jsx";
+import { Register } from "../Authentication/Register.jsx";
+import { auth } from "../../firebaseConfig";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 export const LandingPage = () => {
   // Set the initial active tool to "Group Scheduling" to automatically show it on page load
   const [activeTool, setActiveTool] = useState("Group Scheduling");
-  const [activeSection, setActiveSection] = useState("how-to-use");
+  const [activeSection, setActiveSection] = useState("how-it-works");
+  const [user, setUser] = useState(null);
+
+  // State for controlling the visibility of login and register modals
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+
+  const navigate = useNavigate(); // Initialize navigate function
+  const [intendedUrl, setIntendedUrl] = useState(null);
 
   // Observer for detecting which section is in view
   useEffect(() => {
@@ -34,9 +48,50 @@ export const LandingPage = () => {
     };
   }, []);
 
+  // Listen for authentication state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Handle logout
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
+
+  // Functions to open/close modals
+  const openLoginModal = () => {
+    setShowLoginModal(true);
+    setShowRegisterModal(false);
+  };
+
+  const openRegisterModal = () => {
+    setShowRegisterModal(true);
+    setShowLoginModal(false);
+  };
+
+  const closeModal = () => {
+    setShowLoginModal(false);
+    setShowRegisterModal(false);
+  };
+
   // Handle button clicks by navigating to different pages
+  const handleAuthSuccess = () => {
+    closeModal();
+    if (intendedUrl) {
+      navigate(intendedUrl);
+      setIntendedUrl(null); // Clear the intended URL
+    }
+  };
   const navigateToPage = (url) => {
-    window.location.href = url;
+    if (user) {
+      navigate(url); // Use navigate instead of window.location.href
+    } else {
+      setIntendedUrl(url); // Store the intended URL
+      openLoginModal(); // Open login modal if user is not authenticated
+    }
   };
 
   return (
@@ -50,10 +105,10 @@ export const LandingPage = () => {
             <ul>
               <li>
                 <a
-                  href="#how-to-use"
-                  className={activeSection === "how-to-use" ? "active" : ""}
+                  href="#how-it-works"
+                  className={activeSection === "how-it-works" ? "active" : ""}
                 >
-                  How To Use
+                  How It Works
                 </a>
               </li>
               <li>
@@ -81,18 +136,45 @@ export const LandingPage = () => {
                 </a>
               </li>
             </ul>
-            <button className="Profile">
-              <PersonIcon size={24} />
-            </button>
+            {user ? (
+              <div className="user-info">
+                <PersonIcon size={24} />
+                <span>{user.email}</span>
+                <button className="Profile" onClick={handleLogout}>
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <button className="Profile" onClick={openLoginModal}>
+                Profile
+                <PersonIcon size={24} />
+              </button>
+            )}
           </nav>
           <div></div>
         </div>
       </div>
 
-      {/* How to Use Section */}
-      <section id="how-to-use">
+      {/* Render Modals */}
+      {showLoginModal && (
+        <Login
+          closeModal={closeModal}
+          switchToRegister={openRegisterModal}
+          onAuthSuccess={handleAuthSuccess} // Pass the handler
+        />
+      )}
+      {showRegisterModal && (
+        <Register
+          closeModal={closeModal}
+          switchToLogin={openLoginModal}
+          onAuthSuccess={handleAuthSuccess} // Pass the handler
+        />
+      )}
+
+      {/* How It Works Section */}
+      <section id="how-it-works">
         <div className="container">
-          <h1>How To Use</h1>
+          <h1>How It Works</h1>
           {/* Sub-navbar for Group Scheduling, Itinerary Planning, and Expenses Splitting */}
           <nav className="sub-navbar">
             <ul>
@@ -132,9 +214,11 @@ export const LandingPage = () => {
             {activeTool === "Group Scheduling" && (
               <>
                 <p>
-                  <strong>Group Scheduling</strong> is a simple and intuitive
-                  scheduling tool that helps groups plan meetings by finding the
-                  best time for everyone.
+                  <strong>Group Scheduling</strong> Lorem ipsum dolor sit amet
+                  consectetur adipisicing elit. Quod autem impedit accusamus
+                  tempora sint atque itaque cumque, minima quibusdam dicta,
+                  dignissimos excepturi unde similique distinctio omnis quae
+                  pariatur in eius?
                 </p>
                 <br />
                 <p>
@@ -165,9 +249,10 @@ export const LandingPage = () => {
             {activeTool === "Itinerary Planning" && (
               <>
                 <p>
-                  <strong>Itinerary Planning</strong> is a travel planner that
-                  helps you map out and organize your trips, including
-                  accommodation, attractions, and transportation.
+                  <strong>Itinerary Planning</strong> Lorem ipsum dolor sit amet
+                  consectetur adipisicing elit. Adipisci, non iure, consectetur
+                  harum, quasi placeat eos quae possimus laboriosam earum nam.
+                  Ea vero obcaecati alias accusamus impedit neque nisi eligendi.
                 </p>
                 <br />
                 <p>
@@ -198,9 +283,11 @@ export const LandingPage = () => {
             {activeTool === "Expenses Splitting" && (
               <>
                 <p>
-                  <strong>Expenses Splitting</strong> helps you manage group
-                  expenses and easily track who owes whom when traveling or
-                  sharing costs.
+                  <strong>Expenses Splitting</strong> Lorem ipsum dolor sit amet
+                  consectetur, adipisicing elit. Nisi at magnam hic officia
+                  aliquam voluptatibus vero dolorum iste consequatur est
+                  recusandae pariatur iure, accusantium voluptas animi incidunt
+                  amet, id officiis!
                 </p>
                 <br />
                 <p>
@@ -236,10 +323,24 @@ export const LandingPage = () => {
         <div className="container">
           <h1>About Us</h1>
           <p>
-            We are a team of passionate individuals dedicated to making trip
-            planning easier for groups. Our tools help you coordinate schedules,
-            manage expenses, and organize your itineraries, making travel
-            stress-free and enjoyable.
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Rerum,
+            provident illum! Voluptas ullam officia tenetur labore nostrum
+            nulla, nobis, quos assumenda alias sed, saepe suscipit corrupti eos
+            possimus deserunt culpa.
+          </p>
+          <br />
+          <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda
+            dolore in architecto illum pariatur. Dolore harum eveniet nulla eum
+            minus delectus autem laboriosam perferendis? Reprehenderit
+            asperiores odit ipsa nobis sunt.
+          </p>
+          <br />
+          <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem
+            quam recusandae eligendi porro dolor quibusdam vel iure saepe
+            accusantium quos, quasi sint, voluptatibus velit quas reiciendis
+            corporis maiores consequuntur provident?
           </p>
         </div>
       </section>
@@ -248,10 +349,28 @@ export const LandingPage = () => {
       <section id="join-us">
         <div className="container">
           <h1>Join Us</h1>
+          <br />
           <p>
-            Passionate about travel? Join our team to make group travel more fun
-            and stress-free.
+            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Deserunt
+            aspernatur nihil expedita cumque ut voluptate ab modi atque! Culpa
+            fuga mollitia assumenda eveniet eos sit molestias, quae quisquam
+            necessitatibus quas!
           </p>
+          <br />
+          <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum
+            veritatis dolor reprehenderit ut a deserunt expedita dolores
+            numquam, ipsum commodi dicta quos, perferendis explicabo facilis
+            esse. Corporis facere explicabo tempore!
+          </p>
+          <br />
+          <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit.
+            Reprehenderit fugit consequuntur veniam exercitationem numquam
+            voluptatem deserunt atque possimus. Molestiae neque ullam itaque
+            eaque facilis velit amet quasi distinctio quis perspiciatis!
+          </p>
+          <br />
           <button
             className="btn-primary"
             onClick={() => navigateToPage("/join")}
@@ -268,11 +387,12 @@ export const LandingPage = () => {
           <p>
             Have questions or feedback? Reach out to us using the form below.
           </p>
+          <br />
           <form>
             <input type="text" placeholder="Your Name" />
             <input type="email" placeholder="Your Email" />
             <textarea placeholder="Your Message"></textarea>
-            <button className="btn-secondary">Send Message</button>
+            <button>Send Message</button>
           </form>
         </div>
       </section>

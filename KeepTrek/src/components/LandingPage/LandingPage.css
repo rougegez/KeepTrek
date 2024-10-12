@@ -84,7 +84,7 @@ nav ul li a:hover {
 }
 
 /* How to Use Section - Center contents vertically and horizontally */
-#how-to-use {
+#how-it-works {
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -95,7 +95,7 @@ nav ul li a:hover {
 }
 
 /* How to Use header (h1) */
-#how-to-use h1 {
+#how-it-works h1 {
   font-size: 36px;
   margin-bottom: 40px;
   transition: margin-bottom 0.3s ease;
@@ -241,6 +241,7 @@ nav ul li a:hover {
   max-width: 500px; /* Ensure consistent max width */
   border: 1px solid #ccc;
   border-radius: 5px;
+  box-sizing: border-box; /* Include padding and border in width calculation */
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
