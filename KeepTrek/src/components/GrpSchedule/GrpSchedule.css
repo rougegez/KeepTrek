@@ -15,7 +15,8 @@ body {
   overflow-y: auto; /* Enables vertical scrolling inside the calendar */
   margin-bottom: 30px; /* To separate the calendar from the rest of the content */
   position: relative; /* Relative position to allow fixed header */
-  width: calc(100% - 30px); /* Reduce width by 30px */
+  width: calc(100% - 1000px); /* Reduce width by 100px */
+  margin: 0 auto; /* Center the calendar horizontally */
 }
 
 #grp-header {
@@ -112,6 +113,7 @@ body {
   justify-content: space-between;
   margin-bottom: 20px;
   position: relative; /* Needed for the absolute positioning of the header */
+  padding: 0 400px; /* Added padding to bring elements closer to center */
 }
 
 .calendar-nav-left {
@@ -182,13 +184,14 @@ body {
   grid-template-columns: repeat(8, 1fr); /* 1 for time, 7 for days */
   gap: 10px;
   position: relative;
+  user-select: none; /* Prevent text selection */
+  width: 100%; /* Ensure it fills the container */
 }
 
 .calendar-header {
   display: contents;
 }
 
-/* Fix the day headers at the top of the scrollable calendar */
 .day-header {
   background-color: #f7f7f7;
   padding: 10px;
@@ -199,6 +202,7 @@ body {
   top: 0;
   z-index: 10;
   border-bottom: 2px;
+  user-select: none; /* Prevent text selection */
 }
 
 .time-slot-header {
@@ -219,6 +223,7 @@ body {
   text-align: center;
   cursor: pointer;
   font-weight: bold;
+  user-select: none; /* Prevent text selection */
 }
 
 .hour-slot {
@@ -266,6 +271,7 @@ body {
   display: grid;
   grid-template-columns: repeat(7, 1fr); /* 7 columns for 7 days */
   gap: 10px;
+  user-select: none; /* Prevent text selection */
 }
 
 .month-day {
@@ -275,23 +281,12 @@ body {
   font-weight: bold;
   cursor: pointer;
   border: 1px solid #ddd;
+  user-select: none; /* Prevent text selection */
 }
 
 .month-day.selected {
   background-color: #ff004f;
   color: white;
-}
-
-/* Prevent highlighting of month days during dragging */
-.month-day:active,
-.month-day:focus {
-  background-color: #f7f7f7; /* Keep the background color unchanged */
-  cursor: default; /* Change the cursor to default while dragging */
-}
-
-/* Override hover effect when dragging */
-.month-day:hover {
-  background-color: #f7f7f7; /* No color change on hover */
 }
 
 .btn-group {
@@ -314,4 +309,9 @@ body {
 .btn-primary:hover {
   background-color: #e60045;
   transform: translateY(-3px);
+}
+
+/* Prevent text selection when dragging */
+body.dragging {
+  user-select: none;
 }

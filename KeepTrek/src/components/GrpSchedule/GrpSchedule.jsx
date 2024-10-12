@@ -7,11 +7,14 @@ import "./GrpSchedule.css";
 export const GrpSchedule = () => {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date in view
-  const [selectedSlots, setSelectedSlots] = useState([]);
+  const [selectedSlots, setSelectedSlots] = useState([]); // For weekly view
+  const [selectedDates, setSelectedDates] = useState([]); // For monthly view
   const [viewMode, setViewMode] = useState("weekly"); // Track whether we are in weekly or monthly view
   const isDragging = useRef(false); // Track if the user is dragging
   const dragMode = useRef(null); // Track whether we are selecting or deselecting
   const calendarContainerRef = useRef(null); // Reference for the scrollable calendar container
+  const initialDragDate = useRef(null); // For monthly view drag start date
+  const initialSelectedDates = useRef([]); // For monthly view initial selected dates
 
   // Scroll the calendar to show 12:00 initially in weekly view
   useEffect(() => {
@@ -74,6 +77,24 @@ export const GrpSchedule = () => {
     year: "numeric",
   });
 
+  // Helper function to get dates between two dates
+  const getDatesBetween = (startDate, endDate) => {
+    const dates = [];
+    const currentDate = new Date(startDate);
+    const end = new Date(endDate);
+
+    const increment = currentDate <= end ? 1 : -1;
+
+    while (true) {
+      dates.push(new Date(currentDate));
+      if (currentDate.getTime() === end.getTime()) {
+        break;
+      }
+      currentDate.setDate(currentDate.getDate() + increment);
+    }
+    return dates;
+  };
+
   // Handle slot click or drag for weekly view
   const handleSlotClickOrDrag = (day, timeRange, isDraggingAction = false) => {
     const slot = `${day.toISOString().split("T")[0]} ${timeRange}`;
@@ -100,35 +121,61 @@ export const GrpSchedule = () => {
     const date = day.toISOString().split("T")[0];
 
     if (!isDraggingAction) {
-      if (selectedSlots.includes(date)) {
-        setSelectedSlots(selectedSlots.filter((s) => s !== date)); // Deselect
+      if (selectedDates.includes(date)) {
+        setSelectedDates(selectedDates.filter((s) => s !== date)); // Deselect
       } else {
-        setSelectedSlots([...selectedSlots, date]); // Select
+        setSelectedDates([...selectedDates, date]); // Select
       }
     } else {
-      if (dragMode.current === "select") {
-        if (!selectedSlots.includes(date)) {
-          setSelectedSlots((prev) => [...prev, date]);
-        }
-      } else if (dragMode.current === "deselect") {
-        setSelectedSlots((prev) => prev.filter((s) => s !== date));
-      }
+      // This function is no longer needed since we handle the range selection in handleDateMouseOver
     }
   };
 
   // Mouse events for monthly view
   const handleDateMouseDown = (day) => {
     const date = day.toISOString().split("T")[0];
-    dragMode.current = selectedSlots.includes(date) ? "deselect" : "select";
+    dragMode.current = selectedDates.includes(date) ? "deselect" : "select";
     isDragging.current = true;
+    initialDragDate.current = day;
+    initialSelectedDates.current = [...selectedDates]; // Save the initial selected dates
     handleDateSelection(day);
     document.body.classList.add("dragging"); // Add the class when dragging starts
   };
 
   const handleDateMouseOver = (day) => {
     if (isDragging.current) {
-      handleDateSelection(day, true);
+      const startDate = initialDragDate.current;
+      const endDate = day;
+
+      const datesInRange = getDatesBetween(
+        new Date(startDate.toDateString()),
+        new Date(endDate.toDateString())
+      ).map((date) => date.toISOString().split("T")[0]);
+
+      if (dragMode.current === "select") {
+        // Combine initialSelectedDates with datesInRange
+        setSelectedDates(
+          Array.from(
+            new Set([...initialSelectedDates.current, ...datesInRange])
+          )
+        );
+      } else if (dragMode.current === "deselect") {
+        // Remove datesInRange from initialSelectedDates
+        setSelectedDates(
+          initialSelectedDates.current.filter(
+            (date) => !datesInRange.includes(date)
+          )
+        );
+      }
     }
+  };
+
+  const handleMouseUp = () => {
+    isDragging.current = false;
+    dragMode.current = null;
+    document.body.classList.remove("dragging"); // Remove the class when dragging ends
+    initialDragDate.current = null;
+    initialSelectedDates.current = [];
   };
 
   // Mouse events for weekly view
@@ -137,12 +184,6 @@ export const GrpSchedule = () => {
     dragMode.current = selectedSlots.includes(slot) ? "deselect" : "select";
     handleSlotClickOrDrag(day, timeRange);
     isDragging.current = true;
-  };
-
-  const handleMouseUp = () => {
-    isDragging.current = false;
-    dragMode.current = null;
-    document.body.classList.remove("dragging"); // Remove the class when dragging ends
   };
 
   const handleMouseOver = (day, timeRange) => {
@@ -156,11 +197,14 @@ export const GrpSchedule = () => {
   };
 
   const handleProceed = () => {
-    alert(`Selected slots: ${selectedSlots.join(", ")}`);
+    // Combine selectedDates and selectedSlots for output
+    const allSelected = [...selectedDates, ...selectedSlots];
+    alert(`Selected slots: ${allSelected.join(", ")}`);
   };
 
   const handleClearAll = () => {
     setSelectedSlots([]);
+    setSelectedDates([]);
   };
 
   const handlePreviousPeriod = () => {
@@ -382,9 +426,8 @@ export const GrpSchedule = () => {
           >
             <div className="calendar-month-grid">
               {monthDays.map((day, index) => {
-                const isSelected = selectedSlots.includes(
-                  day.toISOString().split("T")[0]
-                );
+                const date = day.toISOString().split("T")[0];
+                const isSelected = selectedDates.includes(date);
                 return (
                   <div
                     key={index}
