@@ -1,24 +1,37 @@
-// src/components/Itinerary/Itinerary.jsx
-import React, { useState, useEffect } from "react";
+// src/components/TripDetails/TripDetailsPage.jsx
+import React, { useEffect, useState } from "react";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
 import { firestore, auth } from "../../firebaseConfig";
-import { collection, query, onSnapshot, addDoc } from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
 import KeepTrek from "../../assets/KeepTrek.png";
-import "./Itinerary.css";
+import "./TripDetailsPage.css";
 import { Login } from "../Authentication/Login";
 import { Register } from "../Authentication/Register";
 
-export const Itinerary = () => {
-  const [TripName, setTripName] = useState("");
-  const [StartDate, setStartDate] = useState("");
-  const [EndDate, setEndDate] = useState("");
-  const [itineraries, setItineraries] = useState([]);
+// Helper function to generate the list of dates between start and end date
+const generateDateRange = (startDate, endDate) => {
+  const dates = [];
+  let currentDate = new Date(startDate);
+  const stopDate = new Date(endDate);
+
+  while (currentDate <= stopDate) {
+    dates.push(new Date(currentDate));
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return dates;
+};
+
+export const TripDetailsPage = () => {
+  const location = useLocation();
+  const { id } = useParams(); // Get the itinerary id from the URL
+  const [itinerary, setItinerary] = useState(location.state?.itinerary || null);
+  const [selectedDay, setSelectedDay] = useState(null); // State for the selected day
   const [user, setUser] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const navigate = useNavigate();
 
-  // Check for authentication when component mounts
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       if (currentUser) {
@@ -34,49 +47,27 @@ export const Itinerary = () => {
     return () => unsubscribe();
   }, []);
 
-  // Function to handle creating new itinerary
-  const handleCreateItinerary = async () => {
-    try {
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
-      const docRef = await addDoc(
-        collection(firestore, "itineraries", user.uid, "trips"),
-        {
-          TripName,
-          StartDate,
-          EndDate,
-        }
-      );
-
-      // Navigate to the trip details page after successful creation
-      navigate(`/trip-details/${docRef.id}`, {
-        state: { TripName, StartDate, EndDate },
-      });
-    } catch (error) {
-      alert("Error adding trip: " + error.message);
-    }
-  };
-
-  // Real-time listener for fetching itineraries
   useEffect(() => {
+    const fetchItinerary = async () => {
+      if (!itinerary) {
+        const docRef = doc(firestore, "itineraries", user.uid, "trips", id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setItinerary(docSnap.data()); // Set fetched itinerary
+        } else {
+          console.error("No such itinerary found!");
+        }
+      }
+    };
+
     if (user) {
-      const q = query(collection(firestore, "itineraries", user.uid, "trips"));
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const fetchedItineraries = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setItineraries(fetchedItineraries);
-      });
-
-      return () => unsubscribe();
+      fetchItinerary();
     }
-  }, [user]);
+  }, [id, itinerary, user]);
 
-  // Function to navigate to the details page of an itinerary
-  const handleItineraryClick = (itinerary) => {
-    navigate(`/trip-details/${itinerary.id}`, { state: { itinerary } });
+  // Handle the click on a day button
+  const handleDayClick = (day) => {
+    setSelectedDay(day); // Set the selected day to show the planning section
   };
 
   const handleAuthSuccess = () => {
@@ -91,6 +82,17 @@ export const Itinerary = () => {
     setShowRegisterModal(false);
     navigate("/");
   };
+
+  if (!user) {
+    return null; // Return null while authentication is being checked
+  }
+
+  if (!itinerary) {
+    return <p>Loading itinerary...</p>;
+  }
+
+  // Generate the date range based on the start and end dates
+  const dateRange = generateDateRange(itinerary.StartDate, itinerary.EndDate);
 
   return (
     <>
@@ -142,52 +144,53 @@ export const Itinerary = () => {
         </div>
       </header>
 
-      <div className="itinerary-page">
+      <div className="trip-details-page">
         <div className="grp-content">
-          <h1>Create Your Trip</h1>
-          <div className="form-group">
-            <input
-              type="text"
-              placeholder="Trip Name"
-              value={TripName}
-              onChange={(e) => setTripName(e.target.value)}
-              className="input-field"
-            />
-            <input
-              type="date"
-              placeholder="Start Date"
-              value={StartDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="input-field"
-            />
-            <input
-              type="date"
-              placeholder="End Date"
-              value={EndDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="input-field"
-            />
-            <button onClick={handleCreateItinerary} className="btn-primary">
-              Submit
-            </button>
-          </div>
+          <h1>Trip Details</h1>
+          <h2>{itinerary.TripName}</h2>
 
-          <h2>Your Itineraries</h2>
-          {itineraries.length > 0 ? (
-            <ul className="itinerary-list">
-              {itineraries.map((itinerary) => (
-                <li key={itinerary.id} className="itinerary-item">
-                  <button
-                    onClick={() => handleItineraryClick(itinerary)}
-                    className="itinerary-button"
-                  >
-                    {itinerary.TripName}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>You have no itineraries yet.</p>
+          <h3>Select a Day to Plan:</h3>
+          <ul className="date-list">
+            {dateRange.map((date, index) => (
+              <li key={index}>
+                <button
+                  onClick={() => handleDayClick(date)}
+                  className={`date-button ${
+                    selectedDay &&
+                    selectedDay.toDateString() === date.toDateString()
+                      ? "selected"
+                      : ""
+                  }`}
+                >
+                  {date.toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          {/* Conditionally render the planning section for the selected day */}
+          {selectedDay && (
+            <div className="planning-section">
+              <h3>
+                Plan for{" "}
+                {selectedDay.toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </h3>
+
+              {/* Planning section content */}
+              <textarea
+                placeholder="Enter your plan for the day..."
+                className="input-textarea"
+              ></textarea>
+              <button className="btn-primary">Save Plan</button>
+            </div>
           )}
         </div>
       </div>

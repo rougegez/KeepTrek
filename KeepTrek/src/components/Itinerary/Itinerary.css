@@ -1,0 +1,90 @@
+/* src/components/Itinerary/Itinerary.css */
+
+.itinerary-page {
+  /* Styles specific to Itinerary component */
+
+  .grp-content {
+    padding: 120px 20px 20px 20px; /* Adjusted padding to account for fixed header */
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 36px;
+    color: #ff004f;
+  }
+
+  h2 {
+    font-size: 28px;
+    color: #333;
+    margin-top: 40px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+
+  .input-field {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+
+  .btn-primary {
+    background-color: #ff004f;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    font-size: 16px;
+    margin-top: 10px;
+  }
+
+  .btn-primary:hover {
+    background-color: #e60045;
+    transform: translateY(-3px);
+  }
+
+  .itinerary-list {
+    list-style-type: none;
+    padding: 0;
+  }
+
+  .itinerary-item {
+    margin: 10px 0;
+  }
+
+  .itinerary-button {
+    background-color: #f7f7f7;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    max-width: 400px;
+    font-size: 18px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+
+  .itinerary-button:hover {
+    background-color: #ff004f;
+    color: white;
+    transform: translateY(-3px);
+  }
+
+  p {
+    font-size: 18px;
+    color: #555;
+  }
+}

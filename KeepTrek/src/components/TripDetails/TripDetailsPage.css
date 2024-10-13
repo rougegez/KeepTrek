@@ -1,0 +1,100 @@
+/* src/components/TripDetails/TripDetailsPage.css */
+
+.trip-details-page {
+  /* Styles specific to TripDetailsPage component */
+
+  .grp-content {
+    padding: 120px 20px 20px 20px; /* Adjusted padding to account for fixed header */
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 36px;
+    color: #ff004f;
+    margin-bottom: 20px;
+  }
+
+  h2 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 30px;
+  }
+
+  h3 {
+    font-size: 24px;
+    color: #333;
+    margin-top: 40px;
+    margin-bottom: 20px;
+  }
+
+  .date-list {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .date-button {
+    background-color: #f7f7f7;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+
+  .date-button:hover {
+    background-color: #ff004f;
+    color: white;
+    transform: translateY(-3px);
+  }
+
+  .date-button.selected {
+    background-color: #ff004f;
+    color: white;
+  }
+
+  .planning-section {
+    margin-top: 30px;
+    text-align: left;
+  }
+
+  .input-textarea {
+    width: 100%;
+    max-width: 800px;
+    height: 200px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    resize: vertical;
+    margin-bottom: 20px;
+  }
+
+  .btn-primary {
+    background-color: #ff004f;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    font-size: 16px;
+  }
+
+  .btn-primary:hover {
+    background-color: #e60045;
+    transform: translateY(-3px);
+  }
+
+  p {
+    font-size: 18px;
+    color: #555;
+  }
+}

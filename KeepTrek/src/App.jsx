@@ -1,9 +1,11 @@
+// src/App.js
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Itinerary } from "./components/Itinerary/Itinerary.jsx";
-import TripDetailsPage from "./components/TripDetails/Trips.jsx";
+import { TripDetailsPage } from "./components/TripDetails/TripDetailsPage.jsx"; // Named import
 import { LandingPage } from "./components/LandingPage/LandingPage.jsx";
 import { GrpSchedule } from "./components/GrpSchedule/GrpSchedule.jsx";
+import { ScheduleSummary } from "./components/GrpSchedule/ScheduleSummary";
 
 function App() {
   return (
@@ -12,6 +14,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/itinerary" element={<Itinerary />} />
         <Route path="/schedule" element={<GrpSchedule />} />
+        <Route path="/schedule-summary" element={<ScheduleSummary />} />
         <Route path="/trip-details/:id" element={<TripDetailsPage />} />
       </Routes>
     </Router>

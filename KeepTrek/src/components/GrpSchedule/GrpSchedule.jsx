@@ -1,4 +1,4 @@
-// src/components/GrpSchedule.jsx
+// src/components/GrpSchedule/GrpSchedule.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PersonIcon } from "@primer/octicons-react";
@@ -24,6 +24,14 @@ export const GrpSchedule = () => {
   const [user, setUser] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+
+  // Helper function to format date as 'YYYY-MM-DD' using local time
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Months are zero-based
+    const day = date.getDate().toString().padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
 
   // Check for authentication when component mounts
   useEffect(() => {
@@ -122,7 +130,7 @@ export const GrpSchedule = () => {
 
   // Handle slot click or drag for weekly view
   const handleSlotClickOrDrag = (day, timeRange, isDraggingAction = false) => {
-    const slot = `${day.toISOString().split("T")[0]} ${timeRange}`;
+    const slot = `${formatDate(day)} ${timeRange}`;
 
     if (!isDraggingAction) {
       if (selectedSlots.includes(slot)) {
@@ -143,7 +151,7 @@ export const GrpSchedule = () => {
 
   // Handle date selection or drag in monthly view
   const handleDateSelection = (day) => {
-    const date = day.toISOString().split("T")[0];
+    const date = formatDate(day);
     if (selectedDates.includes(date)) {
       setSelectedDates(selectedDates.filter((s) => s !== date)); // Deselect
     } else {
@@ -153,7 +161,7 @@ export const GrpSchedule = () => {
 
   // Mouse events for monthly view
   const handleDateMouseDown = (day) => {
-    const date = day.toISOString().split("T")[0];
+    const date = formatDate(day);
     dragMode.current = selectedDates.includes(date) ? "deselect" : "select";
     isDragging.current = true;
     initialDragDate.current = day;
@@ -170,7 +178,7 @@ export const GrpSchedule = () => {
       const datesInRange = getDatesBetween(
         new Date(startDate.toDateString()),
         new Date(endDate.toDateString())
-      ).map((date) => date.toISOString().split("T")[0]);
+      ).map((date) => formatDate(date));
 
       if (dragMode.current === "select") {
         // Combine initialSelectedDates with datesInRange
@@ -200,7 +208,7 @@ export const GrpSchedule = () => {
 
   // Mouse events for weekly view
   const handleMouseDown = (day, timeRange) => {
-    const slot = `${day.toISOString().split("T")[0]} ${timeRange}`;
+    const slot = `${formatDate(day)} ${timeRange}`;
     dragMode.current = selectedSlots.includes(slot) ? "deselect" : "select";
     handleSlotClickOrDrag(day, timeRange);
     isDragging.current = true;
@@ -230,7 +238,7 @@ export const GrpSchedule = () => {
           hourlyIntervals.forEach((hour) => {
             const timeRanges = generateTimeRanges(hour);
             timeRanges.forEach((timeRange) => {
-              const slot = `${day.toISOString().split("T")[0]} ${timeRange}`;
+              const slot = `${formatDate(day)} ${timeRange}`;
               allSlots.push(slot);
             });
           });
@@ -255,9 +263,7 @@ export const GrpSchedule = () => {
         );
       } else if (viewMode === "monthly") {
         // Generate all possible dates
-        const allDates = monthDays.map(
-          (day) => day.toISOString().split("T")[0]
-        );
+        const allDates = monthDays.map((day) => formatDate(day));
 
         // Compute unselectedDates
         const unselectedDates = allDates.filter(
@@ -336,7 +342,7 @@ export const GrpSchedule = () => {
   const handleColumnSelection = (day) => {
     const selectedColumnSlots = hourlyIntervals.flatMap((hour) =>
       generateTimeRanges(hour).map(
-        (timeRange) => `${day.toISOString().split("T")[0]} ${timeRange}`
+        (timeRange) => `${formatDate(day)} ${timeRange}`
       )
     );
 
@@ -355,7 +361,7 @@ export const GrpSchedule = () => {
   const handleRowSelection = (hour) => {
     const selectedRowSlots = weekDays.flatMap((day) =>
       generateTimeRanges(hour).map(
-        (timeRange) => `${day.toISOString().split("T")[0]} ${timeRange}`
+        (timeRange) => `${formatDate(day)} ${timeRange}`
       )
     );
 
@@ -402,7 +408,11 @@ export const GrpSchedule = () => {
             <button onClick={() => navigate("#")} className="grp-nav-link">
               How it Works
             </button>
-            <button onClick={() => navigate("#")} className="grp-nav-link">
+            {/* Updated History button to navigate to /schedule-summary */}
+            <button
+              onClick={() => navigate("/schedule-summary")}
+              className="grp-nav-link"
+            >
               History
             </button>
             {user ? (
@@ -500,7 +510,7 @@ export const GrpSchedule = () => {
                       <div key={dayIndex} className="hour-slot">
                         {generateTimeRanges(hour).map((timeRange) => {
                           const isSelected = selectedSlots.includes(
-                            `${day.toISOString().split("T")[0]} ${timeRange}`
+                            `${formatDate(day)} ${timeRange}`
                           );
                           return (
                             <div
@@ -532,7 +542,7 @@ export const GrpSchedule = () => {
           >
             <div className="calendar-month-grid">
               {monthDays.map((day, index) => {
-                const date = day.toISOString().split("T")[0];
+                const date = formatDate(day);
                 const isSelected = selectedDates.includes(date);
                 return (
                   <div

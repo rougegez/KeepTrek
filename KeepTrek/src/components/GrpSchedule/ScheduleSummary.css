@@ -1,0 +1,47 @@
+/* src/components/ScheduleSummary.css */
+
+.schedule-summary {
+  /* Styles specific to ScheduleSummary component */
+
+  .grp-content {
+    padding: 120px 20px 20px 20px; /* Adjusted padding to account for fixed header */
+  }
+
+  .schedule-section {
+    margin-bottom: 40px;
+  }
+
+  .schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .schedule-table th,
+  .schedule-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+
+  .schedule-table th {
+    background-color: #f2f2f2;
+  }
+
+  .schedule-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  .schedule-table tr:hover {
+    background-color: #ddd;
+  }
+
+  /* Additional styles specific to ScheduleSummary */
+  h1 {
+    font-size: 36px;
+    color: #ff004f;
+  }
+
+  h2 {
+    font-size: 28px;
+    color: #333;
+  }
+}
