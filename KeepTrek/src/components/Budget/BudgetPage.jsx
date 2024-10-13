@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Pie } from "react-chartjs-2"; // Correct import for Pie chart
+import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { auth } from "../../firebaseConfig"; // Firebase config
-import KeepTrek from "../../assets/KeepTrek.png"; // Replace with your asset
-import "./BudgetPage.css"; // Import the CSS file
+import KeepTrek from "../../assets/KeepTrek.png";
+import { auth } from "../../firebaseConfig";
 import { Login } from "../Authentication/Login";
 import { Register } from "../Authentication/Register";
+import { firestore } from "../../firebaseConfig"; // Firebase Firestore
+import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
+import "./BudgetPage.css"; // Import the scoped CSS for BudgetPage
 
 // Register required Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export const BudgetPage = () => {
+  const navigate = useNavigate();
   const [expenses, setExpenses] = useState([]);
   const [expenseInput, setExpenseInput] = useState({
     date: "",
@@ -20,25 +23,41 @@ export const BudgetPage = () => {
     category: "",
     youOwe: "",
   });
+
+  // Authentication states
   const [user, setUser] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
-  const navigate = useNavigate();
 
+  // Handle authentication state change
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
         setShowLoginModal(false);
         setShowRegisterModal(false);
+        await fetchUserExpenses(currentUser.uid); // Fetch expenses after user logs in
       } else {
         setUser(null);
-        setShowLoginModal(true);
+        setShowLoginModal(true); // Show login modal if not authenticated
       }
     });
 
     return () => unsubscribe();
   }, []);
+
+  // Fetch user-specific expenses from Firestore
+  const fetchUserExpenses = async (userId) => {
+    try {
+      const expensesRef = collection(firestore, "users", userId, "expenses");
+      const q = query(expensesRef); // Query for user's expenses
+      const querySnapshot = await getDocs(q);
+      const fetchedExpenses = querySnapshot.docs.map((doc) => doc.data());
+      setExpenses(fetchedExpenses); // Update state with fetched expenses
+    } catch (error) {
+      console.error("Error fetching expenses: ", error);
+    }
+  };
 
   const handleInputChange = (e) => {
     setExpenseInput({
@@ -47,7 +66,8 @@ export const BudgetPage = () => {
     });
   };
 
-  const handleAddExpense = () => {
+  // Function to add expense to Firestore under the logged-in user's account
+  const handleAddExpense = async () => {
     const { date, description, amount, category, youOwe } = expenseInput;
 
     if (!date || !description || !amount || !category || !youOwe) {
@@ -59,15 +79,29 @@ export const BudgetPage = () => {
       ...expenseInput,
       amount: parseFloat(expenseInput.amount),
       youOwe: parseFloat(expenseInput.youOwe),
+      userId: user.uid, // Include the user's ID
+      timestamp: new Date(), // Add a timestamp
     };
-    setExpenses([...expenses, newExpense]);
-    setExpenseInput({
-      date: "",
-      description: "",
-      amount: "",
-      category: "",
-      youOwe: "",
-    });
+
+    try {
+      // Add new expense to the user's expenses collection in Firestore
+      await addDoc(
+        collection(firestore, "users", user.uid, "expenses"),
+        newExpense
+      );
+      setExpenses([...expenses, newExpense]); // Update state with new expense
+      setExpenseInput({
+        date: "",
+        description: "",
+        amount: "",
+        category: "",
+        youOwe: "",
+      });
+      alert("Expense added successfully!");
+    } catch (error) {
+      console.error("Error adding expense: ", error);
+      alert("Failed to add expense. Please try again.");
+    }
   };
 
   const totalCost = expenses.reduce((acc, expense) => acc + expense.amount, 0);
@@ -112,12 +146,8 @@ export const BudgetPage = () => {
   const handleCloseModal = () => {
     setShowLoginModal(false);
     setShowRegisterModal(false);
-    navigate("/");
+    navigate("/"); // Redirect to home or any other page after closing the modal
   };
-
-  if (!user) {
-    return null;
-  }
 
   return (
     <>
@@ -178,14 +208,14 @@ export const BudgetPage = () => {
         </div>
 
         {/* Expense Input Section */}
-        <div className="expense-input">
+        <div className="budget-expense-input">
           <h3>Add an Expense</h3>
           <input
             type="date"
             name="date"
             value={expenseInput.date}
             onChange={handleInputChange}
-            placeholder="Date"
+            placeholder="mm/dd/yyyy"
           />
           <input
             type="text"
@@ -221,13 +251,15 @@ export const BudgetPage = () => {
             onChange={handleInputChange}
             placeholder="You Owe"
           />
-          <button onClick={handleAddExpense}>Add Expense</button>
+          <button className="budget-btn-primary" onClick={handleAddExpense}>
+            Add Expense
+          </button>
         </div>
 
         {/* Expenses List Section */}
-        <div className="expenses-section">
+        <div className="budget-expenses-section">
           <h3>Expenses</h3>
-          <ul className="expenses-list">
+          <ul className="budget-expenses-list">
             {expenses.map((expense, index) => (
               <li key={index}>
                 <span>{expense.date}</span>
@@ -240,9 +272,11 @@ export const BudgetPage = () => {
         </div>
 
         {/* Expense Breakdown Chart Section */}
-        <div className="expense-breakdown">
+        <div className="budget-expense-breakdown">
           <h3>Expense Breakdown</h3>
-          <Pie data={chartData} />
+          <div className="budget-pie-chart">
+            <Pie data={chartData} />
+          </div>
         </div>
       </div>
 
