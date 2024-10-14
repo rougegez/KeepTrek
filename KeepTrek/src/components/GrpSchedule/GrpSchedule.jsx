@@ -51,44 +51,11 @@ export const GrpSchedule = () => {
     return () => unsubscribe();
   }, []);
 
-  // Function to fetch existing schedule data for the user
-  const fetchUserSchedule = async (userId) => {
-    try {
-      const weeklyDocRef = doc(
-        firestore,
-        "users",
-        userId,
-        "schedules",
-        "weekly"
-      );
-      const monthlyDocRef = doc(
-        firestore,
-        "users",
-        userId,
-        "schedules",
-        "monthly"
-      );
-
-      const weeklyDoc = await getDoc(weeklyDocRef);
-      const monthlyDoc = await getDoc(monthlyDocRef);
-
-      if (weeklyDoc.exists()) {
-        setSelectedSlots(weeklyDoc.data().busySlots || []);
-      }
-
-      if (monthlyDoc.exists()) {
-        setSelectedDates(monthlyDoc.data().busyDates || []);
-      }
-    } catch (error) {
-      console.error("Error fetching schedule: ", error);
-    }
-  };
-
-  // Scroll the calendar to show 12:00 initially in weekly view
+  // Scroll the calendar to show 18.5:00 initially in weekly view
   useEffect(() => {
     if (viewMode === "weekly" && calendarContainerRef.current) {
       const hourHeight = 50;
-      const noonScrollPosition = hourHeight * 12; // Adjusted to 12:00 PM
+      const noonScrollPosition = hourHeight * 18.5; // Adjusted to 18.5:00 PM
       calendarContainerRef.current.scrollTop = noonScrollPosition;
     }
   }, [viewMode]);
