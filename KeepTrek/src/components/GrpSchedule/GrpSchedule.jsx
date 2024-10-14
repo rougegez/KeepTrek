@@ -1,11 +1,12 @@
 // src/components/GrpSchedule/GrpSchedule.jsx
+
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PersonIcon } from "@primer/octicons-react";
 import KeepTrek from "../../assets/KeepTrek.png";
 import "./GrpSchedule.css";
 import { firestore, auth } from "../../firebaseConfig";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore"; // Import getDoc for fetching existing data
 import { Login } from "../Authentication/Login";
 import { Register } from "../Authentication/Register";
 
@@ -35,11 +36,12 @@ export const GrpSchedule = () => {
 
   // Check for authentication when component mounts
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
         setShowLoginModal(false);
         setShowRegisterModal(false);
+        await fetchUserSchedule(currentUser.uid); // Fetch existing schedule data
       } else {
         setUser(null);
         setShowLoginModal(true); // Show login modal if not authenticated
@@ -49,11 +51,44 @@ export const GrpSchedule = () => {
     return () => unsubscribe();
   }, []);
 
+  // Function to fetch existing schedule data for the user
+  const fetchUserSchedule = async (userId) => {
+    try {
+      const weeklyDocRef = doc(
+        firestore,
+        "users",
+        userId,
+        "schedules",
+        "weekly"
+      );
+      const monthlyDocRef = doc(
+        firestore,
+        "users",
+        userId,
+        "schedules",
+        "monthly"
+      );
+
+      const weeklyDoc = await getDoc(weeklyDocRef);
+      const monthlyDoc = await getDoc(monthlyDocRef);
+
+      if (weeklyDoc.exists()) {
+        setSelectedSlots(weeklyDoc.data().busySlots || []);
+      }
+
+      if (monthlyDoc.exists()) {
+        setSelectedDates(monthlyDoc.data().busyDates || []);
+      }
+    } catch (error) {
+      console.error("Error fetching schedule: ", error);
+    }
+  };
+
   // Scroll the calendar to show 12:00 initially in weekly view
   useEffect(() => {
     if (viewMode === "weekly" && calendarContainerRef.current) {
       const hourHeight = 50;
-      const noonScrollPosition = hourHeight * 18;
+      const noonScrollPosition = hourHeight * 12; // Adjusted to 12:00 PM
       calendarContainerRef.current.scrollTop = noonScrollPosition;
     }
   }, [viewMode]);
@@ -63,6 +98,7 @@ export const GrpSchedule = () => {
     const dayOfWeek = date.getDay();
     const startOfWeek = new Date(date);
     startOfWeek.setDate(date.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+    startOfWeek.setHours(0, 0, 0, 0);
     return startOfWeek;
   };
 
@@ -224,6 +260,7 @@ export const GrpSchedule = () => {
     event.preventDefault();
   };
 
+  // Function to save schedule data under the authenticated user's Firestore document
   const handleProceed = async () => {
     try {
       if (!user) {
@@ -258,8 +295,9 @@ export const GrpSchedule = () => {
 
         // Save data to Firestore under the user's document
         await setDoc(
-          doc(firestore, "schedules", userId, "weekly", "current"),
-          data
+          doc(firestore, "users", userId, "schedules", "weekly"),
+          data,
+          { merge: true } // Use merge to update existing data
         );
       } else if (viewMode === "monthly") {
         // Generate all possible dates
@@ -279,12 +317,16 @@ export const GrpSchedule = () => {
 
         // Save data to Firestore under the user's document
         await setDoc(
-          doc(firestore, "schedules", userId, "monthly", "current"),
-          data
+          doc(firestore, "users", userId, "schedules", "monthly"),
+          data,
+          { merge: true } // Use merge to update existing data
         );
       }
+
+      alert("Schedule saved successfully!");
     } catch (error) {
       console.error("Error saving to Firestore: ", error);
+      alert("Failed to save schedule. Please try again.");
     }
   };
 
@@ -391,6 +433,7 @@ export const GrpSchedule = () => {
 
   return (
     <>
+      {/* Header/Navbar */}
       <header id="grp-header" className="grp-navbar">
         <div className="grp-container">
           <div className="grp-navbar-left">
@@ -435,7 +478,12 @@ export const GrpSchedule = () => {
         </div>
       </header>
 
-      <div className="grp-content">
+      {/* Main Content */}
+      <div
+        className="grp-content"
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
         {/* Toggle between Week and Month */}
         <div className="view-toggle-container">
           <div className="calendar-nav-left">
@@ -473,13 +521,9 @@ export const GrpSchedule = () => {
           </div>
         </div>
 
+        {/* Calendar View */}
         {viewMode === "weekly" ? (
-          <div
-            className="scrollable-calendar"
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            ref={calendarContainerRef}
-          >
+          <div className="scrollable-calendar" ref={calendarContainerRef}>
             <div className="calendar-grid" onMouseDown={preventTextSelection}>
               <div className="calendar-header">
                 <div className="time-slot-header"></div>
@@ -560,6 +604,7 @@ export const GrpSchedule = () => {
           </div>
         )}
 
+        {/* Action Buttons */}
         <div className="btn-group">
           <button className="btn-primary" onClick={handleClearAll}>
             Clear All

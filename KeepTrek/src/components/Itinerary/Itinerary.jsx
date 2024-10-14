@@ -1,7 +1,14 @@
 // src/components/Itinerary/Itinerary.jsx
+
 import React, { useState, useEffect } from "react";
 import { firestore, auth } from "../../firebaseConfig";
-import { collection, query, onSnapshot, addDoc } from "firebase/firestore";
+import {
+  collection,
+  query,
+  onSnapshot,
+  addDoc,
+  getDocs,
+} from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import KeepTrek from "../../assets/KeepTrek.png";
 import "./Itinerary.css";
@@ -9,22 +16,23 @@ import { Login } from "../Authentication/Login";
 import { Register } from "../Authentication/Register";
 
 export const Itinerary = () => {
-  const [TripName, setTripName] = useState("");
-  const [StartDate, setStartDate] = useState("");
-  const [EndDate, setEndDate] = useState("");
+  const [tripName, setTripName] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [itineraries, setItineraries] = useState([]);
   const [user, setUser] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const navigate = useNavigate();
 
-  // Check for authentication when component mounts
+  // Listen for authentication state changes
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
         setShowLoginModal(false);
         setShowRegisterModal(false);
+        await fetchUserItineraries(currentUser.uid); // Fetch itineraries upon login
       } else {
         setUser(null);
         setShowLoginModal(true); // Show login modal if not authenticated
@@ -34,51 +42,82 @@ export const Itinerary = () => {
     return () => unsubscribe();
   }, []);
 
-  // Function to handle creating new itinerary
+  // Function to fetch existing itineraries for the user
+  const fetchUserItineraries = async (userId) => {
+    try {
+      const itinerariesRef = collection(
+        firestore,
+        "users",
+        userId,
+        "itineraries"
+      );
+      const q = query(itinerariesRef);
+      const querySnapshot = await getDocs(q);
+      const fetchedItineraries = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setItineraries(fetchedItineraries);
+    } catch (error) {
+      console.error("Error fetching itineraries: ", error);
+    }
+  };
+
+  // Function to handle creating a new itinerary
   const handleCreateItinerary = async () => {
     try {
       if (!user) {
         throw new Error("User not authenticated");
       }
-      const docRef = await addDoc(
-        collection(firestore, "itineraries", user.uid, "trips"),
-        {
-          TripName,
-          StartDate,
-          EndDate,
-        }
-      );
 
-      // Navigate to the trip details page after successful creation
+      if (!tripName || !startDate || !endDate) {
+        alert("Please fill out all fields.");
+        return;
+      }
+
+      // Validate date inputs
+      if (new Date(startDate) > new Date(endDate)) {
+        alert("Start Date cannot be after End Date.");
+        return;
+      }
+
+      const newItinerary = {
+        TripName: tripName,
+        StartDate: new Date(startDate),
+        EndDate: new Date(endDate),
+        timestamp: new Date(),
+      };
+
+      const itinerariesRef = collection(
+        firestore,
+        "users",
+        user.uid,
+        "itineraries"
+      );
+      const docRef = await addDoc(itinerariesRef, newItinerary);
+
+      // Optionally, you can listen for real-time updates instead of manually updating the state
+      // For immediate navigation after creation:
       navigate(`/trip-details/${docRef.id}`, {
-        state: { TripName, StartDate, EndDate },
+        state: { itinerary: { id: docRef.id, ...newItinerary } },
       });
+
+      // Reset form fields
+      setTripName("");
+      setStartDate("");
+      setEndDate("");
     } catch (error) {
+      console.error("Error adding itinerary: ", error);
       alert("Error adding trip: " + error.message);
     }
   };
-
-  // Real-time listener for fetching itineraries
-  useEffect(() => {
-    if (user) {
-      const q = query(collection(firestore, "itineraries", user.uid, "trips"));
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const fetchedItineraries = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setItineraries(fetchedItineraries);
-      });
-
-      return () => unsubscribe();
-    }
-  }, [user]);
 
   // Function to navigate to the details page of an itinerary
   const handleItineraryClick = (itinerary) => {
     navigate(`/trip-details/${itinerary.id}`, { state: { itinerary } });
   };
 
+  // Handle successful authentication
   const handleAuthSuccess = () => {
     setShowLoginModal(false);
     setShowRegisterModal(false);
@@ -94,6 +133,7 @@ export const Itinerary = () => {
 
   return (
     <>
+      {/* Header/Navbar */}
       <header id="grp-header" className="grp-navbar">
         <div className="grp-container">
           <div className="grp-navbar-left">
@@ -142,6 +182,7 @@ export const Itinerary = () => {
         </div>
       </header>
 
+      {/* Main Content */}
       <div className="itinerary-page">
         <div className="grp-content">
           <h1>Create Your Trip</h1>
@@ -149,21 +190,21 @@ export const Itinerary = () => {
             <input
               type="text"
               placeholder="Trip Name"
-              value={TripName}
+              value={tripName}
               onChange={(e) => setTripName(e.target.value)}
               className="input-field"
             />
             <input
               type="date"
               placeholder="Start Date"
-              value={StartDate}
+              value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               className="input-field"
             />
             <input
               type="date"
               placeholder="End Date"
-              value={EndDate}
+              value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               className="input-field"
             />
