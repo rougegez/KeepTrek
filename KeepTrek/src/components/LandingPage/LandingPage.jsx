@@ -1,4 +1,4 @@
-// LandingPage.jsx
+// src/components/LandingPage/LandingPage.jsx
 import React, { useState, useEffect } from "react";
 import KeepTrek from "../../assets/KeepTrek.png";
 import { PersonIcon } from "@primer/octicons-react";
@@ -7,11 +7,9 @@ import { Login } from "../Authentication/Login.jsx";
 import { Register } from "../Authentication/Register.jsx";
 import { auth } from "../../firebaseConfig";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate, Link } from "react-router-dom"; // Import Link
 
 export const LandingPage = () => {
-  // Set the initial active tool to "Group Scheduling" to automatically show it on page load
-  const [activeTool, setActiveTool] = useState("Group Scheduling");
   const [activeSection, setActiveSection] = useState("how-it-works");
   const [user, setUser] = useState(null);
 
@@ -59,6 +57,7 @@ export const LandingPage = () => {
   // Handle logout
   const handleLogout = async () => {
     await signOut(auth);
+    navigate("/"); // Redirect to landing page after logout
   };
 
   // Functions to open/close modals
@@ -85,6 +84,7 @@ export const LandingPage = () => {
       setIntendedUrl(null); // Clear the intended URL
     }
   };
+
   const navigateToPage = (url) => {
     if (user) {
       navigate(url); // Use navigate instead of window.location.href
@@ -96,6 +96,7 @@ export const LandingPage = () => {
 
   return (
     <>
+      {/* Header Section */}
       <div id="header">
         <div className="container">
           <nav>
@@ -135,6 +136,18 @@ export const LandingPage = () => {
                   Contact Us
                 </a>
               </li>
+              {user && (
+                <li>
+                  <Link
+                    to="/dashboard"
+                    className={
+                      window.location.pathname === "/dashboard" ? "active" : ""
+                    }
+                  >
+                    Dashboard
+                  </Link>
+                </li>
+              )}
             </ul>
             {user ? (
               <div className="user-info">
@@ -151,7 +164,6 @@ export const LandingPage = () => {
               </button>
             )}
           </nav>
-          <div></div>
         </div>
       </div>
 
@@ -174,146 +186,37 @@ export const LandingPage = () => {
       {/* How It Works Section */}
       <section id="how-it-works">
         <div className="container">
-          <h1>How It Works</h1>
-          {/* Sub-navbar for Group Scheduling, Itinerary Planning, and Expenses Splitting */}
-          <nav className="sub-navbar">
-            <ul>
-              <li>
-                <button
-                  className={activeTool === "Group Scheduling" ? "active" : ""}
-                  onClick={() => setActiveTool("Group Scheduling")}
-                >
-                  Group Scheduling
-                </button>
-              </li>
-              <li>
-                <button
-                  className={
-                    activeTool === "Itinerary Planning" ? "active" : ""
-                  }
-                  onClick={() => setActiveTool("Itinerary Planning")}
-                >
-                  Itinerary Planning
-                </button>
-              </li>
-              <li>
-                <button
-                  className={
-                    activeTool === "Expenses Splitting" ? "active" : ""
-                  }
-                  onClick={() => setActiveTool("Expenses Splitting")}
-                >
-                  Expenses Splitting
-                </button>
-              </li>
-            </ul>
-          </nav>
+          <h1>The BEST Itinerary Planner</h1>
+          {/* Removed the sub-navbar since only one tool is present */}
 
-          {/* Dynamic content based on the selected tool */}
+          {/* Content focused on The BEST Itinerary Planner */}
           <div className="tool-info">
-            {activeTool === "Group Scheduling" && (
-              <>
-                <p>
-                  <strong>Group Scheduling</strong> Lorem ipsum dolor sit amet
-                  consectetur adipisicing elit. Quod autem impedit accusamus
-                  tempora sint atque itaque cumque, minima quibusdam dicta,
-                  dignissimos excepturi unde similique distinctio omnis quae
-                  pariatur in eius?
-                </p>
-                <br />
-                <p>
-                  Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-                  Culpa, numquam reprehenderit. Aperiam ex, enim obcaecati iste
-                  cupiditate excepturi blanditiis molestiae sequi voluptas
-                  temporibus nostrum beatae corrupti architecto tempore odio
-                  accusamus.
-                </p>
-                <br />
-                <p>
-                  Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-                  Culpa, numquam reprehenderit. Aperiam ex, enim obcaecati iste
-                  cupiditate excepturi blanditiis molestiae sequi voluptas
-                  temporibus nostrum beatae corrupti architecto tempore odio
-                  accusamus.
-                </p>
-                <br />
-                <button
-                  className="btn-primary"
-                  onClick={() => navigateToPage("/schedule")}
-                >
-                  Start Scheduling
-                </button>
-              </>
-            )}
-
-            {activeTool === "Itinerary Planning" && (
-              <>
-                <p>
-                  <strong>Itinerary Planning</strong> Lorem ipsum dolor sit amet
-                  consectetur adipisicing elit. Adipisci, non iure, consectetur
-                  harum, quasi placeat eos quae possimus laboriosam earum nam.
-                  Ea vero obcaecati alias accusamus impedit neque nisi eligendi.
-                </p>
-                <br />
-                <p>
-                  Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-                  Culpa, numquam reprehenderit. Aperiam ex, enim obcaecati iste
-                  cupiditate excepturi blanditiis molestiae sequi voluptas
-                  temporibus nostrum beatae corrupti architecto tempore odio
-                  accusamus.
-                </p>
-                <br />
-                <p>
-                  Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-                  Culpa, numquam reprehenderit. Aperiam ex, enim obcaecati iste
-                  cupiditate excepturi blanditiis molestiae sequi voluptas
-                  temporibus nostrum beatae corrupti architecto tempore odio
-                  accusamus.
-                </p>
-                <br />
-                <button
-                  className="btn-primary"
-                  onClick={() => navigateToPage("/itinerary")}
-                >
-                  Start Planning
-                </button>
-              </>
-            )}
-
-            {activeTool === "Expenses Splitting" && (
-              <>
-                <p>
-                  <strong>Expenses Splitting</strong> Lorem ipsum dolor sit amet
-                  consectetur, adipisicing elit. Nisi at magnam hic officia
-                  aliquam voluptatibus vero dolorum iste consequatur est
-                  recusandae pariatur iure, accusantium voluptas animi incidunt
-                  amet, id officiis!
-                </p>
-                <br />
-                <p>
-                  Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-                  Culpa, numquam reprehenderit. Aperiam ex, enim obcaecati iste
-                  cupiditate excepturi blanditiis molestiae sequi voluptas
-                  temporibus nostrum beatae corrupti architecto tempore odio
-                  accusamus.
-                </p>
-                <br />
-                <p>
-                  Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-                  Culpa, numquam reprehenderit. Aperiam ex, enim obcaecati iste
-                  cupiditate excepturi blanditiis molestiae sequi voluptas
-                  temporibus nostrum beatae corrupti architecto tempore odio
-                  accusamus.
-                </p>
-                <br />
-                <button
-                  className="btn-primary"
-                  onClick={() => navigateToPage("/expense-splitting")}
-                >
-                  Start Splitting
-                </button>
-              </>
-            )}
+            <p>
+              <strong>The BEST Itinerary Planner</strong> Plan your trips
+              effortlessly with our top-notch itinerary planner. Whether you're
+              traveling solo or with a group, our tool helps you organize your
+              schedule, activities, and destinations seamlessly.
+            </p>
+            <br />
+            <p>
+              Customize your itinerary to suit your preferences, add notes, and
+              share your plans with friends and family. Our intuitive interface
+              makes trip planning a breeze, ensuring you make the most out of
+              every journey.
+            </p>
+            <br />
+            <p>
+              With real-time updates and collaboration features, staying
+              organized and on track has never been easier. Start planning your
+              next adventure with confidence and ease.
+            </p>
+            <br />
+            <button
+              className="btn-primary"
+              onClick={() => navigateToPage("/itinerary")}
+            >
+              Start Planning
+            </button>
           </div>
         </div>
       </section>
