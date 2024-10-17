@@ -7,7 +7,7 @@ import { Login } from "../Authentication/Login.jsx";
 import { Register } from "../Authentication/Register.jsx";
 import { auth } from "../../firebaseConfig";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { useNavigate, Link } from "react-router-dom"; // Import Link
+import { useNavigate, Link, useLocation } from "react-router-dom"; // Import useLocation
 
 export const LandingPage = () => {
   const [activeSection, setActiveSection] = useState("how-it-works");
@@ -18,6 +18,7 @@ export const LandingPage = () => {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   const navigate = useNavigate(); // Initialize navigate function
+  const location = useLocation(); // Get current location
   const [intendedUrl, setIntendedUrl] = useState(null);
 
   // Observer for detecting which section is in view
@@ -50,9 +51,13 @@ export const LandingPage = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      if (currentUser && location.pathname === "/") {
+        // If user is authenticated and is on the landing page, redirect to dashboard
+        navigate("/dashboard");
+      }
     });
     return () => unsubscribe();
-  }, []);
+  }, [navigate, location.pathname]);
 
   // Handle logout
   const handleLogout = async () => {
@@ -82,6 +87,8 @@ export const LandingPage = () => {
     if (intendedUrl) {
       navigate(intendedUrl);
       setIntendedUrl(null); // Clear the intended URL
+    } else {
+      navigate("/dashboard"); // Redirect to dashboard if no intended URL
     }
   };
 
@@ -141,7 +148,7 @@ export const LandingPage = () => {
                   <Link
                     to="/dashboard"
                     className={
-                      window.location.pathname === "/dashboard" ? "active" : ""
+                      location.pathname === "/dashboard" ? "active" : ""
                     }
                   >
                     Dashboard
