@@ -1,3 +1,5 @@
+/* src/components/Authentication/Modal.css */
+
 /* Modal Overlay */
 .modal-overlay {
   position: fixed;
@@ -20,7 +22,7 @@
   width: 90%;
   max-width: 400px;
   position: relative;
-  box-sizing: border-box; /* Include padding and border in width */
+  box-sizing: border-box;
 }
 
 .close-modal {
@@ -46,20 +48,20 @@
   margin-bottom: 15px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  box-sizing: border-box; /* Include padding and border in width */
+  box-sizing: border-box;
 }
 
 .modal form button {
   width: 100%;
-  padding: 12px; /* Match padding with input fields */
-  margin-top: 15px; /* Add margin to separate from inputs */
+  padding: 12px;
+  margin-top: 15px;
   border: none;
   border-radius: 5px;
   background-color: #ff004f;
   color: #fff;
   cursor: pointer;
   font-size: 16px;
-  box-sizing: border-box; /* Include padding and border in width */
+  box-sizing: border-box;
 }
 
 .modal form button:hover {
@@ -85,14 +87,4 @@
 .error {
   color: red;
   margin-bottom: 10px;
-}
-
-/* Ensure this style applies to all input fields, including the new Username input */
-.modal input {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-sizing: border-box;
 }

@@ -1,3 +1,4 @@
+// src/components/Budget/BudgetPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Pie } from "react-chartjs-2";
@@ -6,11 +7,10 @@ import KeepTrek from "../../assets/KeepTrek.png";
 import { auth } from "../../firebaseConfig";
 import { Login } from "../Authentication/Login";
 import { Register } from "../Authentication/Register";
-import { firestore } from "../../firebaseConfig"; // Firebase Firestore
+import { firestore } from "../../firebaseConfig";
 import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
-import "./BudgetPage.css"; // Import the scoped CSS for BudgetPage
+import "./BudgetPage.css";
 
-// Register required Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export const BudgetPage = () => {
@@ -24,36 +24,33 @@ export const BudgetPage = () => {
     youOwe: "",
   });
 
-  // Authentication states
   const [user, setUser] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
-  // Handle authentication state change
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
         setShowLoginModal(false);
         setShowRegisterModal(false);
-        await fetchUserExpenses(currentUser.uid); // Fetch expenses after user logs in
+        await fetchUserExpenses(currentUser.uid);
       } else {
         setUser(null);
-        setShowLoginModal(true); // Show login modal if not authenticated
+        setShowLoginModal(true);
       }
     });
 
     return () => unsubscribe();
   }, []);
 
-  // Fetch user-specific expenses from Firestore
   const fetchUserExpenses = async (userId) => {
     try {
       const expensesRef = collection(firestore, "users", userId, "expenses");
-      const q = query(expensesRef); // Query for user's expenses
+      const q = query(expensesRef);
       const querySnapshot = await getDocs(q);
       const fetchedExpenses = querySnapshot.docs.map((doc) => doc.data());
-      setExpenses(fetchedExpenses); // Update state with fetched expenses
+      setExpenses(fetchedExpenses);
     } catch (error) {
       console.error("Error fetching expenses: ", error);
     }
@@ -66,7 +63,6 @@ export const BudgetPage = () => {
     });
   };
 
-  // Function to add expense to Firestore under the logged-in user's account
   const handleAddExpense = async () => {
     const { date, description, amount, category, youOwe } = expenseInput;
 
@@ -79,17 +75,16 @@ export const BudgetPage = () => {
       ...expenseInput,
       amount: parseFloat(expenseInput.amount),
       youOwe: parseFloat(expenseInput.youOwe),
-      userId: user.uid, // Include the user's ID
-      timestamp: new Date(), // Add a timestamp
+      userId: user.uid,
+      timestamp: new Date(),
     };
 
     try {
-      // Add new expense to the user's expenses collection in Firestore
       await addDoc(
         collection(firestore, "users", user.uid, "expenses"),
         newExpense
       );
-      setExpenses([...expenses, newExpense]); // Update state with new expense
+      setExpenses([...expenses, newExpense]);
       setExpenseInput({
         date: "",
         description: "",
@@ -146,7 +141,7 @@ export const BudgetPage = () => {
   const handleCloseModal = () => {
     setShowLoginModal(false);
     setShowRegisterModal(false);
-    navigate("/"); // Redirect to home or any other page after closing the modal
+    navigate("/");
   };
 
   return (
@@ -237,12 +232,11 @@ export const BudgetPage = () => {
             onChange={handleInputChange}
           >
             <option value="">Select Category</option>
-            <option value="Stay">Stay</option>
-            <option value="Activities">Activities</option>
-            <option value="Food">Food</option>
-            <option value="Transport">Transport</option>
-            <option value="Shopping">Shopping</option>
-            <option value="Others">Others</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
           </select>
           <input
             type="number"

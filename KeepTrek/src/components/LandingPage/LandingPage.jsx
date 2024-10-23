@@ -7,7 +7,7 @@ import { Login } from "../Authentication/Login.jsx";
 import { Register } from "../Authentication/Register.jsx";
 import { auth } from "../../firebaseConfig";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { useNavigate, Link, useLocation } from "react-router-dom"; // Import useLocation
+import { useNavigate, Link, useLocation } from "react-router-dom";
 
 export const LandingPage = () => {
   const [activeSection, setActiveSection] = useState("how-it-works");
@@ -17,8 +17,8 @@ export const LandingPage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
-  const navigate = useNavigate(); // Initialize navigate function
-  const location = useLocation(); // Get current location
+  const navigate = useNavigate();
+  const location = useLocation();
   const [intendedUrl, setIntendedUrl] = useState(null);
 
   // Observer for detecting which section is in view
@@ -29,21 +29,21 @@ export const LandingPage = () => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setActiveSection(entry.target.id); // Set the active section based on the visible section's ID
+            setActiveSection(entry.target.id);
           }
         });
       },
       {
-        threshold: 0.7, // Trigger when 70% of the section is visible
+        threshold: 0.7,
       }
     );
 
     sections.forEach((section) => {
-      observer.observe(section); // Observe each section
+      observer.observe(section);
     });
 
     return () => {
-      sections.forEach((section) => observer.unobserve(section)); // Cleanup observer on component unmount
+      sections.forEach((section) => observer.unobserve(section));
     };
   }, []);
 
@@ -51,13 +51,9 @@ export const LandingPage = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      if (currentUser && location.pathname === "/") {
-        // If user is authenticated and is on the landing page, redirect to dashboard
-        navigate("/dashboard");
-      }
     });
     return () => unsubscribe();
-  }, [navigate, location.pathname]);
+  }, []);
 
   // Handle logout
   const handleLogout = async () => {
@@ -81,23 +77,23 @@ export const LandingPage = () => {
     setShowRegisterModal(false);
   };
 
-  // Handle button clicks by navigating to different pages
+  // Handle authentication success
   const handleAuthSuccess = () => {
     closeModal();
     if (intendedUrl) {
       navigate(intendedUrl);
-      setIntendedUrl(null); // Clear the intended URL
+      setIntendedUrl(null);
     } else {
-      navigate("/dashboard"); // Redirect to dashboard if no intended URL
+      navigate("/dashboard"); // Navigate to Dashboard after login
     }
   };
 
   const navigateToPage = (url) => {
     if (user) {
-      navigate(url); // Use navigate instead of window.location.href
+      navigate(url);
     } else {
-      setIntendedUrl(url); // Store the intended URL
-      openLoginModal(); // Open login modal if user is not authenticated
+      setIntendedUrl(url);
+      openLoginModal();
     }
   };
 
@@ -179,14 +175,14 @@ export const LandingPage = () => {
         <Login
           closeModal={closeModal}
           switchToRegister={openRegisterModal}
-          onAuthSuccess={handleAuthSuccess} // Pass the handler
+          onAuthSuccess={handleAuthSuccess}
         />
       )}
       {showRegisterModal && (
         <Register
           closeModal={closeModal}
           switchToLogin={openLoginModal}
-          onAuthSuccess={handleAuthSuccess} // Pass the handler
+          onAuthSuccess={handleAuthSuccess}
         />
       )}
 
@@ -194,7 +190,6 @@ export const LandingPage = () => {
       <section id="how-it-works">
         <div className="container">
           <h1>The BEST Itinerary Planner</h1>
-          {/* Removed the sub-navbar since only one tool is present */}
 
           {/* Content focused on The BEST Itinerary Planner */}
           <div className="tool-info">

@@ -20,6 +20,7 @@ export const Login = ({ closeModal, switchToRegister, onAuthSuccess }) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       onAuthSuccess(); // Notify parent component
+      closeModal(); // Close modal on success
     } catch (error) {
       console.error("Error logging in:", error.message);
       setErrorMsg(error.message);

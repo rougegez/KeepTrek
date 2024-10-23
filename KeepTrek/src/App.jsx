@@ -2,13 +2,13 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Itinerary } from "./components/Itinerary/Itinerary.jsx";
-import { TripDetailsPage } from "./components/TripDetails/TripDetailsPage.jsx"; // Named import
+import { TripDetailsPage } from "./components/TripDetails/TripDetailsPage.jsx";
 import { LandingPage } from "./components/LandingPage/LandingPage.jsx";
 import { GrpSchedule } from "./components/GrpSchedule/GrpSchedule.jsx";
 import { ScheduleSummary } from "./components/GrpSchedule/ScheduleSummary";
 import { BudgetPage } from "./components/Budget/BudgetPage.jsx";
-import Dashboard from "./components/Dashboard/Dashboard.jsx"; // Import Dashboard
-import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx"; // Import PrivateRoute
+import Dashboard from "./components/Dashboard/Dashboard.jsx";
+import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx";
 
 function App() {
   return (
@@ -23,11 +23,46 @@ function App() {
             </PrivateRoute>
           }
         />
-        <Route path="/itinerary" element={<Itinerary />} />
-        <Route path="/schedule" element={<GrpSchedule />} />
-        <Route path="/expense-splitting" element={<BudgetPage />} />
-        <Route path="/schedule-summary" element={<ScheduleSummary />} />
-        <Route path="/trip-details/:id" element={<TripDetailsPage />} />
+        <Route
+          path="/itinerary"
+          element={
+            <PrivateRoute>
+              <Itinerary />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/schedule"
+          element={
+            <PrivateRoute>
+              <GrpSchedule />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/expense-splitting"
+          element={
+            <PrivateRoute>
+              <BudgetPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/schedule-summary"
+          element={
+            <PrivateRoute>
+              <ScheduleSummary />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/trip-details/:id"
+          element={
+            <PrivateRoute>
+              <TripDetailsPage />
+            </PrivateRoute>
+          }
+        />
         {/* Add more routes as needed */}
       </Routes>
     </Router>

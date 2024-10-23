@@ -1,9 +1,8 @@
-/* src/components/Register.jsx */
-
+// src/components/Authentication/Register.jsx
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../../firebaseConfig";
-import "./Modal.css"; // Import your CSS styles
+import "./Modal.css";
 
 export const Register = ({ closeModal, switchToLogin, onAuthSuccess }) => {
   const [username, setUsername] = useState("");
@@ -20,31 +19,18 @@ export const Register = ({ closeModal, switchToLogin, onAuthSuccess }) => {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    // Basic validation for username length
     if (username.length < 3) {
       setErrorMsg("Username must be at least 3 characters long.");
       return;
     }
 
     try {
-      // Create user with email and password
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-
-      // Update the user's profile with the username
+      await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(auth.currentUser, {
         displayName: username,
       });
 
-      // Notify parent component of successful authentication
-      if (onAuthSuccess) {
-        onAuthSuccess();
-      }
-
-      // Optionally, close the modal after successful registration
+      onAuthSuccess();
       closeModal();
     } catch (error) {
       console.error("Error registering:", error.message);

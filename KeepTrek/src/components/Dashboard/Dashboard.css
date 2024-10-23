@@ -1,109 +1,204 @@
 /* src/components/Dashboard/Dashboard.css */
 
-/* Reuse the container class for consistent padding and max-width */
+/* General Styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: white;
+}
+
+/* Header Styling */
+#dashboard-header {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.navbar-container {
+  padding: 10px 10%;
+  background-color: white;
+}
+
+/* Navbar in the Dashboard */
+#dashboard-header nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#dashboard-header .nav-left {
+  display: flex;
+  align-items: center;
+}
+
+#dashboard-header .logo-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+#dashboard-header .logo {
+  width: 100px;
+}
+
+#dashboard-header .nav-center {
+  display: flex;
+  flex-grow: 1;
+  justify-content: center;
+}
+
+#dashboard-header .nav-center ul {
+  display: flex;
+  gap: 30px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#dashboard-header .nav-center ul li a {
+  color: black;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease, font-weight 0.3s ease;
+}
+
+#dashboard-header .nav-center ul li a.active {
+  color: #ff004f;
+  font-weight: bold;
+}
+
+#dashboard-header .nav-center ul li a:hover {
+  color: #ff004f;
+}
+
+#dashboard-header .nav-right {
+  display: flex;
+  align-items: center;
+}
+
+#dashboard-header .user-info {
+  display: flex;
+  align-items: center;
+}
+
+#dashboard-header .user-info span {
+  margin-right: 15px;
+  font-weight: 500;
+}
+
+#dashboard-header .Profile {
+  margin: 10px;
+  padding: 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+#dashboard-header .Profile:hover {
+  transform: scale(1.1);
+}
+
+/* Main Content Styling */
 .dashboard-container {
-  padding: 100px 10% 20px 10%; /* Top padding accounts for fixed header */
+  padding-top: 100px; /* Adjusted to make space for the fixed navbar */
   max-width: 1200px;
   margin: 0 auto;
-  background-color: #f9f9f9; /* Consistent background color */
-  min-height: 100vh;
-  color: #333; /* Consistent text color */
+  background-color: white;
 }
 
 .dashboard-container h1 {
   text-align: center;
+  color: #ff004f;
+  font-size: 36px;
   margin-bottom: 40px;
-  color: #ff004f; /* Primary color consistent with LandingPage */
-  font-size: 36px; /* Consistent heading size */
 }
 
-.dashboard-container p {
-  font-size: 18px;
-  color: #555; /* Consistent paragraph color */
-  text-align: center;
-}
-
-.trip-list {
-  list-style: none;
-  padding: 0;
+/* Itinerary Section */
+.itinerary-section {
   display: flex;
-  flex-direction: column;
-  gap: 20px; /* Consistent spacing between trip items */
+  gap: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
-.trip-item {
-  background-color: #fff;
+/* Itinerary Card Styles */
+.itinerary-card {
+  background-color: white;
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: 10px;
+  width: 280px;
   padding: 20px;
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
 }
 
-.trip-item:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+.itinerary-card:hover {
   transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-.trip-item h2 {
-  margin-top: 0;
+.itinerary-card img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.trip-details h2 {
+  font-size: 18px;
   color: #333;
-  font-size: 28px; /* Consistent sub-heading size */
+  margin: 15px 0;
 }
 
-.trip-item p {
-  margin: 8px 0;
-  color: #555;
-  font-size: 16px;
+.trip-details p {
+  font-size: 14px;
+  color: #777;
 }
 
-.btn-primary {
-  display: inline-flex;
+/* Add New Card */
+.add-new {
+  display: flex;
   justify-content: center;
   align-items: center;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 8px;
+  border: 2px dashed #ddd;
+  width: 280px;
+  height: 200px;
   cursor: pointer;
-  font-size: 16px;
-  background-color: #ff004f;
-  color: white;
-  text-decoration: none;
-  transition: background-color 0.3s ease, transform 0.3s ease,
-    box-shadow 0.3s ease;
 }
 
-.btn-primary:hover {
-  background-color: #e60045;
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(255, 0, 79, 0.3);
+.add-new span {
+  font-size: 36px;
+  color: #ddd;
 }
 
 .error {
-  color: red;
   text-align: center;
+  color: red;
   font-size: 18px;
+  margin-top: 20px;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   .dashboard-container {
-    padding: 100px 5% 20px 5%;
+    padding: 100px 20px;
   }
 
-  .trip-item {
-    padding: 15px;
-  }
-
-  .trip-item h2 {
-    font-size: 24px;
-  }
-
-  .trip-item p {
-    font-size: 14px;
-  }
-
-  .btn-primary {
+  .itinerary-card {
     width: 100%;
-    justify-content: center;
+    max-width: 500px;
+  }
+
+  .add-new {
+    width: 100%;
+    max-width: 500px;
   }
 }

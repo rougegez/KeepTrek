@@ -22,6 +22,14 @@ const generateDateRange = (startDate, endDate) => {
   return dates;
 };
 
+// Utility function to normalize date
+const normalizeDate = (date) => {
+  if (date && typeof date.toDate === "function") {
+    return date.toDate();
+  }
+  return new Date(date);
+};
+
 export const TripDetailsPage = () => {
   const location = useLocation();
   const { id } = useParams(); // Get the itinerary id from the URL
@@ -50,12 +58,16 @@ export const TripDetailsPage = () => {
   useEffect(() => {
     const fetchItinerary = async () => {
       if (!itinerary) {
-        const docRef = doc(firestore, "itineraries", user.uid, "trips", id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setItinerary(docSnap.data()); // Set fetched itinerary
-        } else {
-          console.error("No such itinerary found!");
+        try {
+          const docRef = doc(firestore, "users", user.uid, "itineraries", id);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            setItinerary({ id: docSnap.id, ...docSnap.data() }); // Set fetched itinerary
+          } else {
+            console.error("No such itinerary found!");
+          }
+        } catch (error) {
+          console.error("Error fetching itinerary: ", error);
         }
       }
     };
@@ -91,8 +103,12 @@ export const TripDetailsPage = () => {
     return <p>Loading itinerary...</p>;
   }
 
+  // Normalize dates
+  const startDate = normalizeDate(itinerary.StartDate);
+  const endDate = normalizeDate(itinerary.EndDate);
+
   // Generate the date range based on the start and end dates
-  const dateRange = generateDateRange(itinerary.StartDate, itinerary.EndDate);
+  const dateRange = generateDateRange(startDate, endDate);
 
   return (
     <>

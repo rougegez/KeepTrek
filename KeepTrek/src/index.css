@@ -1,11 +1,16 @@
-@import url("https://fonts.googleapis.com/css2?family=Palanquin:wght@400;500;600;700&display=swap");
+/* Import Baloo 2 font */
+@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&display=swap");
 
+/* General Reset */
 * {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
+
+/* Font Styling */
 body {
-  font-family: "Palanquin", sans-serif;
+  font-family: "Baloo 2", sans-serif;
 }
 
 h1,
@@ -14,6 +19,12 @@ h3,
 p,
 label,
 button {
-  font-family: "Palanquin", sans-serif;
+  font-family: "Baloo 2", sans-serif;
   font-weight: 400;
+}
+
+/* Ensure consistent margin and padding across elements */
+body {
+  margin: 0;
+  padding: 0;
 }
