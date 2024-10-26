@@ -7,6 +7,7 @@ import KeepTrek from "../../assets/KeepTrek.png";
 import "./TripDetailsPage.css";
 import { Login } from "../Authentication/Login";
 import { Register } from "../Authentication/Register";
+import Sidebar from "./Sidebar/Sidebar";
 
 // Helper function to generate the list of dates between start and end date
 const generateDateRange = (startDate, endDate) => {
@@ -112,109 +113,69 @@ export const TripDetailsPage = () => {
 
   return (
     <>
+      {/* Top Nav Bar */}
       <header id="grp-header" className="grp-navbar">
-        <div className="grp-container">
-          <div className="grp-navbar-left">
-            <button onClick={() => navigate("/")} className="grp-logo-btn">
-              <img src={KeepTrek} alt="KeepTrek Logo" className="grp-logo" />
-            </button>
-            <button
-              onClick={() => navigate("/itinerary")}
-              className="grp-nav-link"
-            >
-              Itinerary
-            </button>
-            <button
-              onClick={() => navigate("/schedule")}
-              className="grp-nav-link"
-            >
-              Group Scheduling
-            </button>
-          </div>
-          <div className="grp-navbar-right">
-            <button onClick={() => navigate("#")} className="grp-nav-link">
-              How it Works
-            </button>
-            <button
-              onClick={() => navigate("/schedule-summary")}
-              className="grp-nav-link"
-            >
-              History
-            </button>
-            {user ? (
-              <button
-                className="grp-profile-btn"
-                onClick={() => auth.signOut()}
-              >
-                Logout
-              </button>
-            ) : (
-              <button
-                className="grp-profile-btn"
-                onClick={() => setShowLoginModal(true)}
-              >
-                Login
-              </button>
-            )}
-          </div>
-        </div>
+        {/* ... Your existing top navbar code ... */}
       </header>
 
-      <div className="trip-details-page">
-        <div className="grp-content">
-          <h1>Trip Details</h1>
-          <h2>{itinerary.TripName}</h2>
+      <div className="trip-details-layout">
+        {/* Sidebar Component */}
+        <Sidebar />
 
-          <h3>Select a Day to Plan:</h3>
-          <ul className="date-list">
-            {dateRange.map((date, index) => (
-              <li key={index}>
-                <button
-                  onClick={() => handleDayClick(date)}
-                  className={`date-button ${
-                    selectedDay &&
-                    selectedDay.toDateString() === date.toDateString()
+        {/* Main Body*/}
+        <div className="trip-details-page">
+          <div className="grp-content">
+            <h1>Trip Details</h1>
+            <h2>{itinerary.TripName}</h2>
+
+            <h3>Select a Day to Plan:</h3>
+            <ul className="date-list">
+              {dateRange.map((date, index) => (
+                <li key={index}>
+                  <button
+                    onClick={() => handleDayClick(date)}
+                    className={`date-button ${selectedDay &&
+                      selectedDay.toDateString() === date.toDateString()
                       ? "selected"
                       : ""
-                  }`}
-                >
-                  {date.toLocaleDateString("en-US", {
+                    }`}
+                  >
+                    {date.toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </button>
+                </li>
+              ))}
+            </ul>
+
+            {selectedDay && (
+              <div className="planning-section">
+                <h3>
+                  Plan for{" "}
+                  {selectedDay.toLocaleDateString("en-US", {
                     month: "long",
                     day: "numeric",
                     year: "numeric",
                   })}
-                </button>
-              </li>
-            ))}
-          </ul>
+                </h3>
 
-          {/* Conditionally render the planning section for the selected day */}
-          {selectedDay && (
-            <div className="planning-section">
-              <h3>
-                Plan for{" "}
-                {selectedDay.toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </h3>
-
-              {/* Planning section content */}
-              <textarea
-                placeholder="Enter your plan for the day..."
-                className="input-textarea"
-              ></textarea>
-              <button className="btn-primary">Save Plan</button>
-            </div>
-          )}
+                <textarea
+                  placeholder="Enter your plan for the day..."
+                  className="input-textarea"
+                ></textarea>
+                <button className="btn-primary">Save Plan</button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Modals */}
       {showLoginModal && (
         <Login
-          closeModal={handleCloseModal} // Redirects to home on close
+          closeModal={handleCloseModal}
           switchToRegister={() => {
             setShowLoginModal(false);
             setShowRegisterModal(true);
@@ -225,7 +186,7 @@ export const TripDetailsPage = () => {
 
       {showRegisterModal && (
         <Register
-          closeModal={handleCloseModal} // Redirects to home on close
+          closeModal={handleCloseModal}
           switchToLogin={() => {
             setShowRegisterModal(false);
             setShowLoginModal(true);
