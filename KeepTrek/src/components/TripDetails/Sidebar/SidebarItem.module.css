@@ -1,0 +1,30 @@
+.item {
+    width: 100%;
+    text-align: left;
+    transition: color 0.2s;
+    color: #000000;
+    border: none;
+    background: none;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    height: 2.5rem;
+    /* 40px */
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+}
+
+.primaryItem {
+    font-family: "Baloo 2";
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.secondaryItem {
+    padding-left: 2rem;
+    font-size: 0.90rem;
+    font-family: "Baloo 2";
+    font-weight: medium;
+    color: #808080;
+}

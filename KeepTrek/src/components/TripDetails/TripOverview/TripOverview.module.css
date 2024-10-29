@@ -1,0 +1,66 @@
+.container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 3rem;
+    padding: 1rem;
+}
+
+.backgroundCard {
+    position: relative;
+    width: 100%;
+    height: 10rem;
+    overflow: hidden;
+    border-radius: 20px;
+}
+
+.backgroundImage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.gradientOverlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.1));
+}
+
+.infoCard {
+    position: inherit;
+    /* Position the card so its top edge is at 75% of background height */
+    top: -20%;
+    /* Center horizontally by using left: 50% and transform */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 75%;
+    height: 6rem;
+    background: white;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    display: inherit;
+    flex-direction: inherit;
+    justify-content: center;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: rgb(17, 24, 39);
+    margin-bottom: 0.5rem;
+}
+
+.dateRange {
+    font-size: 0.875rem;
+    color: rgb(107, 114, 128);
+}
+
+@media (max-width: 640px) {
+    .infoCard {
+        width: calc(100% - 2rem);
+        left: 1rem;
+        transform: none;
+    }
+}
