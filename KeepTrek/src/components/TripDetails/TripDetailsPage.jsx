@@ -8,37 +8,31 @@ import "./TripDetailsPage.css";
 import { Login } from "../Authentication/Login";
 import { Register } from "../Authentication/Register";
 
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Sidebar from "./Sidebar/Sidebar.jsx";
+import SampleMap from "./Map/SampleMap.jsx";
+import TripBuddy from "./TripBuddy/TripBuddy.jsx";
+import TripOverview from "./TripOverview/TripOverview.jsx";
+import Notes from "./Notes/Notes.jsx";
+import Attachments from "./Attachments/Attachments.jsx";
+
 // Helper function to generate the list of dates between start and end date
-const generateDateRange = (startDate, endDate) => {
-  const dates = [];
-  let currentDate = new Date(startDate);
-  const stopDate = new Date(endDate);
 
-  while (currentDate <= stopDate) {
-    dates.push(new Date(currentDate));
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
-
-  return dates;
-};
-
-// Utility function to normalize date
-const normalizeDate = (date) => {
-  if (date && typeof date.toDate === "function") {
-    return date.toDate();
-  }
-  return new Date(date);
-};
 
 export const TripDetailsPage = () => {
   const location = useLocation();
   const { id } = useParams(); // Get the itinerary id from the URL
   const [itinerary, setItinerary] = useState(location.state?.itinerary || null);
-  const [selectedDay, setSelectedDay] = useState(null); // State for the selected day
   const [user, setUser] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const navigate = useNavigate();
+
+  const [isMapExpanded, setIsMapExpanded] = useState(false);
+
+  const toggleMapExpansion = () => {
+    setIsMapExpanded(!isMapExpanded);
+  };
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -77,11 +71,6 @@ export const TripDetailsPage = () => {
     }
   }, [id, itinerary, user]);
 
-  // Handle the click on a day button
-  const handleDayClick = (day) => {
-    setSelectedDay(day); // Set the selected day to show the planning section
-  };
-
   const handleAuthSuccess = () => {
     setShowLoginModal(false);
     setShowRegisterModal(false);
@@ -103,118 +92,50 @@ export const TripDetailsPage = () => {
     return <p>Loading itinerary...</p>;
   }
 
-  // Normalize dates
-  const startDate = normalizeDate(itinerary.StartDate);
-  const endDate = normalizeDate(itinerary.EndDate);
-
-  // Generate the date range based on the start and end dates
-  const dateRange = generateDateRange(startDate, endDate);
-
   return (
-    <>
-      <header id="grp-header" className="grp-navbar">
-        <div className="grp-container">
-          <div className="grp-navbar-left">
-            <button onClick={() => navigate("/")} className="grp-logo-btn">
-              <img src={KeepTrek} alt="KeepTrek Logo" className="grp-logo" />
-            </button>
-            <button
-              onClick={() => navigate("/itinerary")}
-              className="grp-nav-link"
-            >
-              Itinerary
-            </button>
-            <button
-              onClick={() => navigate("/schedule")}
-              className="grp-nav-link"
-            >
-              Group Scheduling
-            </button>
-          </div>
-          <div className="grp-navbar-right">
-            <button onClick={() => navigate("#")} className="grp-nav-link">
-              How it Works
-            </button>
-            <button
-              onClick={() => navigate("/schedule-summary")}
-              className="grp-nav-link"
-            >
-              History
-            </button>
-            {user ? (
-              <button
-                className="grp-profile-btn"
-                onClick={() => auth.signOut()}
-              >
-                Logout
-              </button>
-            ) : (
-              <button
-                className="grp-profile-btn"
-                onClick={() => setShowLoginModal(true)}
-              >
-                Login
-              </button>
-            )}
-          </div>
-        </div>
-      </header>
+    <div className="trip-details-container">
+      <Sidebar />
+      <div className="main-page">
+        <div className="content-wrapper">
+          <main>
 
-      <div className="trip-details-page">
-        <div className="grp-content">
-          <h1>Trip Details</h1>
-          <h2>{itinerary.TripName}</h2>
+            <TripOverview
+              title="East Coast Road-Trip"
+              dateRange="19 June 2024 to 23 June 2024"
+              backgroundImage="../src/assets/Langkawi.jpg"
+              id="Overview"
+            />
 
-          <h3>Select a Day to Plan:</h3>
-          <ul className="date-list">
-            {dateRange.map((date, index) => (
-              <li key={index}>
-                <button
-                  onClick={() => handleDayClick(date)}
-                  className={`date-button ${
-                    selectedDay &&
-                    selectedDay.toDateString() === date.toDateString()
-                      ? "selected"
-                      : ""
-                  }`}
-                >
-                  {date.toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </button>
-              </li>
-            ))}
-          </ul>
-
-          {/* Conditionally render the planning section for the selected day */}
-          {selectedDay && (
-            <div className="planning-section">
-              <h3>
-                Plan for{" "}
-                {selectedDay.toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </h3>
-
-              {/* Planning section content */}
-              <textarea
-                placeholder="Enter your plan for the day..."
-                className="input-textarea"
-              ></textarea>
-              <button className="btn-primary">Save Plan</button>
+            <div id="TripBuddy">
+              <TripBuddy />
             </div>
-          )}
+            <div id="Notes">
+              <Notes />
+            </div>
+            <div id="Attachments">
+              <Attachments />
+            </div>
+          </main>
+
+          <div className={`map-wrapper ${isMapExpanded ? 'expanded' : ''}`}>
+            <button
+              className="toggle-map-button"
+              onClick={toggleMapExpansion}
+              aria-label={isMapExpanded ? 'Collapse map' : 'Expand map'}
+            >
+              {isMapExpanded ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
+            </button>
+            <div className="map-container">
+              <SampleMap />
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Modals */}
       {showLoginModal && (
         <Login
-          closeModal={handleCloseModal} // Redirects to home on close
+          closeModal={handleCloseModal}
           switchToRegister={() => {
             setShowLoginModal(false);
             setShowRegisterModal(true);
@@ -225,7 +146,7 @@ export const TripDetailsPage = () => {
 
       {showRegisterModal && (
         <Register
-          closeModal={handleCloseModal} // Redirects to home on close
+          closeModal={handleCloseModal}
           switchToLogin={() => {
             setShowRegisterModal(false);
             setShowLoginModal(true);
@@ -233,6 +154,6 @@ export const TripDetailsPage = () => {
           onAuthSuccess={handleAuthSuccess}
         />
       )}
-    </>
+    </div>
   );
 };
