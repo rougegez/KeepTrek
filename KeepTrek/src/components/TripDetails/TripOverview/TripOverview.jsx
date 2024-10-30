@@ -5,10 +5,11 @@ import styles from './TripOverview.module.css';
 const TripOverview = ({ 
     title = "East Coast Road-Trip",
     dateRange = "19 June 2024 to 23 June 2024",
-    backgroundImage = "../src/assets/dummy-image.jpg"
+    backgroundImage = "../src/assets/dummy-image.jpg",
+    id = ""
   }) => {
     return (
-      <div className={styles.container}>
+      <div className={styles.container} id={id}>
         {/* Background Image Card */}
         <Card className={styles.backgroundCard}>
           <img

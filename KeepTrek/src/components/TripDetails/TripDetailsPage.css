@@ -2,9 +2,8 @@
 
 .trip-details-page {
   /* Styles specific to TripDetailsPage component */
-
   .grp-content {
-    padding: 120px 20px 20px 20px; /* Adjusted padding to account for fixed header */
+    padding: 120px 20px 20px 20px;
     max-width: 800px;
     margin: 0 auto;
     text-align: center;
@@ -28,12 +27,12 @@
     margin-top: 40px;
     margin-bottom: 20px;
   }
-  
 }
 
 .main-page {
   display: flex;
   min-height: 100vh;
+  padding-left: 16rem; /* Add padding equal to sidebar width */
 }
 
 /* Content wrapper */
@@ -41,6 +40,8 @@
   flex: 1;
   display: flex;
   position: relative;
+  width: calc(100% - 16rem); /* Adjust width to account for sidebar */
+  margin-left: auto; /* Push content to the right */
 }
 
 /* Main content area */
@@ -50,6 +51,8 @@ main {
   display: grid;
   gap: 1rem;
   transition: flex 0.3s ease-in-out;
+  max-width: 100%; /* Ensure content doesn't overflow */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 /* Map related styles */
@@ -94,4 +97,17 @@ main {
 
 .toggle-map-button:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Add responsive styles for smaller screens */
+@media (max-width: 768px) {
+  .main-page {
+    padding-left: 0;
+  }
+  
+  .content-wrapper {
+    width: 100%;
+  }
+  
+  /* Add additional responsive styles as needed */
 }

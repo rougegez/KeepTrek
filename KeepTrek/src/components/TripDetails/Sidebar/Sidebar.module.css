@@ -1,4 +1,3 @@
-/* Sidebar.module.css */
 .sidebar {
   width: 16rem;
   height: 100vh;
@@ -6,14 +5,15 @@
   border-right: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
-  position: relative;
+  position: fixed;
   overflow-y: auto;
+  z-index: 10; /* Ensure sidebar stays above other content */
 }
 
 .highlight {
   position: absolute;
-  left: .15rem;
-  width: 97%;
+  left: 0.5rem; /* Adjusted position */
+  width: calc(100% - 1rem); /* Adjust width to account for padding */
   height: 2.5rem;
   background-color: #FF5975;
   border-radius: 12px;
@@ -27,12 +27,6 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
-.logoWrapper {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .logoImage {
   width: 10rem;
   height: 4rem;
@@ -41,12 +35,6 @@
   align-items: center;
   justify-content: center;
   object-fit: cover;
-}
-
-
-.brandName {
-  font-size: 1.25rem;
-  font-weight: 600;
 }
 
 .libraryHeader {
@@ -58,7 +46,11 @@
 }
 
 .nav {
-  flex: .5;
+  flex: 1;
   position: relative;
+  padding: 0.5rem 0; /* Reduced padding */
 }
 
+.spacer {
+  height: 0.5rem; /* Reduced spacing between items */
+}

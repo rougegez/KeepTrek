@@ -7,8 +7,6 @@ import collapsibleStyles from './CollapsibleItem.module.css';
 const SidebarItem = ({ label, onClick, isActive, type = 'primary', onMouseEnter, onMouseLeave }) => (
   <button
     onClick={onClick}
-    onMouseEnter={onMouseEnter}
-    onMouseLeave={onMouseLeave}
     className={`${itemStyles.item} 
                ${type === 'primary' ? itemStyles.primaryItem : itemStyles.secondaryItem} 
                ${isActive ? itemStyles.active : ''}`}
@@ -17,19 +15,16 @@ const SidebarItem = ({ label, onClick, isActive, type = 'primary', onMouseEnter,
   </button>
 );
 
-const CollapsibleSection = ({ label, isActive, isOpen, onToggle, onClick, onMouseEnter, children }) => (
+const CollapsibleSection = ({ label, isActive, isOpen, onToggle, onClick, children }) => (
   <div>
-    <div
-      className={collapsibleStyles.collapsible}
-      onMouseEnter={onMouseEnter}
-    >
+    <div className={collapsibleStyles.collapsible}>
       <button
         onClick={onClick}
         className={`${itemStyles.item} ${itemStyles.primaryItem} ${isActive ? itemStyles.active : ''}`}
       >
         {label}
       </button>
-      <div 
+      <button 
         onClick={(e) => {
           e.stopPropagation();
           onToggle(e);
@@ -41,7 +36,7 @@ const CollapsibleSection = ({ label, isActive, isOpen, onToggle, onClick, onMous
         ) : (
           <ChevronDown className={collapsibleStyles.iconButton} />
         )}
-      </div>
+      </button>
     </div>
     <div
       className={itemStyles.subItemsContainer}
@@ -65,25 +60,39 @@ const Sidebar = () => {
   const [highlightPosition, setHighlightPosition] = useState(null);
   const sidebarRef = useRef(null);
 
-  const updateHighlightPosition = (element) => {
-    if (element && sidebarRef.current) {
-      const rect = element.getBoundingClientRect();
+  const updateHighlightPosition = (sectionId) => {
+    const activeElement = document.querySelector(`[data-section="${sectionId}"]`);
+    if (activeElement && sidebarRef.current) {
+      const rect = activeElement.getBoundingClientRect();
       const sidebarRect = sidebarRef.current.getBoundingClientRect();
       const offsetTop = rect.top - sidebarRect.top;
       setHighlightPosition(offsetTop);
     }
   };
 
-  // Set initial highlight position and update when active section changes
+  // Update active section based on scroll position
   useEffect(() => {
-    // Wait for DOM to be ready
-    setTimeout(() => {
-      const activeElement = document.querySelector(`.${itemStyles.active}`);
-      if (activeElement) {
-        updateHighlightPosition(activeElement);
+    const handleScroll = () => {
+      const sections = ['Overview', 'TripSummary', 'TripBuddy', 'Notes', 'Attachments', 
+                       'Destination', 'Itinerary', 'Day1', 'Day2', 'Day3', 'Day4', 'Day5',
+                       'Budget', 'Wishlist'];
+      
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          if (rect.top <= 100 && rect.bottom >= 100) {
+            setActiveSection(section);
+            updateHighlightPosition(section);
+            break;
+          }
+        }
       }
-    }, 0);
-  }, [activeSection, openSections]);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const scrollToSection = (sectionId, event) => {
     event.preventDefault();
@@ -91,6 +100,7 @@ const Sidebar = () => {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
       setActiveSection(sectionId);
+      updateHighlightPosition(sectionId);
     }
   };
 
@@ -119,26 +129,22 @@ const Sidebar = () => {
         />
       )}
       
-      {/* Logo Section */}
       <div className={styles.logoContainer}>
-            <img className={styles.logoImage} src='../src/assets/KeepTrek.png'/>
+        <img className={styles.logoImage} src='../src/assets/KeepTrek.png' alt="KeepTrek Logo"/>
       </div>
 
-      {/* Library Header */}
       <div className={styles.libraryHeader}>
         Library
       </div>
 
-      {/* Navigation */}
       <nav className={styles.nav}>
-        {/* Overview Section */}
         <CollapsibleSection
           label="Overview"
           isActive={activeSection === 'Overview'}
           isOpen={openSections.Overview}
           onToggle={(e) => toggleSection('Overview', e)}
           onClick={(e) => scrollToSection('Overview', e)}
-          onMouseEnter={(e) => updateHighlightPosition(e.target.closest(`.${collapsibleStyles.collapsible}`))}
+          data-section="Overview"
         >
           {overviewItems.map(item => (
             <SidebarItem
@@ -147,27 +153,29 @@ const Sidebar = () => {
               onClick={(e) => scrollToSection(item.id, e)}
               isActive={activeSection === item.id}
               type="secondary"
-              onMouseEnter={(e) => updateHighlightPosition(e.currentTarget)}
+              data-section={item.id}
             />
           ))}
         </CollapsibleSection>
 
-        {/* Destination */}
+        <div className={styles.spacer} />
+
         <SidebarItem
           label="Destination"
           onClick={(e) => scrollToSection('Destination', e)}
           isActive={activeSection === 'Destination'}
-          onMouseEnter={(e) => updateHighlightPosition(e.currentTarget)}
+          data-section="Destination"
         />
 
-        {/* Itinerary Section */}
+        <div className={styles.spacer} />
+
         <CollapsibleSection
           label="Itinerary"
           isActive={activeSection === 'Itinerary'}
           isOpen={openSections.Itinerary}
           onToggle={(e) => toggleSection('Itinerary', e)}
           onClick={(e) => scrollToSection('Itinerary', e)}
-          onMouseEnter={(e) => updateHighlightPosition(e.target.closest(`.${collapsibleStyles.collapsible}`))}
+          data-section="Itinerary"
         >
           {itineraryDays.map((day, index) => (
             <SidebarItem
@@ -176,25 +184,27 @@ const Sidebar = () => {
               onClick={(e) => scrollToSection(day.replace(' ', ''), e)}
               isActive={activeSection === day.replace(' ', '')}
               type="secondary"
-              onMouseEnter={(e) => updateHighlightPosition(e.currentTarget)}
+              data-section={day.replace(' ', '')}
             />
           ))}
         </CollapsibleSection>
 
-        {/* Budget */}
+        <div className={styles.spacer} />
+
         <SidebarItem
           label="Budget"
           onClick={(e) => scrollToSection('Budget', e)}
           isActive={activeSection === 'Budget'}
-          onMouseEnter={(e) => updateHighlightPosition(e.currentTarget)}
+          data-section="Budget"
         />
 
-        {/* Wishlist */}
+        <div className={styles.spacer} />
+
         <SidebarItem
           label="Wishlist"
           onClick={(e) => scrollToSection('Wishlist', e)}
           isActive={activeSection === 'Wishlist'}
-          onMouseEnter={(e) => updateHighlightPosition(e.currentTarget)}
+          data-section="Wishlist"
         />
       </nav>
     </div>

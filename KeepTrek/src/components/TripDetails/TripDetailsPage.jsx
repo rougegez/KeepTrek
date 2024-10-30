@@ -93,25 +93,28 @@ export const TripDetailsPage = () => {
   }
 
   return (
-    <>
-      {/* Top Nav Bar */}
-      <header id="grp-header" className="grp-navbar">
-        {/* ... Your existing top navbar code ... */}
-      </header>
-
+    <div className="trip-details-container">
+      <Sidebar />
       <div className="main-page">
-        <Sidebar />
         <div className="content-wrapper">
           <main>
+
             <TripOverview
-              id="Overview"
               title="East Coast Road-Trip"
               dateRange="19 June 2024 to 23 June 2024"
               backgroundImage="../src/assets/Langkawi.jpg"
+              id="Overview"
             />
-            <TripBuddy />
-            <Notes />
-            <Attachments />
+
+            <div id="TripBuddy">
+              <TripBuddy />
+            </div>
+            <div id="Notes">
+              <Notes />
+            </div>
+            <div id="Attachments">
+              <Attachments />
+            </div>
           </main>
 
           <div className={`map-wrapper ${isMapExpanded ? 'expanded' : ''}`}>
@@ -151,6 +154,6 @@ export const TripDetailsPage = () => {
           onAuthSuccess={handleAuthSuccess}
         />
       )}
-    </>
+    </div>
   );
 };
