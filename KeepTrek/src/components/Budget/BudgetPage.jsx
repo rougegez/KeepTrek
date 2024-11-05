@@ -1,40 +1,27 @@
 // src/components/Budget/BudgetPage.jsx
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { auth, firestore } from "../../firebaseConfig"; // Import 'firestore'
+import { collection, addDoc, doc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import { Pie } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import KeepTrek from "../../assets/KeepTrek.png";
-import { auth } from "../../firebaseConfig";
-import { Login } from "../Authentication/Login";
-import { Register } from "../Authentication/Register";
-import { firestore } from "../../firebaseConfig";
-import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
+import { Login } from "../Authentication/Login.jsx";
+import { Register } from "../Authentication/Register.jsx";
 import "./BudgetPage.css";
-
-ChartJS.register(ArcElement, Tooltip, Legend);
+import TeamNameModal from "./TeamNameModal.jsx";
 
 export const BudgetPage = () => {
-  const navigate = useNavigate();
-  const [expenses, setExpenses] = useState([]);
-  const [expenseInput, setExpenseInput] = useState({
-    date: "",
-    description: "",
-    amount: "",
-    category: "",
-    youOwe: "",
-  });
-
   const [user, setUser] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        setShowLoginModal(false);
-        setShowRegisterModal(false);
-        await fetchUserExpenses(currentUser.uid);
       } else {
         setUser(null);
         setShowLoginModal(true);
@@ -44,92 +31,43 @@ export const BudgetPage = () => {
     return () => unsubscribe();
   }, []);
 
-  const fetchUserExpenses = async (userId) => {
-    try {
-      const expensesRef = collection(firestore, "users", userId, "expenses");
-      const q = query(expensesRef);
-      const querySnapshot = await getDocs(q);
-      const fetchedExpenses = querySnapshot.docs.map((doc) => doc.data());
-      setExpenses(fetchedExpenses);
-    } catch (error) {
-      console.error("Error fetching expenses: ", error);
-    }
+  const openTeamNameModal = () => {
+    setIsModalOpen(true);
   };
 
-  const handleInputChange = (e) => {
-    setExpenseInput({
-      ...expenseInput,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleAddExpense = async () => {
-    const { date, description, amount, category, youOwe } = expenseInput;
-
-    if (!date || !description || !amount || !category || !youOwe) {
-      alert("Please fill out all fields.");
-      return;
-    }
-
-    const newExpense = {
-      ...expenseInput,
-      amount: parseFloat(expenseInput.amount),
-      youOwe: parseFloat(expenseInput.youOwe),
-      userId: user.uid,
-      timestamp: new Date(),
-    };
+  const handleSaveTeamName = async (name) => {
+    setIsModalOpen(false);
 
     try {
-      await addDoc(
-        collection(firestore, "users", user.uid, "expenses"),
-        newExpense
-      );
-      setExpenses([...expenses, newExpense]);
-      setExpenseInput({
-        date: "",
-        description: "",
-        amount: "",
-        category: "",
-        youOwe: "",
+      // Generate a new team document with a unique ID
+      const teamsCollectionRef = collection(firestore, "teams");
+      const teamDocRef = await addDoc(teamsCollectionRef, {
+        owner: user.uid,
+        members: [user.uid],
+        name: name,
+        createdAt: new Date(),
       });
-      alert("Expense added successfully!");
+      const newTeamId = teamDocRef.id;
+
+      // Store the team ID in the user's profile
+      const userRef = doc(firestore, "users", user.uid);
+      await setDoc(
+        userRef,
+        {
+          currentTeamId: newTeamId,
+          email: user.email,
+          displayName: user.displayName || "",
+          photoURL: user.photoURL || "",
+        },
+        { merge: true }
+      );
+
+      // Navigate to the team's budget page
+      navigate(`/teams/${newTeamId}`);
     } catch (error) {
-      console.error("Error adding expense: ", error);
-      alert("Failed to add expense. Please try again.");
+      console.error("Error generating team link:", error);
+      alert("Failed to create team. Please try again.");
     }
-  };
-
-  const totalCost = expenses.reduce((acc, expense) => acc + expense.amount, 0);
-  const yourCost = expenses.reduce((acc, expense) => acc + expense.youOwe, 0);
-  const youOwed = totalCost - yourCost;
-
-  const categories = [
-    "Stay",
-    "Activities",
-    "Food",
-    "Transport",
-    "Shopping",
-    "Others",
-  ];
-  const chartData = {
-    labels: categories,
-    datasets: [
-      {
-        data: categories.map((category) =>
-          expenses
-            .filter((expense) => expense.category === category)
-            .reduce((acc, expense) => acc + expense.amount, 0)
-        ),
-        backgroundColor: [
-          "#4CAF50",
-          "#FFCE56",
-          "#FF6384",
-          "#36A2EB",
-          "#FD6B19",
-          "#E0E4CC",
-        ],
-      },
-    ],
   };
 
   const handleAuthSuccess = () => {
@@ -195,86 +133,27 @@ export const BudgetPage = () => {
       </header>
 
       <div className="budget-page">
-        {/* Budget Summary Section */}
-        <div className="budget-summary">
-          <h2>Total Trip Cost: RM {totalCost.toFixed(2)}</h2>
-          <p>Your Cost: RM {yourCost.toFixed(2)}</p>
-          <p>You Are Owed: RM {youOwed.toFixed(2)}</p>
-        </div>
-
-        {/* Expense Input Section */}
-        <div className="budget-expense-input">
-          <h3>Add an Expense</h3>
-          <input
-            type="date"
-            name="date"
-            value={expenseInput.date}
-            onChange={handleInputChange}
-            placeholder="mm/dd/yyyy"
-          />
-          <input
-            type="text"
-            name="description"
-            value={expenseInput.description}
-            onChange={handleInputChange}
-            placeholder="Description"
-          />
-          <input
-            type="number"
-            name="amount"
-            value={expenseInput.amount}
-            onChange={handleInputChange}
-            placeholder="Amount"
-          />
-          <select
-            name="category"
-            value={expenseInput.category}
-            onChange={handleInputChange}
-          >
-            <option value="">Select Category</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-          <input
-            type="number"
-            name="youOwe"
-            value={expenseInput.youOwe}
-            onChange={handleInputChange}
-            placeholder="You Owe"
-          />
-          <button className="budget-btn-primary" onClick={handleAddExpense}>
-            Add Expense
+        <h2>Welcome to the Budget Management Page</h2>
+        <div className="budget-actions">
+          <button className="budget-btn-primary" onClick={openTeamNameModal}>
+            Create Team
           </button>
-        </div>
-
-        {/* Expenses List Section */}
-        <div className="budget-expenses-section">
-          <h3>Expenses</h3>
-          <ul className="budget-expenses-list">
-            {expenses.map((expense, index) => (
-              <li key={index}>
-                <span>{expense.date}</span>
-                <span>{expense.description}</span>
-                <span>RM {expense.amount.toFixed(2)}</span>
-                <span>You Owe: RM {expense.youOwe.toFixed(2)}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Expense Breakdown Chart Section */}
-        <div className="budget-expense-breakdown">
-          <h3>Expense Breakdown</h3>
-          <div className="budget-pie-chart">
-            <Pie data={chartData} />
-          </div>
+          <button
+            className="budget-btn-secondary"
+            onClick={() => navigate("/team-history")}
+          >
+            Team History
+          </button>
         </div>
       </div>
 
-      {/* Modals */}
+      {/* Render the modal */}
+      <TeamNameModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveTeamName}
+      />
+
       {showLoginModal && (
         <Login
           closeModal={handleCloseModal}
