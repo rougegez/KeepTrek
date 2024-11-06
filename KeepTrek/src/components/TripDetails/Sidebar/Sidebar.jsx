@@ -81,7 +81,7 @@ const Sidebar = () => {
 
   // Map of parent sections to their subsections
   const sectionMap = {
-    Overview: ['TripSummary', 'TripBuddy', 'Notes', 'Attachments'],
+    Overview: ['TripSummary', 'Accommodation', 'TripBuddy', 'Notes', 'Attachments'],
     Itinerary: ['Day1', 'Day2', 'Day3', 'Day4', 'Day5']
   };
 
@@ -97,7 +97,7 @@ const Sidebar = () => {
 
   const determineActiveSection = () => {
     const allSections = [
-      'Overview', 'TripSummary', 'TripBuddy', 'Notes', 'Attachments',
+      'Overview', 'TripSummary', 'Accommodation', 'TripBuddy', 'Notes', 'Attachments',
       'Destination', 'Itinerary', 'Day1', 'Day2', 'Day3', 'Day4', 'Day5',
       'Budget', 'Wishlist'
     ];
@@ -195,6 +195,7 @@ const Sidebar = () => {
 
   const overviewItems = [
     { id: 'TripSummary', label: 'Trip Summary' },
+    { id: 'Accommodation', label: 'Accommodation'},
     { id: 'TripBuddy', label: 'Trip Buddy' },
     { id: 'Notes', label: 'Notes' },
     { id: 'Attachments', label: 'Attachments' }

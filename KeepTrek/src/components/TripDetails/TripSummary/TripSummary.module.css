@@ -1,11 +1,11 @@
 .sectionTitle {
-  font-family: Baloo2;
+  font-family: "Baloo 2";
   font-weight: 600;
   align-items: left;
 }
 
 .container {
-  max-width: 48rem;
+  /* max-width: 48rem; */
   margin: 0 auto;
   padding: 1.5rem;
 }
@@ -19,7 +19,7 @@
   justify-content: space-between;
   margin-left: auto;
   margin-right: auto;
-  width: 75%;
+  width: 66%;
 }
 
 .dateItem {
@@ -102,63 +102,95 @@
   font-weight: 500;
 }
 
+.highlightsContainer {
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 1.5rem;
+}
+
 .highlightsTitle {
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 1rem;
 }
 
-.highlightsGrid {
-  display: grid;
-  grid-template-columns: 1fr;
+.highlightsList {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.highlightItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 1rem;
+  padding: 0.5rem;
+  flex: 1;
+  min-width: 0; /* Prevents flex items from overflowing */
 }
 
-@media (min-width: 768px) {
-  .highlightsGrid {
-    grid-template-columns: 1fr 1fr;
-  }
+.highlightContent {
+  flex: 1;
+  min-width: 0; /* Allows text to wrap properly */
 }
 
-.highlightImageContainer {
-  position: relative;
-  aspect-ratio: 16 / 9;
+.highlightName {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.highlightImage {
+.highlightDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.infoRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgb(75 85 99);
+}
+
+.icon {
+  color: rgb(156 163 175);
+  flex-shrink: 0;
+}
+
+.infoText {
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.divider {
+  margin: 0 0.5rem;
+  font-size: 0.875rem;
+}
+
+.imageContainer {
+  width: 8rem;
+  height: 6rem;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+}
+
+.image {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.highlightContent {
-  padding: 1rem;
-}
-
-.highlightContent>*+* {
-  margin-top: 0.5rem;
-}
-
-.highlightTitle {
-  font-weight: 600;
-}
-
-.highlightInfo {
-  display: flex;
-  align-items: center;
-  color: rgb(75 85 99);
-}
-
-.highlightText {
-  font-size: 0.875rem;
-}
-
-.divider {
-  margin: 0 0.5rem;
-}
-
-.iconWrapper {
-  width: 1rem;
-  height: 1rem;
-  margin-right: 1rem;
+.separator {
+  width: 1px;
+  background-color: #e5e7eb;
+  align-self: stretch;
 }

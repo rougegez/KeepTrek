@@ -71,36 +71,37 @@ const TripSummary = () => {
             </div>
 
             {/* Highlights Section */}
-            <div>
+            <div className={styles.highlightsContainer}>
                 <h2 className={styles.highlightsTitle}>Highlights</h2>
-                <div className={styles.highlightsGrid}>
+                <div className={styles.highlightsList}>
                     {highlights.map((highlight, index) => (
-                        <Card key={index}>
-                            <div className={styles.highlightImageContainer}>
-                                <img
-                                    src={highlight.image}
-                                    alt={highlight.title}
-                                    className={styles.highlightImage}
-                                />
-                            </div>
-                            <div className={styles.highlightContent}>
-                                <h3 className={styles.highlightTitle}>{highlight.title}</h3>
-                                <div className={styles.highlightInfo}>
-                                    <span className={styles.iconWrapper}>
-                                        <MapPin />
-                                    </span>
-                                    <span className={styles.highlightText}>{highlight.location}</span>
+                        <React.Fragment key={index}>
+                            <div className={styles.highlightItem}>
+                                <div className={styles.highlightContent}>
+                                    <h3 className={styles.highlightName}>{highlight.title}</h3>
+                                    <div className={styles.highlightDetails}>
+                                        <div className={styles.infoRow}>
+                                            <MapPin size={16} className={styles.icon} />
+                                            <span className={styles.infoText}>{highlight.location}</span>
+                                        </div>
+                                        <div className={styles.infoRow}>
+                                            <Clock size={16} className={styles.icon} />
+                                            <span className={styles.infoText}>{highlight.time}</span>
+                                            <span className={styles.divider}>•</span>
+                                            <span className={styles.infoText}>{highlight.duration}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className={styles.highlightInfo}>
-                                    <span className={styles.iconWrapper}>
-                                        <Clock />
-                                    </span>
-                                    <span className={styles.highlightText}>{highlight.time}</span>
-                                    <span className={styles.divider}>•</span>
-                                    <span className={styles.highlightText}>{highlight.duration}</span>
+                                <div className={styles.imageContainer}>
+                                    <img
+                                        src={highlight.image}
+                                        alt={highlight.title}
+                                        className={styles.image}
+                                    />
                                 </div>
                             </div>
-                        </Card>
+                            {index < highlights.length - 1 && <div className={styles.separator} />}
+                        </React.Fragment>
                     ))}
                 </div>
             </div>

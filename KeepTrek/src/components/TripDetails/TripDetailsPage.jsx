@@ -16,6 +16,7 @@ import TripOverview from "./TripOverview/TripOverview.jsx";
 import Notes from "./Notes/Notes.jsx";
 import Attachments from "./Attachments/Attachments.jsx";
 import TripSummary from "./TripSummary/TripSummary.jsx";
+import Accommodation from "./Accomodation/Accommodation.jsx";
 
 // Helper function to generate the list of dates between start and end date
 
@@ -99,19 +100,19 @@ export const TripDetailsPage = () => {
       <div className="main-page">
         <div className="content-wrapper">
           <main>
-
             <TripOverview
               title="East Coast Road-Trip"
               dateRange="19 June 2024 to 23 June 2024"
               backgroundImage="../src/assets/Langkawi.jpg"
               id="Overview"
             />
-
             <div id="TripSummary">
             <h2 className="trip-summary-title">Trip Summary</h2>
               <TripSummary/>
             </div>
-
+            <div id="Accommodation">
+              <Accommodation/>
+            </div>
             <div id="TripBuddy">
               <TripBuddy />
             </div>
@@ -123,7 +124,7 @@ export const TripDetailsPage = () => {
             </div>
           </main>
 
-          <div className={`map-wrapper ${isMapExpanded ? 'expanded' : ''}`}>
+          {/* <div className={`map-wrapper ${isMapExpanded ? 'expanded' : ''}`}>
             <button
               className="toggle-map-button"
               onClick={toggleMapExpansion}
@@ -134,7 +135,7 @@ export const TripDetailsPage = () => {
             <div className="map-container">
               <SampleMap />
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 
