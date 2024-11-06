@@ -1,39 +1,34 @@
 import React from 'react';
-import './TripBuddy.css'
+import styles from './TripBuddy.module.css';
+import { Plus } from "lucide-react";
 
 const TripBuddy = () => {
   const buddies = [
-    { name: "Gan Wei Lee" },
-    { name: "Kyle Goh" },
-    { name: "Bryan Tan" },
-    { name: "Jaspreet Singh 哥" },
-    { name: "Jaylee Kwa" },
-    { name: "Jaylee Kwa" },
-    { name: "Jaylee Kwa" },
-    { name: "Jaylee Kwa" },
-    { name: "Jaylee Kwa" },
-    { name: "Jaylee Kwa" },
-    { name: "Jaylee Kwa" },
-    { name: "Jaylee Kwa" },
-    { name: "Jaylee Kwa" },
-    { name: "Jaylee Kwa" },
-    { name: "Jaylee Kwa" },
-    { name: "Jaylee Kwa" },
-    { name: "Jaylee Kwa" },
-    { name: "Jaylee Kwa" },
-    { name: "Jaylee Kwa" },
-    { name: "Jaylee Kwa" },
+    { name: 'Gan Wei Lee', image: '../src/assets/buddyicon.svg'},
+    { name: 'Kyle Goh', image: '../src/assets/buddyicon.svg'},
+    { name: 'Bryan Tan', image: '../src/assets/buddyicon.svg'},
+    { name: 'Anoop Singh', image: '../src/assets/buddyicon.svg'},
+    { name: 'Angie Kwa', image: '../src/assets/buddyicon.svg'}
   ];
 
   return (
-    <div className="trip-buddy">
-      <h3>Trip Buddy</h3>
-      <ul>
+    <section className={styles.tripBuddy}>
+      <div className={styles.buddyHeaderContainer}>
+        <h2 className={styles.buddyTitle}>Trip Buddy</h2>
+        <button className={styles.addBuddyButton} aria-label="Add buddy"><Plus/></button>
+      </div>
+      <ul className={styles.buddyList}>
         {buddies.map((buddy, index) => (
-          <li key={index}>{buddy.name}</li>
+          <li key={index} className={styles.buddyItem}>
+            <img src={buddy.image} alt={buddy.name} className={styles.buddyImage} />
+            <span className={styles.buddyName}>{buddy.name}</span>
+            <button className={styles.buddyAction}>
+              <img src='../src/assets/more.svg' alt="Action" className={styles.actionIcon} />
+            </button>
+          </li>
         ))}
       </ul>
-    </div>
+    </section >
   );
 };
 
