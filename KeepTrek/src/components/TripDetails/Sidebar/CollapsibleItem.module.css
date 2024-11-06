@@ -1,18 +1,18 @@
 .collapsible {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    /* align-items: center; */
+    /* justify-content: space-between; */
     position: relative;
     z-index: 1;
     height: 2.5rem;
-    padding-right: 0.75rem;
+    width: 245px;
 }
 
 .iconWrapper {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.25rem;
+    padding: 0 0.5rem;
     cursor: pointer;
     background: none;
     border: none;

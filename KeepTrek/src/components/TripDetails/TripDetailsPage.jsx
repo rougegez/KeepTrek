@@ -15,6 +15,7 @@ import TripBuddy from "./TripBuddy/TripBuddy.jsx";
 import TripOverview from "./TripOverview/TripOverview.jsx";
 import Notes from "./Notes/Notes.jsx";
 import Attachments from "./Attachments/Attachments.jsx";
+import TripSummary from "./TripSummary/TripSummary.jsx";
 
 // Helper function to generate the list of dates between start and end date
 
@@ -105,6 +106,11 @@ export const TripDetailsPage = () => {
               backgroundImage="../src/assets/Langkawi.jpg"
               id="Overview"
             />
+
+            <div id="TripSummary">
+            <h2 className="trip-summary-title">Trip Summary</h2>
+              <TripSummary/>
+            </div>
 
             <div id="TripBuddy">
               <TripBuddy />
