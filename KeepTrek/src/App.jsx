@@ -18,78 +18,15 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/itinerary"
-          element={
-            <PrivateRoute>
-              <Itinerary />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/schedule"
-          element={
-            <PrivateRoute>
-              <GrpSchedule />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/expense-splitting"
-          element={
-            <PrivateRoute>
-              <BudgetPage />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/teams/:teamId"
-          element={
-            <PrivateRoute>
-              <TeamBudgetPage />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/team-history"
-          element={
-            <PrivateRoute>
-              <TeamHistory />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/schedule-summary"
-          element={
-            <PrivateRoute>
-              <ScheduleSummary />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/trip-details/:id"
-          element={
-            <PrivateRoute>
-              <TripDetailsPage />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/join-team/:teamId"
-          element={
-            <PrivateRoute>
-              <JoinTeam />
-            </PrivateRoute>
-          }
-        />
+        <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>}/>
+        <Route path="/itinerary" element={<PrivateRoute><Itinerary /></PrivateRoute>}/>
+        <Route path="/schedule" element={<PrivateRoute><GrpSchedule /></PrivateRoute>}/>
+        <Route path="/expense-splitting" element={<PrivateRoute><BudgetPage /></PrivateRoute>}/>
+        <Route path="/teams/:teamId" element={<PrivateRoute><TeamBudgetPage /></PrivateRoute>}/>
+        <Route path="/team-history" element={<PrivateRoute><TeamHistory /></PrivateRoute>}/>
+        <Route path="/schedule-summary" element={<PrivateRoute><ScheduleSummary /></PrivateRoute>}/>
+        <Route path="/trip-details/:id" element={<PrivateRoute><TripDetailsPage /></PrivateRoute>}/>
+        <Route path="/join-team/:teamId" element={<PrivateRoute><JoinTeam /></PrivateRoute>}/>
       </Routes>
     </Router>
   );
