@@ -53,6 +53,13 @@ main {
   transition: flex 0.3s ease-in-out;
   max-width: 100%; /* Ensure content doesn't overflow */
   overflow-x: hidden; /* Prevent horizontal scrolling */
+  background-color: #FBFBFB;
+}
+
+.trip-summary-title{
+  font-family: "Baloo 2";
+  font-weight: 600;
+  align-items: left;
 }
 
 /* Map related styles */
@@ -63,7 +70,7 @@ main {
 }
 
 .map-wrapper.expanded {
-  width: 33.33%;
+  width: 50%;
 }
 
 .map-container {

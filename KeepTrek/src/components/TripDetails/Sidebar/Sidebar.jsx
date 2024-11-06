@@ -5,15 +5,17 @@ import itemStyles from './SidebarItem.module.css';
 import collapsibleStyles from './CollapsibleItem.module.css';
 
 const SidebarItem = ({ label, onClick, isActive, type = 'primary', 'data-section': dataSection }) => (
+  <div className={itemStyles.itemDiv}>
   <button
     onClick={onClick}
     className={`${itemStyles.item} 
                ${type === 'primary' ? itemStyles.primaryItem : itemStyles.secondaryItem} 
-               ${isActive ? itemStyles.active : ''}`}
+               ${isActive && type === 'secondary' ? itemStyles.activeSubItem : ''}`}
     data-section={dataSection}
   >
     {label}
   </button>
+  </div>
 );
 
 const CollapsibleSection = ({ label, isActive, isOpen, onToggle, onClick, children, 'data-section': dataSection }) => (
@@ -21,12 +23,12 @@ const CollapsibleSection = ({ label, isActive, isOpen, onToggle, onClick, childr
     <div className={collapsibleStyles.collapsible}>
       <button
         onClick={onClick}
-        className={`${itemStyles.item} ${itemStyles.primaryItem} ${isActive ? itemStyles.active : ''}`}
+        className={`${itemStyles.item} ${itemStyles.primaryItem}`}
         data-section={dataSection}
       >
         {label}
       </button>
-      <div 
+      <div
         onClick={(e) => {
           e.stopPropagation();
           onToggle(e);
@@ -42,7 +44,7 @@ const CollapsibleSection = ({ label, isActive, isOpen, onToggle, onClick, childr
     </div>
     <div
       className={itemStyles.subItemsContainer}
-      style={{ 
+      style={{
         maxHeight: isOpen ? `${React.Children.count(children) * 40}px` : '0',
         overflow: 'hidden',
         transition: 'max-height 0.3s ease-in-out'
@@ -63,8 +65,10 @@ const Sidebar = () => {
   const [highlightPosition, setHighlightPosition] = useState(null);
   const sidebarRef = useRef(null);
 
-  const updateHighlightPosition = (sectionId, isSubSection = false) => {
-    if (sidebarRef.current) {
+  // Modified to only highlight main sections
+  const updateHighlightPosition = (sectionId) => {
+    // Only update highlight for main sections
+    if (sidebarRef.current && !getParentSection(sectionId)) {
       const activeElement = sidebarRef.current.querySelector(`[data-section="${sectionId}"]`);
       if (activeElement) {
         const rect = activeElement.getBoundingClientRect();
@@ -106,17 +110,17 @@ const Sidebar = () => {
       if (element) {
         const rect = element.getBoundingClientRect();
         if (rect.top <= threshold && rect.bottom >= threshold) {
-          // Check if this is a subsection
           const parentSection = getParentSection(sectionId);
           if (parentSection) {
-            // This is a subsection
             setOpenSections(prev => ({ ...prev, [parentSection]: true }));
             setActiveSubSection(sectionId);
             setActiveSection(parentSection);
+            // Don't update highlight for subsections
             return { section: parentSection, subSection: sectionId };
           } else {
-            // This is a main section
             setActiveSubSection(null);
+            // Update highlight for main sections
+            updateHighlightPosition(sectionId);
             return { section: sectionId, subSection: null };
           }
         }
@@ -124,6 +128,7 @@ const Sidebar = () => {
     }
     return { section: activeSection, subSection: activeSubSection };
   };
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -187,7 +192,7 @@ const Sidebar = () => {
   };
 
   const itineraryDays = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5'];
-  
+
   const overviewItems = [
     { id: 'TripSummary', label: 'Trip Summary' },
     { id: 'TripBuddy', label: 'Trip Buddy' },
@@ -198,12 +203,12 @@ const Sidebar = () => {
   return (
     <div className={styles.sidebar} ref={sidebarRef}>
       {highlightPosition !== null && (
-        <div 
-          className={styles.highlight} 
+        <div
+          className={styles.highlight}
           style={{ transform: `translateY(${highlightPosition}px)` }}
         />
       )}
-      
+
       {/* Logo Section */}
       <div className={styles.logoContainer}>
         <img className={styles.logoImage} src='../src/assets/KeepTrek.png' alt="KeepTrek Logo" />
@@ -215,73 +220,75 @@ const Sidebar = () => {
       </div>
 
       {/* Navigation */}
-      <nav className={styles.nav}>
-        {/* Overview Section */}
-        <CollapsibleSection
-          label="Overview"
-          isActive={activeSection === 'Overview' && !activeSubSection}
-          isOpen={openSections.Overview}
-          onToggle={(e) => toggleSection('Overview', e)}
-          onClick={(e) => scrollToSection('Overview', e)}
-          data-section="Overview"
-        >
-          {overviewItems.map(item => (
-            <SidebarItem
-              key={item.id}
-              label={item.label}
-              onClick={(e) => scrollToSection(item.id, e)}
-              isActive={activeSubSection === item.id}
-              type="secondary"
-              data-section={item.id}
-            />
-          ))}
-        </CollapsibleSection>
+      <div className={styles.navContainer}>
+        <nav className={styles.nav}>
+          {/* Overview Section */}
+          <CollapsibleSection
+            label="Overview"
+            isActive={activeSection === 'Overview' && !activeSubSection}
+            isOpen={openSections.Overview}
+            onToggle={(e) => toggleSection('Overview', e)}
+            onClick={(e) => scrollToSection('Overview', e)}
+            data-section="Overview"
+          >
+            {overviewItems.map(item => (
+              <SidebarItem
+                key={item.id}
+                label={item.label}
+                onClick={(e) => scrollToSection(item.id, e)}
+                isActive={activeSubSection === item.id}
+                type="secondary"
+                data-section={item.id}
+              />
+            ))}
+          </CollapsibleSection>
 
-        {/* Destination */}
-        <SidebarItem
-          label="Destination"
-          onClick={(e) => scrollToSection('Destination', e)}
-          isActive={activeSection === 'Destination'}
-          data-section="Destination"
-        />
+          {/* Destination */}
+          <SidebarItem
+            label="Destination"
+            onClick={(e) => scrollToSection('Destination', e)}
+            isActive={activeSection === 'Destination'}
+            data-section="Destination"
+          />
 
-        {/* Itinerary Section */}
-        <CollapsibleSection
-          label="Itinerary"
-          isActive={activeSection === 'Itinerary' && !activeSubSection}
-          isOpen={openSections.Itinerary}
-          onToggle={(e) => toggleSection('Itinerary', e)}
-          onClick={(e) => scrollToSection('Itinerary', e)}
-          data-section="Itinerary"
-        >
-          {itineraryDays.map((day, index) => (
-            <SidebarItem
-              key={index}
-              label={day}
-              onClick={(e) => scrollToSection(day.replace(' ', ''), e)}
-              isActive={activeSubSection === day.replace(' ', '')}
-              type="secondary"
-              data-section={day.replace(' ', '')}
-            />
-          ))}
-        </CollapsibleSection>
+          {/* Itinerary Section */}
+          <CollapsibleSection
+            label="Itinerary"
+            isActive={activeSection === 'Itinerary' && !activeSubSection}
+            isOpen={openSections.Itinerary}
+            onToggle={(e) => toggleSection('Itinerary', e)}
+            onClick={(e) => scrollToSection('Itinerary', e)}
+            data-section="Itinerary"
+          >
+            {itineraryDays.map((day, index) => (
+              <SidebarItem
+                key={index}
+                label={day}
+                onClick={(e) => scrollToSection(day.replace(' ', ''), e)}
+                isActive={activeSubSection === day.replace(' ', '')}
+                type="secondary"
+                data-section={day.replace(' ', '')}
+              />
+            ))}
+          </CollapsibleSection>
 
-        {/* Budget */}
-        <SidebarItem
-          label="Budget"
-          onClick={(e) => scrollToSection('Budget', e)}
-          isActive={activeSection === 'Budget'}
-          data-section="Budget"
-        />
+          {/* Budget */}
+          <SidebarItem
+            label="Budget"
+            onClick={(e) => scrollToSection('Budget', e)}
+            isActive={activeSection === 'Budget'}
+            data-section="Budget"
+          />
 
-        {/* Wishlist */}
-        <SidebarItem
-          label="Wishlist"
-          onClick={(e) => scrollToSection('Wishlist', e)}
-          isActive={activeSection === 'Wishlist'}
-          data-section="Wishlist"
-        />
-      </nav>
+          {/* Wishlist */}
+          <SidebarItem
+            label="Wishlist"
+            onClick={(e) => scrollToSection('Wishlist', e)}
+            isActive={activeSection === 'Wishlist'}
+            data-section="Wishlist"
+          />
+        </nav>
+      </div>
     </div>
   );
 };

@@ -8,6 +8,21 @@ const TripBuddy = () => {
     { name: "Bryan Tan" },
     { name: "Jaspreet Singh 哥" },
     { name: "Jaylee Kwa" },
+    { name: "Jaylee Kwa" },
+    { name: "Jaylee Kwa" },
+    { name: "Jaylee Kwa" },
+    { name: "Jaylee Kwa" },
+    { name: "Jaylee Kwa" },
+    { name: "Jaylee Kwa" },
+    { name: "Jaylee Kwa" },
+    { name: "Jaylee Kwa" },
+    { name: "Jaylee Kwa" },
+    { name: "Jaylee Kwa" },
+    { name: "Jaylee Kwa" },
+    { name: "Jaylee Kwa" },
+    { name: "Jaylee Kwa" },
+    { name: "Jaylee Kwa" },
+    { name: "Jaylee Kwa" },
   ];
 
   return (

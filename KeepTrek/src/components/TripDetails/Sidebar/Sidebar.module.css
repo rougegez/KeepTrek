@@ -47,10 +47,5 @@
 
 .nav {
   flex: 1;
-  position: relative;
-  padding: 0.5rem 0; /* Reduced padding */
-}
-
-.spacer {
-  height: 0.5rem; /* Reduced spacing between items */
+  padding: 0.5rem 0;
 }

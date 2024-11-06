@@ -1,0 +1,164 @@
+.sectionTitle {
+  font-family: Baloo2;
+  font-weight: 600;
+  align-items: left;
+}
+
+.container {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.container>*+* {
+  margin-top: 1.5rem;
+}
+
+.dateContainer {
+  display: flex;
+  justify-content: space-between;
+  margin-left: auto;
+  margin-right: auto;
+  width: 75%;
+}
+
+.dateItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 9999px;
+}
+
+.dateItemActive {
+  background-color: rgb(20 184 166);
+  color: white;
+}
+
+.dateItemInactive {
+  color: rgb(75 85 99);
+}
+
+.dateDay {
+  font-family: "Baloo 2";
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.dateNumber {
+  font-family: "Baloo 2";
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.dayTravelSection {
+  display: flex;
+  align-items: stretch;
+  gap: 1rem;
+}
+
+.dayIndicator {
+  width: 20%;
+  background-color: rgb(20 184 166);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dayNumber {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.travelCard {
+  width: 80%;
+}
+
+.travelPath {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.travelDash {
+  flex: 1;
+  margin: 0 1rem;
+  border-top: 2px dashed rgb(209 213 219);
+  position: relative;
+}
+
+.travelIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.locationName {
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+.highlightsTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.highlightsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .highlightsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.highlightImageContainer {
+  position: relative;
+  aspect-ratio: 16 / 9;
+}
+
+.highlightImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.highlightContent {
+  padding: 1rem;
+}
+
+.highlightContent>*+* {
+  margin-top: 0.5rem;
+}
+
+.highlightTitle {
+  font-weight: 600;
+}
+
+.highlightInfo {
+  display: flex;
+  align-items: center;
+  color: rgb(75 85 99);
+}
+
+.highlightText {
+  font-size: 0.875rem;
+}
+
+.divider {
+  margin: 0 0.5rem;
+}
+
+.iconWrapper {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 1rem;
+}
