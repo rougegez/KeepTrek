@@ -9,6 +9,8 @@ const TripBuddy = () => {
     { name: 'Bryan Tan', image: '../src/assets/buddyicon.svg'},
     { name: 'Anoop Singh', image: '../src/assets/buddyicon.svg'},
     { name: 'Angie Kwa', image: '../src/assets/buddyicon.svg'}
+    /* Ideally would want to use a null value for default profile pic to save
+    space in database, put the default in local*/
   ];
 
   return (
