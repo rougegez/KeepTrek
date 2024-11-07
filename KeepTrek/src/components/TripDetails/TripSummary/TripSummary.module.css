@@ -19,7 +19,7 @@
   justify-content: space-between;
   margin-left: auto;
   margin-right: auto;
-  width: 66%;
+  width: 45%;
 }
 
 .dateItem {
@@ -31,7 +31,7 @@
 }
 
 .dateItemActive {
-  background-color: rgb(20 184 166);
+  background-color: #ff004f;
   color: white;
 }
 
@@ -59,7 +59,7 @@
 
 .dayIndicator {
   width: 20%;
-  background-color: rgb(20 184 166);
+  background-color:#ff004f;
   color: white;
   padding: 1.5rem;
   border-radius: 0.5rem;

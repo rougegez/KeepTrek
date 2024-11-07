@@ -15,7 +15,7 @@
   left: 0.5rem; /* Adjusted position */
   width: calc(100% - 1rem); /* Adjust width to account for padding */
   height: 2.5rem;
-  background-color: #FF5975;
+  background-color: #ff004f;
   border-radius: 12px;
   transition: transform 0.3s ease;
   pointer-events: none;
