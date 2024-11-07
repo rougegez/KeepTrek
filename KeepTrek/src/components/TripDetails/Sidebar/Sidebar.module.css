@@ -8,6 +8,7 @@
   position: fixed;
   overflow-y: auto;
   z-index: 10; /* Ensure sidebar stays above other content */
+  box-shadow: 2px 4px 4px rgba(185, 185, 185, 0.25);
 }
 
 .highlight {
