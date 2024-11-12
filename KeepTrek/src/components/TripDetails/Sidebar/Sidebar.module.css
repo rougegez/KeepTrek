@@ -50,3 +50,16 @@
   flex: 1;
   padding: 0.5rem 0;
 }
+
+.primaryItem {
+  font-size: 24px;
+  font-weight: 600;
+  color: black;
+}
+
+.secondaryItem {
+  /* "pl-4 mt-1" */
+  padding-left: 1rem;
+  margin-top: 0.25rem;
+  color: #808080;
+}

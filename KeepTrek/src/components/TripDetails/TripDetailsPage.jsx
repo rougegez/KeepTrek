@@ -8,9 +8,9 @@ import "./TripDetailsPage.css";
 import { Login } from "../Authentication/Login";
 import { Register } from "../Authentication/Register";
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import Sidebar from "./Sidebar/Sidebar.jsx";
-import SampleMap from "./Map/SampleMap.jsx";
+import AppSidebar from "./Sidebar/Sidebar.jsx";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+
 import TripBuddy from "./TripBuddy/TripBuddy.jsx";
 import TripOverview from "./TripOverview/TripOverview.jsx";
 import Notes from "./Notes/Notes.jsx";
@@ -18,7 +18,6 @@ import Attachments from "./Attachments/Attachments.jsx";
 import TripSummary from "./TripSummary/TripSummary.jsx";
 import Accommodation from "./Accomodation/Accommodation.jsx";
 
-// Helper function to generate the list of dates between start and end date
 
 
 export const TripDetailsPage = () => {
@@ -29,12 +28,6 @@ export const TripDetailsPage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const navigate = useNavigate();
-
-  const [isMapExpanded, setIsMapExpanded] = useState(false);
-
-  const toggleMapExpansion = () => {
-    setIsMapExpanded(!isMapExpanded);
-  };
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -95,50 +88,32 @@ export const TripDetailsPage = () => {
   }
 
   return (
-    <div className="trip-details-container">
-      <Sidebar />
-      <div className="main-page">
-        <div className="content-wrapper">
-          <main>
-            <TripOverview
-              title="East Coast Road-Trip"
-              dateRange="19 June 2024 to 23 June 2024"
-              backgroundImage="../src/assets/Langkawi.jpg"
-              id="Overview"
-            />
-            <div id="TripSummary">
-            <h2 className="trip-summary-title">Trip Summary</h2>
-              <TripSummary/>
-            </div>
-            <div id="Accommodation">
-              <Accommodation/>
-            </div>
-            <div id="TripBuddy">
-              <TripBuddy />
-            </div>
-            <div id="Notes">
-              <Notes />
-            </div>
-            <div id="Attachments">
-              <Attachments />
-            </div>
-          </main>
-
-          {/* <div className={`map-wrapper ${isMapExpanded ? 'expanded' : ''}`}>
-            <button
-              className="toggle-map-button"
-              onClick={toggleMapExpansion}
-              aria-label={isMapExpanded ? 'Collapse map' : 'Expand map'}
-            >
-              {isMapExpanded ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
-            </button>
-            <div className="map-container">
-              <SampleMap />
-            </div>
-          </div> */}
+    <SidebarProvider>
+      <AppSidebar />
+      <main>
+        <TripOverview
+          title="East Coast Road-Trip"
+          dateRange="19 June 2024 to 23 June 2024"
+          backgroundImage="../src/assets/Langkawi.jpg"
+          id="Overview"
+        />
+        <div id="TripSummary">
+          <h2 className="trip-summary-title">Trip Summary</h2>
+          <TripSummary />
         </div>
-      </div>
-
+        <div id="Accommodation">
+          <Accommodation />
+        </div>
+        <div id="TripBuddy">
+          <TripBuddy />
+        </div>
+        <div id="Notes">
+          <Notes />
+        </div>
+        <div id="Attachments">
+          <Attachments />
+        </div>
+      </main>
       {/* Modals */}
       {showLoginModal && (
         <Login
@@ -161,6 +136,63 @@ export const TripDetailsPage = () => {
           onAuthSuccess={handleAuthSuccess}
         />
       )}
-    </div>
+    </SidebarProvider>
   );
+
+  // return (
+  //   <div className="trip-details-container">
+  //     <Sidebar />
+  //     <div className="main-page">
+  //       <div className="content-wrapper">
+  //         <main>
+  //           <TripOverview
+  //             title="East Coast Road-Trip"
+  //             dateRange="19 June 2024 to 23 June 2024"
+  //             backgroundImage="../src/assets/Langkawi.jpg"
+  //             id="Overview"
+  //           />
+  //           <div id="TripSummary">
+  //           <h2 className="trip-summary-title">Trip Summary</h2>
+  //             <TripSummary/>
+  //           </div>
+  //           <div id="Accommodation">
+  //             <Accommodation/>
+  //           </div>
+  //           <div id="TripBuddy">
+  //             <TripBuddy />
+  //           </div>
+  //           <div id="Notes">
+  //             <Notes />
+  //           </div>
+  //           <div id="Attachments">
+  //             <Attachments />
+  //           </div>
+  //         </main>
+  //       </div>
+  //     </div>
+
+  //     {/* Modals */}
+  //     {showLoginModal && (
+  //       <Login
+  //         closeModal={handleCloseModal}
+  //         switchToRegister={() => {
+  //           setShowLoginModal(false);
+  //           setShowRegisterModal(true);
+  //         }}
+  //         onAuthSuccess={handleAuthSuccess}
+  //       />
+  //     )}
+
+  //     {showRegisterModal && (
+  //       <Register
+  //         closeModal={handleCloseModal}
+  //         switchToLogin={() => {
+  //           setShowRegisterModal(false);
+  //           setShowLoginModal(true);
+  //         }}
+  //         onAuthSuccess={handleAuthSuccess}
+  //       />
+  //     )}
+  //   </div>
+  // );
 };

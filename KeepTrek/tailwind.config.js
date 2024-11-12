@@ -62,7 +62,29 @@ export default {
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
   			}
-  		}
+  		},
+		
+		// font-baloo changes the font of text to baloo
+		// Add other fonts here
+		fontFamily: {
+			baloo: ['Baloo 2', 'sans-serif']
+		},
+		// Set default transition for collapsible to be ease-in/out
+		// https://github.com/shadcn-ui/ui/issues/2053 - Converted to JS code using Claude
+		keyframes: {
+			'collapsible-down': {
+				from: { height: '0' },
+				to: { height: 'var(--radix-collapsible-content-height)' },
+			},
+			'collapsible-up': {
+				from: { height: 'var(--radix-collapsible-content-height)' },
+				to: { height: '0' },
+			},
+		},
+		animation: {
+			'collapsible-down': 'collapsible-down 0.3s ease-out',
+			'collapsible-up': 'collapsible-up 0.3s ease-out',
+		},
   	}
   },
   plugins: [require("tailwindcss-animate")],

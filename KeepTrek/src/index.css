@@ -36,10 +36,14 @@ body {
   padding: 0;
 }
 
-/*Will probably need to edit this to get the right theme*/
+/*Will probably need to edit this to get the right theme
+hsl(0, 72%, 51%) - red
+hsl(341, 100%, 50%) - pink
+hsl(0, 0%, 100%) - white
+*/
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 0 0% 98%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
