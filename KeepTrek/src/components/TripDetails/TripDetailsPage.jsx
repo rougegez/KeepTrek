@@ -90,12 +90,14 @@ export const TripDetailsPage = () => {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main>
+      <main className="main-page">
+        {/* <SidebarTrigger /> 
+        A button to open/close sidebar
+        Need to change collapsible="none"*/}
         <TripOverview
           title="East Coast Road-Trip"
           dateRange="19 June 2024 to 23 June 2024"
           backgroundImage="../src/assets/Langkawi.jpg"
-          id="Overview"
         />
         <div id="TripSummary">
           <h2 className="trip-summary-title">Trip Summary</h2>

@@ -30,9 +30,9 @@
 }
 
 .main-page {
-  display: flex;
   min-height: 100vh;
-  padding-left: 16rem; /* Add padding equal to sidebar width */
+  padding-left: 10%;
+  padding-right: 10%;
 }
 
 .trip-details-container {

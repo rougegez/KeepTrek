@@ -63,7 +63,10 @@ export default {
   				ring: 'hsl(var(--sidebar-ring))'
   			}
   		},
-		
+		// KeepTrek shadow
+		dropShadow: {
+			'keepTrek': '0 10px 10px rgba(0, 0, 0, 0.25)'
+		},
 		// font-baloo changes the font of text to baloo
 		// Add other fonts here
 		fontFamily: {

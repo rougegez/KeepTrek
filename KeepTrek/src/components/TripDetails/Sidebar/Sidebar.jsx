@@ -21,6 +21,8 @@ import {
 }
   from "@/components/ui/collapsible";
 
+import {NavLink } from 'react-router-dom';
+
 // Overview items
 const OverviewItems = [
   {
@@ -71,30 +73,35 @@ const ItineraryItems = [
 
 export const AppSidebar = () => {
   return (
-    <Sidebar collapsible="none" className="h-screen bg-white">
+    <Sidebar collapsible="none" className="h-100 bg-white drop-shadow-keepTrek">
       <SidebarHeader>
         <a href="/"><img src='../src/assets/KeepTrek.png' alt="KeepTrek Logo" /></a>
         <span className="text-[32px] text-black font-semibold ml-4">Library</span>
       </SidebarHeader>
       <SidebarContent className="pl-2">
-
         {/* Overview */}
         <Collapsible defaultOpen className="group/collapsible">
           <SidebarGroup>
             <SidebarGroupLabel asChild className="mb-2">
               <CollapsibleTrigger>
-                <a className={styles.primaryItem} href="/trip-details/Ntei46ZcDkpqezzCjrH1">Overview</a> {/*Need to add logic for ID and
-                make it not reload the page when already on it*/}
-                <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                <NavLink className={({ isActive }) => 
+                `text-[24px] font-semibold text-black ${
+                isActive ? 
+                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#ff004f] rounded-[12px] items-center justify-start pl-4 pt-1"
+                 : 
+                ""}`}
+                 to="/trip-details/Ntei46ZcDkpqezzCjrH1">Overview</NavLink> {/*Need the logic for id*/}
+                <ChevronDown className="ml-auto 
+                transition-transform group-data-[state=open]/collapsible:rotate-180" />
               </CollapsibleTrigger>
             </SidebarGroupLabel>
             <CollapsibleContent>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {OverviewItems.map((item) => (
-                    <SidebarMenuItem key={item.title} className={styles.secondaryItem}>
+                  {OverviewItems.map((overviewItem) => (
+                    <SidebarMenuItem key={overviewItem.title} className={styles.secondaryItem}>
                       <SidebarMenuButton asChild>
-                        <span>{item.title}</span>
+                        <span>{overviewItem.title}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
@@ -108,7 +115,13 @@ export const AppSidebar = () => {
         <SidebarGroup>
           <SidebarGroupLabel asChild className="mb-2">
               <SidebarMenuButton>
-                <a className={styles.primaryItem} href="#">Destinations</a> {/*Link for Destinations*/}
+              <NavLink className={({ isActive }) => 
+                `text-[24px] font-semibold text-black ${
+                isActive ? 
+                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#ff004f] rounded-[12px] items-center justify-start pl-4 pt-1"
+                 : 
+                ""}`}
+                to="#">Destinations</NavLink> {/*Link for Destinations*/}
               </SidebarMenuButton>
           </SidebarGroupLabel>
         </SidebarGroup>
@@ -118,17 +131,23 @@ export const AppSidebar = () => {
           <SidebarGroup>
             <SidebarGroupLabel asChild className="mb-2">
               <CollapsibleTrigger>
-                <a className={styles.primaryItem} href="/itinerary">Itinerary</a>
+                <NavLink className={({ isActive }) => 
+                `text-[24px] font-semibold text-black ${
+                isActive ? 
+                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#ff004f] rounded-[12px] items-center justify-start pl-4 pt-1"
+                 : 
+                ""}`}
+                to="/itinerary">Itinerary</NavLink>
                 <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
               </CollapsibleTrigger>
             </SidebarGroupLabel>
             <CollapsibleContent>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {ItineraryItems.map((item) => (
-                    <SidebarMenuItem key={item.title} className={styles.secondaryItem}>
+                  {ItineraryItems.map((itineraryItem) => (
+                    <SidebarMenuItem key={itineraryItem.title} className={styles.secondaryItem}>
                       <SidebarMenuButton asChild>
-                        <span>{item.title}</span>
+                        <span>{itineraryItem.title}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
@@ -142,7 +161,13 @@ export const AppSidebar = () => {
         <SidebarGroup>
           <SidebarGroupLabel asChild className="mb-2">
               <SidebarMenuButton>
-                <a className={styles.primaryItem} href="#">Budget</a> {/*Link for Budget*/}
+                <NavLink className={({ isActive }) => 
+                `text-[24px] font-semibold text-black ${
+                isActive ? 
+                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#ff004f] rounded-[12px] items-center justify-start pl-4 pt-1"
+                 : 
+                ""}`}
+                to="/expense-splitting">Budget</NavLink> {/*Link for Budget*/}
               </SidebarMenuButton>
           </SidebarGroupLabel>
         </SidebarGroup>
@@ -151,11 +176,16 @@ export const AppSidebar = () => {
         <SidebarGroup>
           <SidebarGroupLabel asChild className="mb-2">
               <SidebarMenuButton>
-                <a className={styles.primaryItem} href="#">Wishlist</a> {/*Link for Wishlist*/}
+                <NavLink className={({ isActive }) => 
+                `text-[24px] font-semibold text-black ${
+                isActive ? 
+                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#ff004f] rounded-[12px] items-center justify-start pl-4 pt-1"
+                 : 
+                ""}`}
+                to="#">Wishlist</NavLink> {/*Link for Wishlist*/}
               </SidebarMenuButton>
           </SidebarGroupLabel>
         </SidebarGroup>
-
       </SidebarContent>
     </Sidebar>
   )
