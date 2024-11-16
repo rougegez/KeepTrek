@@ -8,7 +8,7 @@ import "./TripDetailsPage.css";
 import { Login } from "../Authentication/Login";
 import { Register } from "../Authentication/Register";
 
-import AppSidebar from "./Sidebar/Sidebar.jsx";
+import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 
 import TripBuddy from "./TripBuddy/TripBuddy.jsx";
