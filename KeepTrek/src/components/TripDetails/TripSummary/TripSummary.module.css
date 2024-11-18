@@ -28,11 +28,19 @@
   align-items: center;
   padding: 0.75rem;
   border-radius: 9999px;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.dateItem:hover{
+  background-color: #e5e7eb;
+  transform: scale(1.05);
 }
 
 .dateItemActive {
   background-color: #ff004f;
   color: white;
+  
 }
 
 .dateItemInactive {
@@ -72,6 +80,36 @@
 .dayNumber {
   font-size: 1.5rem;
   font-weight: 700;
+}
+/* Animation Classes */
+.highlightsContainer.slide-left {
+  animation: slideLeft 0.3s forwards;
+}
+
+.highlightsContainer.slide-right {
+  animation: slideRight 0.3s forwards;
+}
+
+@keyframes slideLeft {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideRight {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 .travelCard {
@@ -196,4 +234,100 @@
   width: 1px;
   background-color: #e5e7eb;
   align-self: stretch;
+}
+
+.dayTravelSection {
+  display: flex;
+  align-items: stretch;
+  gap: 1rem; /* This adds spacing between the dayIndicator and travelCard */
+  margin-top: 1rem; /* Optional: adds some spacing between sections */
+}
+
+.dayIndicator {
+  width: 20%;
+  background-color: #ff004f;
+  color: white;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 2px 4px 4px rgba(185, 185, 185, 0.25);
+  margin-right: 1rem; /* Adds space to the right of the Day 1 box */
+}
+
+.dayNumber {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.travelCard {
+  width: 80%;
+  background-color: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 2px 4px 4px rgba(185, 185, 185, 0.25);
+}
+
+.travelPath {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.travelDash {
+  flex: 1;
+  margin: 0 1rem;
+  border-top: 2px dashed rgb(209 213 219);
+  position: relative;
+}
+
+.travelIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.locationName {
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+.dayTravelContainer {
+  display: flex;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+/* Add animations */
+.dayTravelContainer.slide-left {
+  animation: slideLeft 0.3s forwards;
+}
+
+.dayTravelContainer.slide-right {
+  animation: slideRight 0.3s forwards;
+}
+
+/* Reuse the same keyframes as highlightsContainer */
+@keyframes slideLeft {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideRight {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
