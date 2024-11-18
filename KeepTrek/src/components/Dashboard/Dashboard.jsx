@@ -1,11 +1,11 @@
 // src/components/Dashboard/Dashboard.jsx
 import React, { useEffect, useState } from "react";
-import { firestore, auth } from "../../firebaseConfig";
-import { collection, query, getDocs } from "firebase/firestore";
-import { signOut, onAuthStateChanged } from "firebase/auth";
+// import { firestore, auth } from "../../firebaseConfig";
+// import { collection, query, getDocs } from "firebase/firestore";
+// import { signOut, onAuthStateChanged } from "firebase/auth";
 import "./Dashboard.css";
-import { Login } from "../Authentication/Login.jsx";
-import { Register } from "../Authentication/Register.jsx";
+// import { Login } from "../Authentication/Login.jsx";
+// import { Register } from "../Authentication/Register.jsx";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import KeepTrek from "../../assets/KeepTrek.png";
 import { PersonIcon } from "@primer/octicons-react";

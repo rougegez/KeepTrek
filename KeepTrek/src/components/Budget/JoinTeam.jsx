@@ -1,8 +1,8 @@
 // src/components/Budget/JoinTeam.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { auth, firestore } from "../../firebaseConfig";
-import { doc, getDoc, updateDoc, arrayUnion, setDoc } from "firebase/firestore";
+// import { auth, firestore } from "../../firebaseConfig";
+// import { doc, getDoc, updateDoc, arrayUnion, setDoc } from "firebase/firestore";
 import "./JoinTeam.css";
 
 export const JoinTeam = () => {

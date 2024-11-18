@@ -1,10 +1,10 @@
 // src/components/GrpSchedule/ScheduleSummary.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { firestore, auth } from "../../firebaseConfig";
-import { collection, getDocs } from "firebase/firestore";
-import { Login } from "../Authentication/Login";
-import { Register } from "../Authentication/Register";
+// import { firestore, auth } from "../../firebaseConfig";
+// import { collection, getDocs } from "firebase/firestore";
+// import { Login } from "../Authentication/Login";
+// import { Register } from "../Authentication/Register";
 import "./ScheduleSummary.css";
 import KeepTrek from "../../assets/KeepTrek.png";
 

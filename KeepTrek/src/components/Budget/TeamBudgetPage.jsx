@@ -3,17 +3,17 @@ import React, { useEffect, useState } from "react";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Pie } from "react-chartjs-2";
 ChartJS.register(ArcElement, Tooltip, Legend);
-import { firestore, auth } from "../../firebaseConfig";
-import {
-  collection,
-  addDoc,
-  doc,
-  getDoc,
-  getDocs,
-  setDoc,
-  updateDoc,
-  arrayUnion,
-} from "firebase/firestore";
+// import { firestore, auth } from "../../firebaseConfig";
+// import {
+//   collection,
+//   addDoc,
+//   doc,
+//   getDoc,
+//   getDocs,
+//   setDoc,
+//   updateDoc,
+//   arrayUnion,
+// } from "firebase/firestore";
 import { useNavigate, useParams } from "react-router-dom";
 import KeepTrek from "../../assets/KeepTrek.png";
 import "./TeamBudgetPage.css";

@@ -3,9 +3,7 @@ import React, { useState, useEffect } from "react";
 import KeepTrek from "../../assets/KeepTrek.png";
 import { PersonIcon } from "@primer/octicons-react";
 import "./LandingPage.css";
-import { Login } from "../Authentication/Login.jsx";
-import { Register } from "../Authentication/Register.jsx";
-import { auth } from "../../firebaseConfig";
+
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 

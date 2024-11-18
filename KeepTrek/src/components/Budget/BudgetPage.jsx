@@ -1,11 +1,11 @@
 // src/components/Budget/BudgetPage.jsx
 import React, { useEffect, useState } from "react";
-import { auth, firestore } from "../../firebaseConfig"; // Import 'firestore'
-import { collection, addDoc, doc, setDoc } from "firebase/firestore";
+// import { auth, firestore } from "../../firebaseConfig"; // Import 'firestore'
+// import { collection, addDoc, doc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import KeepTrek from "../../assets/KeepTrek.png";
-import { Login } from "../Authentication/Login.jsx";
-import { Register } from "../Authentication/Register.jsx";
+// import { Login } from "../Authentication/Login.jsx";
+// import { Register } from "../Authentication/Register.jsx";
 import "./BudgetPage.css";
 import TeamNameModal from "./TeamNameModal.jsx";
 

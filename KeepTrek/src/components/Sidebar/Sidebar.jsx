@@ -1,7 +1,5 @@
 import styles from './Sidebar.module.css'
 import { ChevronDown } from "lucide-react";
-
-
 import {
   Sidebar,
   SidebarContent,
@@ -73,7 +71,7 @@ const ItineraryItems = [
 
 export const AppSidebar = () => {
   return (
-    <Sidebar collapsible="none" className="h-100 bg-white drop-shadow-keepTrek">
+    <Sidebar collapsible="none" className="h-screen sticky top-0 bg-white drop-shadow-keepTrek overflow-y-auto z-50">
       <SidebarHeader>
         <a href="/"><img src='../src/assets/KeepTrek.png' alt="KeepTrek Logo" /></a>
         <span className="text-[32px] text-black font-semibold ml-4">Library</span>

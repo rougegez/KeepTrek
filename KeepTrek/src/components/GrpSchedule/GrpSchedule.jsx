@@ -5,10 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { PersonIcon } from "@primer/octicons-react";
 import KeepTrek from "../../assets/KeepTrek.png";
 import "./GrpSchedule.css";
-import { firestore, auth } from "../../firebaseConfig";
-import { doc, setDoc, getDoc } from "firebase/firestore"; // Import getDoc for fetching existing data
-import { Login } from "../Authentication/Login";
-import { Register } from "../Authentication/Register";
+// import { firestore, auth } from "../../firebaseConfig";
+// import { doc, setDoc, getDoc } from "firebase/firestore"; // Import getDoc for fetching existing data
+// import { Login } from "../Authentication/Login";
+// import { Register } from "../Authentication/Register";
 
 export const GrpSchedule = () => {
   const navigate = useNavigate();

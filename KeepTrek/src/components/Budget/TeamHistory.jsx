@@ -1,14 +1,14 @@
 // src/components/Budget/TeamHistory.jsx
 import React, { useEffect, useState } from "react";
-import { auth, firestore } from "../../firebaseConfig";
-import {
-  getDocs,
-  collection,
-  query,
-  where,
-  doc,
-  getDoc,
-} from "firebase/firestore";
+// import { auth, firestore } from "../../firebaseConfig";
+// import {
+//   getDocs,
+//   collection,
+//   query,
+//   where,
+//   doc,
+//   getDoc,
+// } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import KeepTrek from "../../assets/KeepTrek.png";
 import "./TeamHistory.css";

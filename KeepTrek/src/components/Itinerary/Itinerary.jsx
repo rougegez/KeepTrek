@@ -1,19 +1,19 @@
 // src/components/Itinerary/Itinerary.jsx
 
-import React, { useState, useEffect } from "react";
-import { firestore, auth } from "../../firebaseConfig";
-import {
-  collection,
-  query,
-  onSnapshot,
-  addDoc,
-  getDocs,
-} from "firebase/firestore";
+// import React, { useState, useEffect } from "react";
+// import { firestore, auth } from "../../firebaseConfig";
+// import {
+//   collection,
+//   query,
+//   onSnapshot,
+//   addDoc,
+//   getDocs,
+// } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import KeepTrek from "../../assets/KeepTrek.png";
 import "./Itinerary.css";
-import { Login } from "../Authentication/Login";
-import { Register } from "../Authentication/Register";
+// import { Login } from "../Authentication/Login";
+// import { Register } from "../Authentication/Register";
 
 export const Itinerary = () => {
   const [tripName, setTripName] = useState("");
@@ -258,3 +258,5 @@ export const Itinerary = () => {
     </>
   );
 };
+
+export default Itinerary;

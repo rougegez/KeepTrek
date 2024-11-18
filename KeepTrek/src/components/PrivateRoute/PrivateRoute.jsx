@@ -1,27 +1,27 @@
-// src/components/PrivateRoute/PrivateRoute.jsx
-import React, { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
-import { auth } from "../../firebaseConfig";
-import { onAuthStateChanged } from "firebase/auth";
+// // src/components/PrivateRoute/PrivateRoute.jsx
+// import React, { useEffect, useState } from "react";
+// import { Navigate } from "react-router-dom";
+// import { auth } from "../../firebaseConfig";
+// import { onAuthStateChanged } from "firebase/auth";
 
-const PrivateRoute = ({ children }) => {
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
+// const PrivateRoute = ({ children }) => {
+//   const [loading, setLoading] = useState(true);
+//   const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
+//   useEffect(() => {
+//     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+//       setUser(currentUser);
+//       setLoading(false);
+//     });
 
-    return () => unsubscribe();
-  }, []);
+//     return () => unsubscribe();
+//   }, []);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+//   if (loading) {
+//     return <div>Loading...</div>;
+//   }
 
-  return user ? children : <Navigate to="/" replace />;
-};
+//   return user ? children : <Navigate to="/" replace />;
+// };
 
-export default PrivateRoute;
+// export default PrivateRoute;
