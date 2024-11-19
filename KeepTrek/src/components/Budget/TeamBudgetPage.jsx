@@ -1,163 +1,53 @@
-// src/components/Budget/TeamBudgetPage.jsx
-import React, { useEffect, useState } from "react";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { Pie } from "react-chartjs-2";
-ChartJS.register(ArcElement, Tooltip, Legend);
-// import { firestore, auth } from "../../firebaseConfig";
-// import {
-//   collection,
-//   addDoc,
-//   doc,
-//   getDoc,
-//   getDocs,
-//   setDoc,
-//   updateDoc,
-//   arrayUnion,
-// } from "firebase/firestore";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useState } from "react";
 import KeepTrek from "../../assets/KeepTrek.png";
 import "./TeamBudgetPage.css";
 
+import AppSidebar from "../Sidebar/Sidebar.jsx";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { PieChart, Pie, Cell, Tooltip, Label } from "recharts";
+
 export const TeamBudgetPage = () => {
-  const [user, setUser] = useState(null);
-  const [teamName, setTeamName] = useState("");
-  const [teamMembers, setTeamMembers] = useState([]);
-  const [expenses, setExpenses] = useState([]);
-  const [expenseInput, setExpenseInput] = useState({
-    date: "",
-    description: "",
-    amount: "",
-    category: "",
-    youOwe: "",
+  const [user] = useState({
+    uid: "123",
+    displayName: "John Doe",
+    email: "john@example.com",
   });
-  const [selectedTeamMember, setSelectedTeamMember] = useState("");
-  const [teamLink, setTeamLink] = useState("");
-  const [showTeamDropdown, setShowTeamDropdown] = useState(false);
+  const [teamName] = useState("Team Alpha");
+  const [teamMembers] = useState([
+    { id: "1", displayName: "Alice" },
+    { id: "2", displayName: "Bob" },
+    { id: "3", displayName: "Charlie" },
+  ]);
+  const [expenses] = useState([
+    {
+      date: "2023-11-01",
+      description: "Hotel",
+      amount: 500,
+      category: "Stay",
+      youOwe: 200,
+    },
+    {
+      date: "2023-11-02",
+      description: "Dinner",
+      amount: 150,
+      category: "Food",
+      youOwe: 50,
+    },
+    {
+      date: "2023-11-03",
+      description: "Taxi",
+      amount: 100,
+      category: "Transport",
+      youOwe: 40,
+    },
+  ]);
+  const [teamLink] = useState("https://example.com/join-team/dummyTeamId");
+  const [showExpenseModal, setShowExpenseModal] = useState(false);
+  const [activeChart, setActiveChart] = useState("breakdown");
 
-  const navigate = useNavigate();
-  const { teamId } = useParams();
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        await fetchTeamData(teamId);
-        await fetchExpenses(currentUser.uid);
-      } else {
-        setUser(null);
-        navigate("/expense-splitting");
-      }
-    });
-
-    return () => unsubscribe();
-  }, [teamId]);
-
-  const fetchTeamData = async (teamId) => {
-    try {
-      const teamRef = doc(firestore, "teams", teamId);
-      const teamDoc = await getDoc(teamRef);
-
-      if (teamDoc.exists()) {
-        const teamData = teamDoc.data();
-        setTeamName(teamData.name || "");
-
-        const memberIds = teamData.members;
-        // Fetch user data for each member
-        const members = [];
-        for (const memberId of memberIds) {
-          const memberRef = doc(firestore, "users", memberId);
-          const memberDoc = await getDoc(memberRef);
-          if (memberDoc.exists()) {
-            members.push({ id: memberId, ...memberDoc.data() });
-          }
-        }
-
-        setTeamMembers(members);
-      } else {
-        alert("Team does not exist.");
-        navigate("/expense-splitting");
-      }
-    } catch (error) {
-      console.error("Error fetching team data:", error);
-      alert("Failed to load team data.");
-      navigate("/expense-splitting");
-    }
-  };
-
-  const fetchExpenses = async (userId) => {
-    try {
-      const expensesRef = collection(firestore, "users", userId, "expenses");
-      const expensesSnapshot = await getDocs(expensesRef);
-      const expensesData = expensesSnapshot.docs.map((doc) => doc.data());
-      setExpenses(expensesData);
-    } catch (error) {
-      console.error("Error fetching expenses:", error);
-    }
-  };
-
-  const generateTeamLink = () => {
-    const link = `${window.location.origin}/join-team/${teamId}`;
-    setTeamLink(link);
-    navigator.clipboard.writeText(link);
-    alert("Team invite link copied to clipboard!");
-  };
-
-  const handleExpenseSubmit = async () => {
-    const { date, description, amount, category, youOwe } = expenseInput;
-
-    if (
-      !date ||
-      !description ||
-      !amount ||
-      !category ||
-      !youOwe ||
-      !selectedTeamMember
-    ) {
-      alert("Please fill out all fields including team member.");
-      return;
-    }
-
-    const newExpense = {
-      ...expenseInput,
-      amount: parseFloat(expenseInput.amount),
-      youOwe: parseFloat(expenseInput.youOwe),
-      userId: user.uid,
-      teamMember: selectedTeamMember,
-      timestamp: new Date(),
-    };
-
-    try {
-      await addDoc(
-        collection(firestore, "users", user.uid, "expenses"),
-        newExpense
-      );
-      setExpenses([...expenses, newExpense]);
-      setExpenseInput({
-        date: "",
-        description: "",
-        amount: "",
-        category: "",
-        youOwe: "",
-      });
-      setSelectedTeamMember("");
-      alert("Expense added successfully!");
-    } catch (error) {
-      console.error("Error adding expense: ", error);
-      alert("Failed to add expense. Please try again.");
-    }
-  };
-
-  const handleInputChange = (e) => {
-    setExpenseInput({ ...expenseInput, [e.target.name]: e.target.value });
-  };
-
-  const handleAddExpense = () => {
-    handleExpenseSubmit();
-  };
-
-  const totalCost = expenses.reduce((acc, expense) => acc + expense.amount, 0);
-  const yourCost = expenses.reduce((acc, expense) => acc + expense.youOwe, 0);
-  const youOwed = totalCost - yourCost;
+  const totalCost = 1346;
+  const yourCost = 273;
+  const youOwed = 751;
 
   const categories = [
     "Stay",
@@ -167,196 +57,249 @@ export const TeamBudgetPage = () => {
     "Shopping",
     "Others",
   ];
+  const categoryColors = [
+    "#a569bd",
+    "#27ae60",
+    "#5dade2",
+    "#82e0aa",
+    "#b2babb",
+    "#e74c3c",
+  ];
+  const chartDataBreakdown = categories.map((category, index) => {
+    return {
+      name: category,
+      value: Math.random() * 200, // Random value for demo purposes
+      fill: categoryColors[index],
+    };
+  });
 
-  // Prepare the chart data
-  const chartData = {
-    labels: categories,
-    datasets: [
-      {
-        data: categories.map((category) =>
-          expenses
-            .filter((expense) => expense.category === category)
-            .reduce((acc, expense) => acc + expense.amount, 0)
-        ),
-        backgroundColor: [
-          "#4CAF50",
-          "#FFCE56",
-          "#FF6384",
-          "#36A2EB",
-          "#FD6B19",
-          "#E0E4CC",
-        ],
-      },
-    ],
-  };
+  const chartDataSettleUp = [
+    { name: "Paid Amount", value: totalCost, fill: "#36A2EB" },
+    { name: "Pending Amount", value: youOwed, fill: "#FF6384" },
+  ];
+
+  const chartData =
+    activeChart === "settleUp" ? chartDataSettleUp : chartDataBreakdown;
 
   return (
-    <>
-      <header id="grp-header" className="grp-navbar">
-        <div className="grp-container">
-          <div className="grp-navbar-left">
-            <button onClick={() => navigate("/")} className="grp-logo-btn">
-              <img src={KeepTrek} alt="KeepTrek Logo" className="grp-logo" />
-            </button>
-            <button
-              onClick={() => navigate("/itinerary")}
-              className="grp-nav-link"
-            >
-              Itinerary
-            </button>
-            <button
-              onClick={() => navigate("/schedule")}
-              className="grp-nav-link"
-            >
-              Group Scheduling
-            </button>
-          </div>
-          <div className="grp-navbar-right">
-            <button onClick={() => navigate("#")} className="grp-nav-link">
-              How it Works
-            </button>
-            <button
-              onClick={() => navigate("/schedule-summary")}
-              className="grp-nav-link"
-            >
-              History
-            </button>
-            {user ? (
-              <button
-                className="grp-profile-btn"
-                onClick={() => auth.signOut()}
-              >
-                Logout
-              </button>
-            ) : (
-              <button
-                className="grp-profile-btn"
-                onClick={() => navigate("/expense-splitting")}
-              >
-                Login
-              </button>
-            )}
-          </div>
-        </div>
-      </header>
-
-      <div className="team-budget-page">
-        <div className="team-header">
-          <h2>Team: {teamName}</h2>
-          <button className="budget-btn-secondary" onClick={generateTeamLink}>
-            Generate Team Invite Link
-          </button>
-          <button
-            className="budget-btn-secondary"
-            onClick={() => setShowTeamDropdown(!showTeamDropdown)}
-          >
-            {showTeamDropdown ? "Hide Team Members" : "Show Team Members"}
-          </button>
-          {showTeamDropdown && (
-            <div className="team-members-dropdown">
-              <h4>Team Members:</h4>
-              {teamMembers.length > 0 ? (
-                <ul>
-                  {teamMembers.map((member, index) => (
-                    <li key={index}>
-                      {member.displayName || member.email} ({member.email})
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No team members yet</p>
-              )}
+    <SidebarProvider>
+      <AppSidebar />
+      <main className="team-budget-page">
+        <div className="budget-container">
+          <div className="left-section">
+            <div className="budget-summary">
+              <div className="summary-card new-summary-layout">
+                <div className="summary-item total-cost">
+                  <h3>RM {totalCost.toFixed(2)}</h3>
+                  <p>Total Trip Cost</p>
+                </div>
+                <div className="summary-item your-cost">
+                  <p>Your Cost</p>
+                  <h3>RM {yourCost.toFixed(2)}</h3>
+                </div>
+                <div className="summary-item owed">
+                  <p>You are owed:</p>
+                  <h3>RM {youOwed.toFixed(2)}</h3>
+                </div>
+              </div>
             </div>
-          )}
-        </div>
 
-        <div className="budget-summary">
-          <h2>Total Trip Cost: RM {totalCost.toFixed(2)}</h2>
-          <p>Your Cost: RM {yourCost.toFixed(2)}</p>
-          <p>You Are Owed: RM {youOwed.toFixed(2)}</p>
-        </div>
+            <div className="budget-expenses-section">
+              <div className="expenses-header">
+                <h3>Expenses</h3>
+                <button
+                  className="add-expense-btn"
+                  onClick={() => setShowExpenseModal(true)}
+                >
+                  + Expense
+                </button>
+              </div>
+              <ul className="budget-expenses-list">
+                {expenses.map((expense, index) => (
+                  <li key={index} className="expense-item">
+                    <div className="expense-date">
+                      <span>{expense.date}</span>
+                    </div>
+                    <div className="expense-description">
+                      <p>{expense.description}</p>
+                      <span>Paid by: {user?.displayName || user?.email}</span>
+                    </div>
+                    <div className="expense-amount">
+                      <h4>RM {expense.amount.toFixed(2)}</h4>
+                      <span
+                        className={`owe-info ${
+                          expense.youOwe > 0 ? "you-owe" : "you-lent"
+                        }`}
+                      >
+                        {expense.youOwe > 0
+                          ? `You Owe: RM ${expense.youOwe.toFixed(2)}`
+                          : `You lent: RM ${(
+                              expense.amount - expense.youOwe
+                            ).toFixed(2)}`}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
 
-        <div className="budget-expense-input">
-          <h3>Add an Expense</h3>
-          <input
-            type="date"
-            name="date"
-            value={expenseInput.date}
-            onChange={handleInputChange}
-            placeholder="mm/dd/yyyy"
-          />
-          <input
-            type="text"
-            name="description"
-            value={expenseInput.description}
-            onChange={handleInputChange}
-            placeholder="Description"
-          />
-          <input
-            type="number"
-            name="amount"
-            value={expenseInput.amount}
-            onChange={handleInputChange}
-            placeholder="Amount"
-          />
-          <select
-            name="category"
-            value={expenseInput.category}
-            onChange={handleInputChange}
-          >
-            <option value="">Select Category</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-          <input
-            type="number"
-            name="youOwe"
-            value={expenseInput.youOwe}
-            onChange={handleInputChange}
-            placeholder="You Owe"
-          />
-          <select
-            name="teamMember"
-            value={selectedTeamMember}
-            onChange={(e) => setSelectedTeamMember(e.target.value)}
-          >
-            <option value="">Select Team Member</option>
-            {teamMembers.map((member) => (
-              <option key={member.id} value={member.id}>
-                {member.displayName || member.email}
-              </option>
-            ))}
-          </select>
-          <button className="budget-btn-primary" onClick={handleAddExpense}>
-            Add Expense
-          </button>
-        </div>
-
-        <div className="budget-expenses-section">
-          <h3>Expenses</h3>
-          <ul className="budget-expenses-list">
-            {expenses.map((expense, index) => (
-              <li key={index}>
-                <span>{expense.date}</span>
-                <span>{expense.description}</span>
-                <span>RM {expense.amount.toFixed(2)}</span>
-                <span>You Owe: RM {expense.youOwe.toFixed(2)}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="budget-expense-breakdown">
-          <h3>Expense Breakdown</h3>
-          <div className="budget-pie-chart">
-            {/* Render the Pie chart */}
-            <Pie data={chartData} />
+          <div className="right-section">
+            <div className="budget-expense-breakdown">
+              <div className="chart-nav">
+                <button
+                  className={`chart-nav-btn ${
+                    activeChart === "settleUp" ? "active" : ""
+                  }`}
+                  onClick={() => setActiveChart("settleUp")}
+                >
+                  Settle Up
+                </button>
+                <button
+                  className={`chart-nav-btn ${
+                    activeChart === "breakdown" ? "active" : ""
+                  }`}
+                  onClick={() => setActiveChart("breakdown")}
+                >
+                  Breakdown
+                </button>
+              </div>
+              <div
+                className="budget-pie-chart"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                <PieChart width={300} height={300} className="chart-center">
+                  <Pie
+                    data={chartData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={80}
+                    outerRadius={120}
+                    fill="#8884d8"
+                    labelLine={false}
+                  >
+                    <Label
+                      value={
+                        activeChart === "breakdown"
+                          ? "Expense Breakdown"
+                          : `RM ${totalCost.toFixed(2)}`
+                      }
+                      position="center"
+                      className="chart-center-label"
+                      style={{
+                        fontSize: "16px",
+                        fontWeight: "bold",
+                        textAlign: "center",
+                        fill: "#333",
+                      }}
+                    />
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => `RM ${value.toFixed(2)}`} />
+                </PieChart>
+                <div
+                  className="chart-legend"
+                  style={{ marginTop: "20px", textAlign: "center" }}
+                >
+                  {chartData.map((entry, index) => (
+                    <div key={index} className="legend-item">
+                      <span
+                        className="legend-color"
+                        style={{ backgroundColor: entry.fill }}
+                      ></span>
+                      <span>
+                        {entry.name}: RM {entry.value.toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="settle-summary-box">
+              {teamMembers.map((member) => (
+                <div className="settle-item" key={member.id}>
+                  <span>{member.displayName || member.email} </span>{" "}
+                  <span>
+                    owes you: RM {(youOwed / teamMembers.length).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+              <div className="settled-item">
+                <span>{user?.displayName || user?.email} has settled </span>
+                <span>Total: RM {yourCost.toFixed(2)}</span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </>
+
+        {showExpenseModal && (
+          <div className="expense-modal">
+            <div className="expense-modal-content">
+              <h3>Add an Expense</h3>
+              <input
+                type="date"
+                name="date"
+                value="2023-11-10"
+                placeholder="Date"
+              />
+              <input
+                type="text"
+                name="description"
+                value="Random Expense"
+                placeholder="Description"
+              />
+              <input
+                type="number"
+                name="amount"
+                value="123"
+                placeholder="Amount"
+              />
+              <select name="category" value="Food">
+                <option value="">Select Category</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="number"
+                name="youOwe"
+                value="50"
+                placeholder="You Owe"
+              />
+              <select name="teamMember" value={teamMembers[0].id}>
+                <option value="">Who Do You Owe</option>
+                {teamMembers.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.displayName || member.email}
+                  </option>
+                ))}
+              </select>
+              <button
+                className="budget-btn-primary"
+                onClick={() => setShowExpenseModal(false)}
+              >
+                Add Expense
+              </button>
+              <button
+                className="budget-btn-secondary"
+                onClick={() => setShowExpenseModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
+    </SidebarProvider>
   );
 };

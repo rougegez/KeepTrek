@@ -18,22 +18,21 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<TripDetailsPage />} />
-        <Route path="/dashboard" element={<Dashboard />}/>
-        <Route path="/itinerary" element={<Itinerary />}/>
-        <Route path="/schedule" element={<GrpSchedule />}/>
-        <Route path="/expense-splitting" element={<BudgetPage />}/>
-        <Route path="/teams/:teamId" element={<TeamBudgetPage />}/>
-        <Route path="/team-history" element={<TeamHistory />}/>
-        <Route path="/schedule-summary" element={<ScheduleSummary />}/>
-        <Route path="/trip-details/:id" element={<TripDetailsPage />}/>
-        <Route path="/join-team/:teamId" element={<JoinTeam />}/>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/itinerary" element={<Itinerary />} />
+        <Route path="/schedule" element={<GrpSchedule />} />
+        <Route path="/expense-splitting" element={<TeamBudgetPage />} />
+        <Route path="/teams/:teamId" element={<TeamBudgetPage />} />
+        <Route path="/team-history" element={<TeamHistory />} />
+        <Route path="/schedule-summary" element={<ScheduleSummary />} />
+        <Route path="/trip-details/:id" element={<TripDetailsPage />} />
+        <Route path="/join-team/:teamId" element={<JoinTeam />} />
       </Routes>
     </Router>
   );
 }
 
 export default App;
-
 
 // // src/App.js
 // import React from "react";
