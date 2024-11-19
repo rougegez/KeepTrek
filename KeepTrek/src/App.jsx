@@ -12,6 +12,7 @@ import { TeamHistory } from "./components/Budget/TeamHistory.jsx"; // Import Tea
 import Dashboard from "./components/Dashboard/Dashboard.jsx";
 // import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx";
 import { JoinTeam } from "./components/Budget/JoinTeam.jsx";
+import ItineraryWL from "./components/ItineraryWL/ItineraryWL.jsx";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/schedule-summary" element={<ScheduleSummary />}/>
         <Route path="/trip-details/:id" element={<TripDetailsPage />}/>
         <Route path="/join-team/:teamId" element={<JoinTeam />}/>
+        <Route path="/itineraryWL" element={<ItineraryWL />}/>
       </Routes>
     </Router>
   );
