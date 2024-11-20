@@ -57,7 +57,7 @@ export const TripDetailsPage = () => {
     <SidebarProvider>
       <AppSidebar />
       <main className="main-page">
-        {/* <SidebarTrigger /> */}
+        <SidebarTrigger />
         <TripOverview
           title={itinerary.title}
           dateRange={itinerary.dateRange}

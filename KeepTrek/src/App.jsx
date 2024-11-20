@@ -12,12 +12,15 @@ import { TeamHistory } from "./components/OldBudget.jsx/TeamHistory.jsx"; // Imp
 import Dashboard from "./components/Dashboard/Dashboard.jsx";
 // import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx";
 import { JoinTeam } from "./components/OldBudget.jsx/JoinTeam.jsx";
+import ItineraryWL from "./components/ItineraryWL/ItineraryWL.jsx";
+
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<TripDetailsPage />} />
+
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/itinerary" element={<Itinerary />} />
         <Route path="/schedule" element={<GrpSchedule />} />
@@ -27,6 +30,7 @@ function App() {
         <Route path="/schedule-summary" element={<ScheduleSummary />} />
         <Route path="/trip-details/:id" element={<TripDetailsPage />} />
         <Route path="/join-team/:teamId" element={<JoinTeam />} />
+        <Route path="/itineraryWL" element={<ItineraryWL />}/>
       </Routes>
     </Router>
   );

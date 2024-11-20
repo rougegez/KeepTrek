@@ -71,7 +71,7 @@ const ItineraryItems = [
 
 export const AppSidebar = () => {
   return (
-    <Sidebar collapsible="none" className="h-screen sticky top-0 bg-white drop-shadow-keepTrek overflow-y-auto z-50">
+    <Sidebar className="h-screen sticky top-0 bg-white drop-shadow-keepTrek overflow-y-auto z-50">
       <SidebarHeader>
         <a href="/"><img src='../src/assets/KeepTrek.png' alt="KeepTrek Logo" /></a>
         <span className="text-[32px] text-black font-semibold ml-4">Library</span>
@@ -88,7 +88,7 @@ export const AppSidebar = () => {
                 "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#ff004f] rounded-[12px] items-center justify-start pl-4 pt-1"
                  : 
                 ""}`}
-                 to="/trip-details/Ntei46ZcDkpqezzCjrH1">Overview</NavLink> {/*Need the logic for id*/}
+                 to="/">Overview</NavLink> {/*Need the logic for id*/}
                 <ChevronDown className="ml-auto 
                 transition-transform group-data-[state=open]/collapsible:rotate-180" />
               </CollapsibleTrigger>
@@ -135,7 +135,8 @@ export const AppSidebar = () => {
                 "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#ff004f] rounded-[12px] items-center justify-start pl-4 pt-1"
                  : 
                 ""}`}
-                to="/ItineraryWL">Itinerary</NavLink>
+                to="/itineraryWL">Itinerary</NavLink>
+
                 <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
               </CollapsibleTrigger>
             </SidebarGroupLabel>
