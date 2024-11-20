@@ -6,28 +6,30 @@ import { TripDetailsPage } from "./components/TripDetails/TripDetailsPage.jsx";
 import { LandingPage } from "./components/LandingPage/LandingPage.jsx";
 import { GrpSchedule } from "./components/GrpSchedule/GrpSchedule.jsx";
 import { ScheduleSummary } from "./components/GrpSchedule/ScheduleSummary";
-import { BudgetPage } from "./components/Budget/BudgetPage.jsx";
-import { TeamBudgetPage } from "./components/Budget/TeamBudgetPage.jsx"; // Import TeamBudgetPage
-import { TeamHistory } from "./components/Budget/TeamHistory.jsx"; // Import TeamHistory
+import { BudgetPage } from "./components/OldBudget.jsx/BudgetPage.jsx";
+import TeamBudgetPage from "./components/Budget/TeamBudgetPage.jsx"; // Import TeamBudgetPage
+import { TeamHistory } from "./components/OldBudget.jsx/TeamHistory.jsx"; // Import TeamHistory
 import Dashboard from "./components/Dashboard/Dashboard.jsx";
 // import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx";
-import { JoinTeam } from "./components/Budget/JoinTeam.jsx";
+import { JoinTeam } from "./components/OldBudget.jsx/JoinTeam.jsx";
 import ItineraryWL from "./components/ItineraryWL/ItineraryWL.jsx";
+
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<TripDetailsPage />} />
-        <Route path="/dashboard" element={<Dashboard />}/>
-        <Route path="/itinerary" element={<Itinerary />}/>
-        <Route path="/schedule" element={<GrpSchedule />}/>
-        <Route path="/expense-splitting" element={<BudgetPage />}/>
-        <Route path="/teams/:teamId" element={<TeamBudgetPage />}/>
-        <Route path="/team-history" element={<TeamHistory />}/>
-        <Route path="/schedule-summary" element={<ScheduleSummary />}/>
-        <Route path="/trip-details/:id" element={<TripDetailsPage />}/>
-        <Route path="/join-team/:teamId" element={<JoinTeam />}/>
+
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/itinerary" element={<Itinerary />} />
+        <Route path="/schedule" element={<GrpSchedule />} />
+        <Route path="/expense-splitting" element={<TeamBudgetPage />} />
+        <Route path="/teams/:teamId" element={<TeamBudgetPage />} />
+        <Route path="/team-history" element={<TeamHistory />} />
+        <Route path="/schedule-summary" element={<ScheduleSummary />} />
+        <Route path="/trip-details/:id" element={<TripDetailsPage />} />
+        <Route path="/join-team/:teamId" element={<JoinTeam />} />
         <Route path="/itineraryWL" element={<ItineraryWL />}/>
       </Routes>
     </Router>
@@ -35,7 +37,6 @@ function App() {
 }
 
 export default App;
-
 
 // // src/App.js
 // import React from "react";

@@ -136,6 +136,7 @@ export const AppSidebar = () => {
                  : 
                 ""}`}
                 to="/itineraryWL">Itinerary</NavLink>
+
                 <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
               </CollapsibleTrigger>
             </SidebarGroupLabel>
