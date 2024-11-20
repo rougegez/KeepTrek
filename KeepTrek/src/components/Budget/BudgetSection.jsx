@@ -5,7 +5,6 @@ import { Plus, Utensils, Droplet, Bike, Home, Waves, Wine } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
-import { motion } from "framer-motion";
 
 export default function BudgetSection() {
   const [expenses, setExpenses] = useState([
@@ -14,8 +13,9 @@ export default function BudgetSection() {
     { date: "June 21", type: "Activity", icon: <Bike className="w-6 h-6" />, description: "ATV ride", amount: 400.0, paidBy: "Mike Lee", youOwe: 80.0 },
   ]);
 
+  const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState({
-    date: new Date().toISOString().split("T")[0], // Set today's date
+    date: new Date().toISOString().split("T")[0],
     type: "Food",
     description: "",
     amount: "",
@@ -27,10 +27,7 @@ export default function BudgetSection() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const [isClosing, setIsClosing] = useState(false); // Add state to track animation
-
   const handleAddExpense = () => {
-    // Generate an icon based on the type
     const typeIcons = {
       Food: <Utensils className="w-6 h-6" />,
       Activity: <Bike className="w-6 h-6" />,
@@ -38,10 +35,9 @@ export default function BudgetSection() {
       Travel: <Waves className="w-6 h-6" />,
       Drinks: <Wine className="w-6 h-6" />,
     };
-  
-    // Generate random 2-digit value for `youOwe` or `youPaid`
+
     const randomValue = Math.floor(Math.random() * 90) + 10;
-  
+
     const newExpense = {
       ...form,
       icon: typeIcons[form.type],
@@ -49,21 +45,16 @@ export default function BudgetSection() {
       youOwe: form.paidBy === "You" ? undefined : randomValue,
       youPaid: form.paidBy === "You" ? randomValue : undefined,
     };
-  
-    setIsClosing(true); // Trigger the animation
-  
-    setTimeout(() => {
-      // Add the new expense after the animation ends
-      setExpenses((prev) => [...prev, newExpense]);
-      setIsClosing(false); // Reset closing state
-      setForm({
-        date: new Date().toISOString().split("T")[0],
-        type: "Food",
-        description: "",
-        amount: "",
-        paidBy: "",
-      });
-    }, 300); // Animation duration
+
+    setExpenses((prev) => [...prev, newExpense]);
+    setForm({
+      date: new Date().toISOString().split("T")[0],
+      type: "Food",
+      description: "",
+      amount: "",
+      paidBy: "",
+    });
+    setIsOpen(false);
   };
 
   return (
@@ -97,15 +88,14 @@ export default function BudgetSection() {
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-xl font-semibold">Expenses</h3>
-          <Dialog>
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
               <Button className="bg-[#4DB6AC] hover:bg-[#3B9B91] text-white">
                 <Plus className="w-4 h-4 mr-2" />
                 Expense
               </Button>
             </DialogTrigger>
-            <motion.div className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2`} initial={{ scale: 1 }} animate={{ scale: isClosing ? 0 : 1 }} transition={{ duration: 0.3 }}>
-            <DialogContent>
+            <DialogContent className="transition-all duration-600 scale-100 data-[state=closed]:scale-0">
               <DialogHeader>
                 <DialogTitle>Add Expense</DialogTitle>
               </DialogHeader>
@@ -135,7 +125,6 @@ export default function BudgetSection() {
                   <label className="block text-sm font-medium mb-1">Amount (RM)</label>
                   <Input type="text" name="amount" value={form.amount} onChange={(e) => {
                     const value = e.target.value;
-                    // Allow only numeric values
                     if (!isNaN(value) && /^\d*\.?\d*$/.test(value)) {
                       setForm((prev) => ({ ...prev, amount: value }));
                     }
@@ -161,7 +150,6 @@ export default function BudgetSection() {
                 Add Expense
               </Button>
             </DialogContent>
-            </motion.div>
           </Dialog>
         </div>
 
