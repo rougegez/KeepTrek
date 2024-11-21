@@ -14,7 +14,7 @@ export default function TabsSection() {
   const settledPeople = [{ name: "Bryan", amount: 220.47 }];
 
   return (
-    <div className="flex-[4] overflow-y-auto border-l p-8">
+    <div className="flex-[4] overflow-y-auto border-l p-8 max-h-full">
       <Tabs defaultValue="settle-up" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-4">
           <TabsTrigger value="settle-up">Settle Up</TabsTrigger>

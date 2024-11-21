@@ -30,9 +30,9 @@ const ExpenseBreakdown = () => {
   const total = expenseData.reduce((sum, item) => sum + item.value, 0)
 
   return (
-    <Card className="p-6">
-      <div className="space-y-8">
-        <div className="h-[400px] w-full">
+    <Card className="p-4 max-h-500px">
+      <div className="space-y-4">
+        <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
