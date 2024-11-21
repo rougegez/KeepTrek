@@ -58,7 +58,7 @@ export default function BudgetSection() {
   };
 
   return (
-    <div className="flex-[6] overflow-y-auto p-8">
+    <div className="flex-[6] overflow-y-auto p-8 max-h-full">
       <h2 className="text-2xl font-bold mb-6">Budget</h2>
       <Card className="mb-8">
         <div className="flex p-6 gap-6">
