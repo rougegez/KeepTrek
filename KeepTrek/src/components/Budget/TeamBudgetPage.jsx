@@ -8,7 +8,7 @@ export default function TeamBudgetPage() {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <div className="flex h-screen w-screen">
+      <div className="flex h-full w-screen">
         <div className="flex flex-col flex-1 overflow-hidden">
           <div className="flex flex-1 overflow-hidden">
             {/* Budget Section */}
