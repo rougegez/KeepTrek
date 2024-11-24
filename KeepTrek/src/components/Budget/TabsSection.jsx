@@ -4,6 +4,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Circle } from "lucide-react";
 import ExpenseBreakdown from "./ExpeneseBreakdown.jsx";
 
+// Import JSON data
+import usersData from './db/users.json';
+import expensesData from './db/expenses.json';
+import friendsData from './db/friends.json';
+// Local Storage Keys
+const EXPENSES_KEY = 'splitwise_expenses';
+const USERS_KEY = 'splitwise_users';
+const FRIENDS_KEY = 'splitwise_friends';
+const CURRENT_USER_KEY = 'splitwise_current_user';
+
 export default function TabsSection() {
   const owedByPeople = [
     { name: "Anoop", amount: 280.1 },
