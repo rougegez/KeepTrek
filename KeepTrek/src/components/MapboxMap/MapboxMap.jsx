@@ -1,16 +1,20 @@
 'use client'
 
 import React, { useRef, useEffect, useState } from 'react'
+
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API_KEY
 
 const MapboxMap = ({
-    height = 400,
+    height = '400px',
     initCenter = [101.6160160887531, 3.0644537753819425], // BizPod
-    initZoom = 15
+    initZoom = 15,
+    onSaveLocation
 }) => {
     const mapContainer = useRef(null)
     const mapRef = useRef(null)
@@ -68,7 +72,8 @@ const MapboxMap = ({
                     const feature = data.features[0]
                     setPlace({
                         name: feature.text,
-                        address: feature.place_name
+                        address: feature.place_name,
+                        coordinates: [e.lngLat.lng, e.lngLat.lat]
                     })
                 } else {
                     setPlace(null)
@@ -80,26 +85,34 @@ const MapboxMap = ({
         }
     }
 
+    const handleSaveLocation = () => {
+        if (place) {
+            onSaveLocation(place)
+            setPlace(null)
+            if (markerRef.current) {
+                markerRef.current.remove()
+            }
+        }
+    }
+
     return (
-        <div className="space-y-4">
-            <div className="relative w-full" style={{ height: height }}>
-                <div ref={mapContainer} className="h-full w-full" />
-                {place && (
-                    <div className="absolute bottom-0 left-0 right-0 p-4">
-                        <Card className="bg-white bg-opacity-90">
-                            <CardHeader>
-                                <CardTitle>{place.name}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p>{place.address}</p>
-                            </CardContent>
-                        </Card>
-                    </div>
-                )}
-            </div>
+        <div className="relative w-full" style={{ height: height }}>
+            <div ref={mapContainer} className="absolute inset-0" />
+            {place && (
+                <div className="absolute bottom-4 left-4 right-4 z-10">
+                    <Card className="bg-white bg-opacity-90">
+                        <CardHeader>
+                            <CardTitle>{place.name}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="mb-2">{place.address}</p>
+                            <Button onClick={handleSaveLocation}>Save Location</Button>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
         </div>
     )
 }
 
 export default MapboxMap
-
