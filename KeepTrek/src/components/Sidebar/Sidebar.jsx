@@ -89,8 +89,10 @@ export const AppSidebar = () => {
                  : 
                 ""}`}
                  to="/">Overview</NavLink> {/*Need the logic for id*/}
-                <ChevronDown className="ml-auto 
-                transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                <ChevronDown
+                  className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180"
+                  style={{ position: "relative" }}
+                />
               </CollapsibleTrigger>
             </SidebarGroupLabel>
             <CollapsibleContent>
@@ -137,7 +139,10 @@ export const AppSidebar = () => {
                 ""}`}
                 to="/itineraryWL">Itinerary</NavLink>
 
-                <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                <ChevronDown
+                  className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180"
+                  style={{ position: "relative" }}
+                />
               </CollapsibleTrigger>
             </SidebarGroupLabel>
             <CollapsibleContent>
