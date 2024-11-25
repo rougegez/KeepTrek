@@ -6,6 +6,8 @@ import "./TripDetailsPage.css";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
+import MapboxMap from "../MapboxMap/MapboxMap.jsx";
+
 import TripBuddy from "./TripBuddy/TripBuddy.jsx";
 import TripOverview from "./TripOverview/TripOverview.jsx";
 import Notes from "./Notes/Notes.jsx";
@@ -79,6 +81,7 @@ export const TripDetailsPage = () => {
         <div id="Attachments">
           <Attachments />
         </div>
+          <MapboxMap/>
       </main>
 
       {/* Modals */}
