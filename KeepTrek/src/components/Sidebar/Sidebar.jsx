@@ -186,7 +186,7 @@ export const AppSidebar = () => {
                 "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#ff004f] rounded-[12px] items-center justify-start pl-4 pt-1"
                  : 
                 ""}`}
-                to="#">Wishlist</NavLink> {/*Link for Wishlist*/}
+                to="/wishlist">Wishlist</NavLink> {/*Link for Wishlist*/}
               </SidebarMenuButton>
           </SidebarGroupLabel>
         </SidebarGroup>
