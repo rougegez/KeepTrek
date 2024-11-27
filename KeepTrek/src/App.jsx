@@ -14,13 +14,14 @@ import Dashboard from "./components/Dashboard/Dashboard.jsx";
 import { JoinTeam } from "./components/OldBudget.jsx/JoinTeam.jsx";
 import ItineraryWL from "./components/ItineraryWL/ItineraryWL.jsx";
 
+import { MapTestPage } from "./components/MapboxMap/MapTestPage.jsx";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<TripDetailsPage />} />
-
+        <Route path="/maptest" element={<MapTestPage />} /> {/*Use this to see the code for the map*/}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/itinerary" element={<Itinerary />} />
         <Route path="/schedule" element={<GrpSchedule />} />
