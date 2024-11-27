@@ -9,7 +9,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarHeader
+  SidebarHeader,
+  SidebarTrigger
 } from "@/components/ui/sidebar";
 
 import {
@@ -71,10 +72,12 @@ const ItineraryItems = [
 
 export const AppSidebar = () => {
   return (
-    <Sidebar className="h-screen sticky top-0 bg-white drop-shadow-keepTrek overflow-y-auto z-50">
+    <Sidebar className="h-screen w-11/12 sticky top-0 bg-white drop-shadow-keepTrek overflow-y-auto z-50">
+      <SidebarTrigger />
       <SidebarHeader>
         <a href="/"><img src='../src/assets/KeepTrek.png' alt="KeepTrek Logo" className='size-18 w-40' /></a>
         <span className="text-[32px] text-black font-semibold ml-4">Library</span>
+        
       </SidebarHeader>
       <SidebarContent className="pl-2">
         {/* Overview */}
@@ -85,7 +88,7 @@ export const AppSidebar = () => {
                 <NavLink className={({ isActive }) => 
                 `text-[24px] font-semibold text-black ${
                 isActive ? 
-                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1"
+                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
                  : 
                 ""}`}
                  to="/">Overview</NavLink> {/*Need the logic for id*/}
@@ -121,7 +124,7 @@ export const AppSidebar = () => {
                 <NavLink className={({ isActive }) => 
                 `text-[24px] font-semibold text-black ${
                 isActive ? 
-                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1"
+                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
                  : 
                 ""}`}
                 to="/itineraryWL">Itinerary</NavLink>
@@ -155,7 +158,7 @@ export const AppSidebar = () => {
                 <NavLink className={({ isActive }) => 
                 `text-[24px] font-semibold text-black ${
                 isActive ? 
-                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1"
+                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
                  : 
                 ""}`}
                 to="/expense-splitting">Budget</NavLink> {/*Link for Budget*/}
@@ -170,10 +173,10 @@ export const AppSidebar = () => {
                 <NavLink className={({ isActive }) => 
                 `text-[24px] font-semibold text-black ${
                 isActive ? 
-                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1"
+                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
                  : 
                 ""}`}
-                to="#">Wishlist</NavLink> {/*Link for Wishlist*/}
+                to="/wishlist">Wishlist</NavLink> {/*Link for Wishlist*/}
               </SidebarMenuButton>
           </SidebarGroupLabel>
         </SidebarGroup>
@@ -185,7 +188,7 @@ export const AppSidebar = () => {
                 <NavLink className={({ isActive }) => 
                 `text-[24px] font-semibold text-black ${
                 isActive ? 
-                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1"
+                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
                  : 
                 ""}`}
                 to="/schedule">Can't find a date?</NavLink> {/*Link for Wishlist*/}

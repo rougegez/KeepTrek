@@ -8,6 +8,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { MapTestPage } from "../MapboxMap/MapTestPage.jsx";
+import MapSearchBar from "../MapboxMap/MapSearchbarGeoAPIV5.jsx"
 
 function ItineraryWL() {
   const [days, setDays] = useState([
@@ -105,30 +107,54 @@ const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     setDays(updatedDays);
   };
 
+  const [mapInstance, setMapInstance] = useState(null)
+  const handleLocationSearch = (suggestion) => {
+    if (suggestion && suggestion.center) {
+        // Create a place object similar to what's used in MapboxMap
+        const place = {
+            name: suggestion.text,
+            address: suggestion.place_name,
+            coordinates: suggestion.center
+        }
 
+        // Set the selected place to trigger the card in MapboxMap
+        setSearchedPlace(place)
+    }
+
+    // If using V6 API
+    if (suggestion.properties && suggestion.properties.coordinates) {
+        const place = {
+            name: suggestion.properties.name,
+            address: suggestion.properties.full_address || suggestion.properties.place_formatted,
+            coordinates: suggestion.geometry.coordinates,
+        }
+
+        setSearchedPlace(place)
+    }
+}
 
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarTrigger />
-      <div className="max-w-3xl mx-auto p-6 space-y-8">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">East-Coast Road Trip</h1>
-          <p className="text-sm text-muted-foreground">19 June 2024 to 23 June 2024</p>
-        </div>
-
-        {days.map((day, dayIndex) => (
-          <div key={day.date} className="space-y-4">
-            <h2 className="text-xl font-semibold">{day.date}</h2>
-            <Reorder.Group
-              axis="y"
-              values={day.activities}
-              onReorder={(newActivities) => updateActivities(newActivities, dayIndex)}
-              className="space-y-4"
-            >
-              {day.activities.map((activity) => (
-                <Reorder.Item key={activity.id} value={activity} className="relative">
-                  <div className="absolute left-0 -ml-24 top-4 flex flex-col space-y-1 w-20 text-sm text-muted-foreground">
+      
+      <div className="flex w-full">
+        {/* Left side: Itinerary */}
+        <div className="w-8/12 px-14 py-8 space-y-8 overflow-y-auto max-h-screen">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold">East-Coast Road Trip</h1>
+            <p className="text-sm text-muted-foreground">19 June 2024 to 23 June 2024</p>
+          </div>
+          {days.map((day, dayIndex) => (
+            <div key={day.date} className="space-y-4">
+              <h2 className="text-xl font-semibold">{day.date}</h2>
+              <Reorder.Group
+                axis="y"
+                values={day.activities}
+                onReorder={(newActivities) => updateActivities(newActivities, dayIndex)}
+                className="space-y-4">
+                {day.activities.map((activity) => (
+                  <Reorder.Item key={activity.id} value={activity} className="relative">
+                    <div className="absolute left-0 -ml-24 top-12 flex flex-col space-y-1 text-sm text-muted-foreground px-10">
                     <div className="font-medium">{activity.time}</div>
                     <div className="flex items-center gap-1">
                       <Clock className="w-4 h-4" />
@@ -161,7 +187,7 @@ const [isEditModalOpen, setIsEditModalOpen] = useState(false);
                       </div>
                     </CardContent>
                   </Card>
-                  <div className="absolute -right-14 top-4 flex flex-col gap-2">
+                  <div className="absolute -right-10 top-10 flex flex-col gap-4">
                   <button
                     className="p-2 rounded-full bg-gray-100 hover:bg-gray-300 transition-colors"
                     onClick={() => handleEditClick(dayIndex, activity)}>
@@ -173,16 +199,21 @@ const [isEditModalOpen, setIsEditModalOpen] = useState(false);
                     <X className="w-4 h-4 text-red-500" />
                   </button>
                   </div>
-                </Reorder.Item>
-              ))}
-            </Reorder.Group>
-            <Button variant="outline" className="w-full" onClick={() => setIsModalOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
+                  </Reorder.Item>
+                ))}
+              </Reorder.Group>
+              <Button variant="outline" className="w-full" onClick={() => setIsModalOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
                 Add Activity
               </Button>
-          </div>
-          
-        ))}
+            </div>
+          ))}
+        </div>
+
+        {/* Right side: Map */}
+        <div className="w-5/13">
+          <MapTestPage />
+        </div>
       </div>
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
   <DialogContent className="max-w-md">
@@ -227,14 +258,17 @@ const [isEditModalOpen, setIsEditModalOpen] = useState(false);
       {/* Address */}
       <div>
         <label className="block text-sm font-medium text-muted-foreground">Address</label>
-        <Input
+        {/* <Input
           type="text"
           placeholder="Enter address"
           value={newActivity.location}
           onChange={(e) =>
             setNewActivity((prev) => ({ ...prev, location: e.target.value }))
           }
-        />
+        ></Input> */}
+        <MapSearchBar 
+        mapInstance={mapInstance}
+        onLocationSearch={handleLocationSearch} />
       </div>
 
       {/* Notes */}

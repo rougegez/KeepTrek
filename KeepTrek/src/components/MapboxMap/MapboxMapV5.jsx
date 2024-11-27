@@ -13,7 +13,8 @@ import { X } from 'lucide-react'
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API_KEY
 
 const MapboxMap = ({
-    height = '400px',
+    height = '750px',
+    width= '750px',
     initCenter = [101.6160160887531, 3.0644537753819425], // BizPod
     initZoom = 15,
     onSaveLocation,
@@ -149,7 +150,7 @@ const MapboxMap = ({
     }
 
     return (
-        <div className="relative w-full" style={{ height: height }}>
+        <div className="relative w-full" style={{ height: height ,width:width}}>
             <div ref={mapContainer} className="absolute inset-0" />
             <div className="p-4 w-2/5">
                 <SearchBox

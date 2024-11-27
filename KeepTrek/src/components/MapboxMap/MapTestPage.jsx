@@ -53,7 +53,7 @@ export const MapTestPage = () => {
 
     return (
         <>
-            <div className="p-20">
+            <div className="py-6">
                 {/* SearchBar, change import for Geocoding or Search API*/}
                 <MapSearchBar 
                 mapInstance={mapInstance}
