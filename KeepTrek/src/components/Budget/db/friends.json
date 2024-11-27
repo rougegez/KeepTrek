@@ -1,0 +1,16 @@
+{
+    "friends": [
+      {
+        "userId": 1,
+        "friendIds": [2, 3]
+      },
+      {
+        "userId": 2,
+        "friendIds": [1, 3]
+      },
+      {
+        "userId": 3,
+        "friendIds": [1, 2]
+      }
+    ]
+  }
