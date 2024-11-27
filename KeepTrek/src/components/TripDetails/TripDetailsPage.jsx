@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState} from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import KeepTrek from "../../assets/KeepTrek.png";
 import "./TripDetailsPage.css";
@@ -6,8 +6,6 @@ import "./TripDetailsPage.css";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
-import MapboxMap from "../MapboxMap/MapboxMap.jsx";
-import SavedLocations from "../MapboxMap/SavedLocations.jsx";
 
 import TripBuddy from "./TripBuddy/TripBuddy.jsx";
 import TripOverview from "./TripOverview/TripOverview.jsx";
@@ -24,8 +22,6 @@ export const TripDetailsPage = () => {
   const [itinerary, setItinerary] = useState(location.state?.itinerary || null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
-
-  const [savedLocations, setSavedLocations] = useState([]);
 
   useEffect(() => {
     // Mock fetch for itinerary if not provided in location state
@@ -52,10 +48,6 @@ export const TripDetailsPage = () => {
     setShowLoginModal(false);
     setShowRegisterModal(false);
     navigate("/");
-  };
-
-  const addSavedLocation = (location) => {
-    setSavedLocations((prev) => [...prev, location]);
   };
 
   if (!itinerary) {
@@ -87,13 +79,6 @@ export const TripDetailsPage = () => {
         </div>
         <div id="Attachments">
           <Attachments />
-        </div>
-        {/* Mapbox Map with Save Location Callback */}
-        <MapboxMap onSaveLocation={addSavedLocation} />
-
-        {/* Saved Locations Display */}
-        <div className="mt-4">
-          <SavedLocations locations={savedLocations} />
         </div>
       </main>
 
