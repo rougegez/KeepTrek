@@ -1,10 +1,6 @@
 // src/components/GrpSchedule/ScheduleSummary.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-// import { firestore, auth } from "../../firebaseConfig";
-// import { collection, getDocs } from "firebase/firestore";
-// import { Login } from "../Authentication/Login";
-// import { Register } from "../Authentication/Register";
 import "./ScheduleSummary.css";
 import KeepTrek from "../../assets/KeepTrek.png";
 
@@ -17,58 +13,46 @@ export const ScheduleSummary = () => {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        setShowLoginModal(false);
-        setShowRegisterModal(false);
-        // Fetch schedule data
-        await fetchScheduleData(currentUser.uid);
-      } else {
-        setUser(null);
-        setShowLoginModal(true); // Show login modal if not authenticated
-      }
-    });
-
-    return () => unsubscribe();
+    // Mock authentication check for demonstration purposes
+    const currentUser = { uid: "12345" }; // Replace with actual user authentication if needed
+    if (currentUser) {
+      setUser(currentUser);
+      setShowLoginModal(false);
+      setShowRegisterModal(false);
+      // Fetch schedule data (mock data for demo purposes)
+      fetchScheduleData(currentUser.uid);
+    } else {
+      setUser(null);
+      setShowLoginModal(true); // Show login modal if not authenticated
+    }
   }, []);
 
-  const fetchScheduleData = async (userId) => {
-    try {
-      // Fetch weekly data
-      const weeklyDocRef = collection(firestore, "schedules", userId, "weekly");
-      const weeklySnapshot = await getDocs(weeklyDocRef);
-      if (!weeklySnapshot.empty) {
-        const weeklyData = weeklySnapshot.docs
-          .filter((doc) => doc.id === "current") // Ensure we're getting the 'current' document
-          .map((doc) => doc.data())[0];
-        setWeeklyData(weeklyData);
-      }
-
-      // Fetch monthly data
-      const monthlyDocRef = collection(
-        firestore,
-        "schedules",
-        userId,
-        "monthly"
-      );
-      const monthlySnapshot = await getDocs(monthlyDocRef);
-      if (!monthlySnapshot.empty) {
-        const monthlyData = monthlySnapshot.docs
-          .filter((doc) => doc.id === "current") // Ensure we're getting the 'current' document
-          .map((doc) => doc.data())[0];
-        setMonthlyData(monthlyData);
-      }
-    } catch (error) {
-      console.error("Error fetching schedule data: ", error);
-    }
+  const fetchScheduleData = (userId) => {
+    // Mock schedule data for demonstration purposes
+    const weeklyData = {
+      freeSlots: [
+        "2024-11-28 09:00-09:15",
+        "2024-11-28 10:00-10:15",
+        "2024-11-29 11:00-11:15",
+      ],
+      busySlots: [
+        "2024-11-28 13:00-13:15",
+        "2024-11-29 14:00-14:15",
+      ],
+    };
+    const monthlyData = {
+      freeDates: ["2024-11-01", "2024-11-02"],
+      busyDates: ["2024-11-03", "2024-11-04"],
+    };
+    setWeeklyData(weeklyData);
+    setMonthlyData(monthlyData);
   };
 
   const handleAuthSuccess = () => {
     setShowLoginModal(false);
     setShowRegisterModal(false);
-    setUser(auth.currentUser);
-    fetchScheduleData(auth.currentUser.uid);
+    setUser({ uid: "12345" }); // Mock user data for demonstration
+    fetchScheduleData("12345");
   };
 
   // Function to handle closing the modal and redirecting to home
@@ -92,19 +76,11 @@ export const ScheduleSummary = () => {
             >
               Group Scheduling
             </button>
-            {/* Removed My Schedule button */}
-            {/* <button
-              onClick={() => navigate("/summary")}
-              className="grp-nav-link"
-            >
-              My Schedule
-            </button> */}
           </div>
           <div className="grp-navbar-right">
             <button onClick={() => navigate("#")} className="grp-nav-link">
               How it Works
             </button>
-            {/* Updated History button to navigate to /schedule-summary */}
             <button
               onClick={() => navigate("/schedule-summary")}
               className="grp-nav-link"
@@ -114,7 +90,7 @@ export const ScheduleSummary = () => {
             {user ? (
               <button
                 className="grp-profile-btn"
-                onClick={() => auth.signOut()}
+                onClick={() => setUser(null)} // Mock logout functionality
               >
                 Logout
               </button>
@@ -173,25 +149,23 @@ export const ScheduleSummary = () => {
 
       {/* Modals */}
       {showLoginModal && (
-        <Login
-          closeModal={handleCloseModal} // Redirects to home on close
-          switchToRegister={() => {
-            setShowLoginModal(false);
-            setShowRegisterModal(true);
-          }}
-          onAuthSuccess={handleAuthSuccess}
-        />
+        <div className="modal">
+          <div className="modal-content">
+            <h2>Login</h2>
+            <button onClick={handleAuthSuccess}>Mock Login</button>
+            <button onClick={handleCloseModal}>Close</button>
+          </div>
+        </div>
       )}
 
       {showRegisterModal && (
-        <Register
-          closeModal={handleCloseModal} // Redirects to home on close
-          switchToLogin={() => {
-            setShowRegisterModal(false);
-            setShowLoginModal(true);
-          }}
-          onAuthSuccess={handleAuthSuccess}
-        />
+        <div className="modal">
+          <div className="modal-content">
+            <h2>Register</h2>
+            <button onClick={handleAuthSuccess}>Mock Register</button>
+            <button onClick={handleCloseModal}>Close</button>
+          </div>
+        </div>
       )}
     </>
   );

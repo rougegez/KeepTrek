@@ -73,7 +73,7 @@ export const AppSidebar = () => {
   return (
     <Sidebar className="h-screen sticky top-0 bg-white drop-shadow-keepTrek overflow-y-auto z-50">
       <SidebarHeader>
-        <a href="/"><img src='../src/assets/KeepTrek.png' alt="KeepTrek Logo" /></a>
+        <a href="/"><img src='../src/assets/KeepTrek.png' alt="KeepTrek Logo" className='size-18 w-40' /></a>
         <span className="text-[32px] text-black font-semibold ml-4">Library</span>
       </SidebarHeader>
       <SidebarContent className="pl-2">
@@ -85,7 +85,7 @@ export const AppSidebar = () => {
                 <NavLink className={({ isActive }) => 
                 `text-[24px] font-semibold text-black ${
                 isActive ? 
-                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#ff004f] rounded-[12px] items-center justify-start pl-4 pt-1"
+                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1"
                  : 
                 ""}`}
                  to="/">Overview</NavLink> {/*Need the logic for id*/}
@@ -111,20 +111,7 @@ export const AppSidebar = () => {
           </SidebarGroup>
         </Collapsible>
 
-        {/* Destination */}
-        <SidebarGroup>
-          <SidebarGroupLabel asChild className="mb-2">
-              <SidebarMenuButton>
-              <NavLink className={({ isActive }) => 
-                `text-[24px] font-semibold text-black ${
-                isActive ? 
-                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#ff004f] rounded-[12px] items-center justify-start pl-4 pt-1"
-                 : 
-                ""}`}
-                to="#">Destinations</NavLink> {/*Link for Destinations*/}
-              </SidebarMenuButton>
-          </SidebarGroupLabel>
-        </SidebarGroup>
+        
 
         {/* Itinerary */}
         <Collapsible className="group/collapsible">
@@ -134,7 +121,7 @@ export const AppSidebar = () => {
                 <NavLink className={({ isActive }) => 
                 `text-[24px] font-semibold text-black ${
                 isActive ? 
-                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#ff004f] rounded-[12px] items-center justify-start pl-4 pt-1"
+                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1"
                  : 
                 ""}`}
                 to="/itineraryWL">Itinerary</NavLink>
@@ -168,7 +155,7 @@ export const AppSidebar = () => {
                 <NavLink className={({ isActive }) => 
                 `text-[24px] font-semibold text-black ${
                 isActive ? 
-                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#ff004f] rounded-[12px] items-center justify-start pl-4 pt-1"
+                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1"
                  : 
                 ""}`}
                 to="/expense-splitting">Budget</NavLink> {/*Link for Budget*/}
@@ -183,15 +170,32 @@ export const AppSidebar = () => {
                 <NavLink className={({ isActive }) => 
                 `text-[24px] font-semibold text-black ${
                 isActive ? 
-                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#ff004f] rounded-[12px] items-center justify-start pl-4 pt-1"
+                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1"
                  : 
                 ""}`}
                 to="#">Wishlist</NavLink> {/*Link for Wishlist*/}
               </SidebarMenuButton>
           </SidebarGroupLabel>
         </SidebarGroup>
+
+        {/* Calender */}
+        <SidebarGroup>
+          <SidebarGroupLabel asChild className="mb-2">
+              <SidebarMenuButton>
+                <NavLink className={({ isActive }) => 
+                `text-[24px] font-semibold text-black ${
+                isActive ? 
+                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1"
+                 : 
+                ""}`}
+                to="/schedule">Can't find a date?</NavLink> {/*Link for Wishlist*/}
+              </SidebarMenuButton>
+          </SidebarGroupLabel>
+        </SidebarGroup>
+
       </SidebarContent>
     </Sidebar>
+    
   )
 }
 

@@ -8,19 +8,77 @@ import ExpenseBreakdown from "./ExpeneseBreakdown";
 import { useBudget } from "./BudgetContext";
 
 export default function TabsSection() {
-  const { expenses, currentUser, settleDebt } = useBudget();
+  const {
+    expenses,
+    currentUser,
+    currentGroup,
+    users,
+    settleDebt,
+    updateGroup, // Function to update the group info from the backend
+  } = useBudget();
+  
   const [selectedDebt, setSelectedDebt] = useState(null);
   const [paymentAmount, setPaymentAmount] = useState("");
+  const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
+  const [userBudget, setUserBudget] = useState("");
 
-  // Calculate total paid and reimbursed
+  // Helper function to find a user by their ID
+  const findUserById = (id) => users.find((user) => user.id === id);
+
+  // Fetch the budget for the current user if available
+  const currentUserBudget = currentGroup?.budgets?.[currentUser?.id] || 0;
+
+  // Calculate user's total expenses so far
+  const totalExpenses = useMemo(() => {
+    if (!currentUser) return 0;
+  
+    return expenses
+      .filter((expense) => currentGroup && expense.groupId === currentGroup.id) // Filter expenses only in the current group
+      .reduce((total, expense) => {
+        const userSplit = expense.splits.find((split) => split.friendId === currentUser.id);
+        return total + (userSplit ? userSplit.amount : 0);
+      }, 0);
+  }, [expenses, currentUser, currentGroup]);
+  
+  // Calculate progress for the circular budget bar
+  const progressPercentage = currentUserBudget > 0
+    ? Math.min((totalExpenses / currentUserBudget) * 100, 100) // Cap at 100%
+    : 0;
+  
+
+  // Handle budget setting and updating
+  const handleEditBudget = async () => {
+    if (!currentUser || !currentGroup) return;
+
+    const updatedGroup = {
+      ...currentGroup,
+      budgets: {
+        ...(currentGroup.budgets || {}),
+        [currentUser.id]: parseFloat(userBudget) || 0,
+      },
+    };
+
+    try {
+      await updateGroup(updatedGroup); // Update the group in the context
+      setIsBudgetModalOpen(false);
+    } catch (error) {
+      console.error("Failed to update budget:", error);
+      alert("Failed to update budget. Please try again.");
+    }
+  };
+
+  // Calculate total paid, reimbursed, and debts for the current group
   const { totalPaid, reimbursed, debts } = useMemo(() => {
-    if (!currentUser) return { totalPaid: 0, reimbursed: 0, debts: [] };
+    if (!currentUser || !currentGroup) return { totalPaid: 0, reimbursed: 0, debts: [] };
 
     let totalPaid = 0;
     let reimbursed = 0;
     const debtMap = {};
 
-    expenses.forEach((expense) => {
+    // Filter expenses by current group
+    const groupExpenses = expenses.filter(expense => expense.groupId === currentGroup.id);
+    
+    groupExpenses.forEach((expense) => {
       const { paidBy, splits } = expense;
 
       // Track total paid by the user
@@ -33,9 +91,7 @@ export default function TabsSection() {
           }
         });
       } else {
-        const userSplit = splits.find(
-          (split) => split.friendId === currentUser.id
-        );
+        const userSplit = splits.find((split) => split.friendId === currentUser.id);
         if (userSplit) {
           debtMap[paidBy] = (debtMap[paidBy] || 0) + userSplit.amount;
         }
@@ -44,21 +100,15 @@ export default function TabsSection() {
 
     // Cancel out debts
     const debts = Object.entries(debtMap)
-      .map(([friendId, amount]) => ({ friendId: parseInt(friendId, 10), amount }))
+      .map(([friendId, amount]) => ({ friendId: friendId, amount })) // friendId remains as a string
       .filter((debt) => debt.amount !== 0);
 
     return { totalPaid, reimbursed, debts };
-  }, [expenses, currentUser]);
-
-  const { users } = useBudget();
-  const findUserById = (id) => users.find((user) => user.id === id);
+  }, [expenses, currentUser, currentGroup]);
 
   // Separate debts into owed to user and owed by user
   const owedToUser = debts.filter((debt) => debt.amount < 0);
   const owedByUser = debts.filter((debt) => debt.amount > 0);
-
-  // Circular progress values
-  const progressPercentage = totalPaid ? (reimbursed / totalPaid) * 100 : 0;
 
   const handleSettleUp = (debt) => {
     setSelectedDebt(debt);
@@ -67,18 +117,18 @@ export default function TabsSection() {
 
   const handlePayment = () => {
     const amount = parseFloat(paymentAmount);
-  
+
     if (amount > 0 && amount <= Math.abs(selectedDebt.amount)) {
       const payerId =
         selectedDebt.amount > 0
           ? currentUser.id // You owe money, you pay
           : selectedDebt.friendId; // They owe you, they pay
-  
+
       const payeeId =
         selectedDebt.amount > 0
           ? selectedDebt.friendId // You owe money to this user
           : currentUser.id; // They owe money to you
-  
+
       settleDebt(payerId, payeeId, amount);
       setSelectedDebt(null);
       setPaymentAmount("");
@@ -86,6 +136,8 @@ export default function TabsSection() {
       alert("Invalid payment amount.");
     }
   };
+
+  
 
   return (
     <div className="flex-[4] overflow-y-auto border-l p-8 max-h-full">
@@ -100,39 +152,36 @@ export default function TabsSection() {
           <Card className="p-6">
             {/* Circular Progress */}
             <div className="flex justify-center mb-8">
-              <div className="relative w-48 h-48">
-                <svg className="w-full h-full" viewBox="0 0 100 100">
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="none"
-                    stroke="#E0E0E0"
-                    strokeWidth="10"
-                  />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="none"
-                    stroke="#4DB6AC"
-                    strokeWidth="10"
-                    strokeDasharray={`${progressPercentage * 2.83} 283`}
-                    transform="rotate(-90 50 50)"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center flex-col">
-                  <div className="text-2xl font-bold">
-                    RM {reimbursed.toFixed(2)}
-                  </div>
-                  <div className="text-sm text-gray-500 text-center">
-                    Reimbursed
-                    <br />
-                    of RM {totalPaid.toFixed(2)}
-                  </div>
-                </div>
-              </div>
-            </div>
+  <div className="relative w-48 h-48">
+    <svg className="w-full h-full" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="45" fill="none" stroke="#E0E0E0" strokeWidth="10" />
+      <circle
+        cx="50"
+        cy="50"
+        r="45"
+        fill="none"
+        stroke={totalExpenses > currentUserBudget ? "red" : "#4DB6AC"}
+        strokeWidth="10"
+        strokeDasharray={`${progressPercentage * 2.83} 283`}
+        transform="rotate(-90 50 50)"
+      />
+    </svg>
+    <div className="absolute inset-0 flex items-center justify-center flex-col">
+      {currentUserBudget > 0 ? (
+        <>
+          <div className="text-2xl font-bold">RM {totalExpenses.toFixed(2)}</div>
+          <div className="text-sm text-gray-500 text-center">
+            Spent of RM {currentUserBudget.toFixed(2)}
+          </div>
+        </>
+      ) : (
+        <div className="text-2xl font-bold text-gray-500 cursor-pointer" onClick={() => setIsBudgetModalOpen(true)}>
+          Set a Budget
+        </div>
+      )}
+    </div>
+  </div>
+</div>
 
             {/* Debts Summary */}
             <div className="space-y-6">
@@ -207,9 +256,7 @@ export default function TabsSection() {
                 {selectedDebt.amount > 0
                   ? `You owe ${findUserById(selectedDebt.friendId)?.name}`
                   : `${findUserById(selectedDebt.friendId)?.name} owes you`}
-                <span className="font-bold ml-1">
-                  RM {Math.abs(selectedDebt.amount).toFixed(2)}
-                </span>
+                <span className="font-bold ml-1">RM {Math.abs(selectedDebt.amount).toFixed(2)}</span>
               </p>
               <Input
                 type="number"
@@ -234,6 +281,32 @@ export default function TabsSection() {
                 }
               >
                 Pay
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Set Budget Dialog */}
+      {isBudgetModalOpen && (
+        <Dialog open={isBudgetModalOpen} onOpenChange={() => setIsBudgetModalOpen(false)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Set Your Budget</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Input
+                type="number"
+                value={userBudget}
+                onChange={(e) => setUserBudget(e.target.value)}
+                placeholder="Enter budget amount"
+                className="w-full"
+              />
+              <button
+                className="bg-[#4DB6AC] text-white py-2 px-4 rounded w-full"
+                onClick={handleEditBudget}
+              >
+                Save Budget
               </button>
             </div>
           </DialogContent>

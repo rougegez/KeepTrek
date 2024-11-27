@@ -1,0 +1,146 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "Alice Smith",
+      "email": "alice@email.com"
+    },
+    {
+      "id": "2",
+      "name": "Bob Johnson",
+      "email": "bob@email.com"
+    },
+    {
+      "id": "3",
+      "name": "Carol Wilson",
+      "email": "carol@email.com"
+    },
+    {
+      "id": "6751cfe1-3d5d-45f5-b78f-885f75bc7a65",
+      "name": "rajveer",
+      "email": "raj@gmail.com"
+    }
+  ],
+  "groups": [
+    {
+      "id": "g1",
+      "name": "Vacation Group",
+      "members": [
+        "1",
+        "2",
+        "3",
+        "6751cfe1-3d5d-45f5-b78f-885f75bc7a65"
+      ],
+      "budgets": {
+        "1": 1000,
+        "2": 1500,
+        "3": 2000
+      }
+    }
+  ],
+  "expenses": [
+    {
+      "id": "e1",
+      "groupId": "g1",
+      "description": "Dinner at Italian Restaurant",
+      "amount": 500,
+      "type": "Food",
+      "paidBy": "1",
+      "date": "2024-03-20",
+      "splits": [
+        {
+          "friendId": "1",
+          "amount": 125
+        },
+        {
+          "friendId": "2",
+          "amount": 125
+        },
+        {
+          "friendId": "3",
+          "amount": 125
+        },
+        {
+          "friendId": "6751cfe1-3d5d-45f5-b78f-885f75bc7a65",
+          "amount": 125
+        }
+      ],
+      "splitMethod": "equal"
+    },
+    {
+      "id": "e2",
+      "groupId": "g1",
+      "description": "Taxi Ride",
+      "amount": 50,
+      "type": "Transport",
+      "paidBy": "2",
+      "date": "2024-11-27",
+      "splits": [
+        {
+          "friendId": "1",
+          "amount": 20
+        },
+        {
+          "friendId": "2",
+          "amount": 15
+        },
+        {
+          "friendId": "3",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "id": "1e84dd65-93ab-4691-8ee6-a64ed4b0d54a",
+      "groupId": "g1",
+      "date": "2024-11-27",
+      "type": "Activity",
+      "description": "Random Expense",
+      "amount": 300,
+      "paidBy": "1",
+      "splits": [
+        {
+          "friendId": "1",
+          "amount": 100
+        },
+        {
+          "friendId": "2",
+          "amount": 100
+        },
+        {
+          "friendId": "3",
+          "amount": 100
+        }
+      ],
+      "splitMethod": "equal"
+    },
+    {
+      "id": "9f7e284e-9cb7-4bd3-9d57-2ede88d67f8d",
+      "groupId": "g1",
+      "date": "2024-11-27",
+      "type": "Stay",
+      "description": "raj testing",
+      "amount": 600,
+      "paidBy": "6751cfe1-3d5d-45f5-b78f-885f75bc7a65",
+      "splits": [
+        {
+          "friendId": "1",
+          "amount": 60
+        },
+        {
+          "friendId": "2",
+          "amount": 72
+        },
+        {
+          "friendId": "3",
+          "amount": 102.00000000000001
+        },
+        {
+          "friendId": "6751cfe1-3d5d-45f5-b78f-885f75bc7a65",
+          "amount": 366
+        }
+      ],
+      "splitMethod": "percentage"
+    }
+  ]
+}

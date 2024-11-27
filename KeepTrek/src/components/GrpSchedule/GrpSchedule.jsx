@@ -5,10 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { PersonIcon } from "@primer/octicons-react";
 import KeepTrek from "../../assets/KeepTrek.png";
 import "./GrpSchedule.css";
-// import { firestore, auth } from "../../firebaseConfig";
-// import { doc, setDoc, getDoc } from "firebase/firestore"; // Import getDoc for fetching existing data
-// import { Login } from "../Authentication/Login";
-// import { Register } from "../Authentication/Register";
+import AppSidebar from "../Sidebar/Sidebar.jsx";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 export const GrpSchedule = () => {
   const navigate = useNavigate();
@@ -22,10 +20,6 @@ export const GrpSchedule = () => {
   const initialDragDate = useRef(null); // For monthly view drag start date
   const initialSelectedDates = useRef([]); // For monthly view initial selected dates
 
-  const [user, setUser] = useState(null);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
-
   // Helper function to format date as 'YYYY-MM-DD' using local time
   const formatDate = (date) => {
     const year = date.getFullYear();
@@ -33,23 +27,6 @@ export const GrpSchedule = () => {
     const day = date.getDate().toString().padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
-
-  // Check for authentication when component mounts
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        setShowLoginModal(false);
-        setShowRegisterModal(false);
-        await fetchUserSchedule(currentUser.uid); // Fetch existing schedule data
-      } else {
-        setUser(null);
-        setShowLoginModal(true); // Show login modal if not authenticated
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   // Scroll the calendar to show 18.5:00 initially in weekly view
   useEffect(() => {
@@ -113,45 +90,6 @@ export const GrpSchedule = () => {
     year: "numeric",
   });
 
-  // Helper function to get dates between two dates
-  const getDatesBetween = (startDate, endDate) => {
-    const dates = [];
-    const current = new Date(startDate);
-    const end = new Date(endDate);
-
-    const increment = current <= end ? 1 : -1;
-
-    while (true) {
-      dates.push(new Date(current));
-      if (current.getTime() === end.getTime()) {
-        break;
-      }
-      current.setDate(current.getDate() + increment);
-    }
-    return dates;
-  };
-
-  // Handle slot click or drag for weekly view
-  const handleSlotClickOrDrag = (day, timeRange, isDraggingAction = false) => {
-    const slot = `${formatDate(day)} ${timeRange}`;
-
-    if (!isDraggingAction) {
-      if (selectedSlots.includes(slot)) {
-        setSelectedSlots(selectedSlots.filter((s) => s !== slot));
-      } else {
-        setSelectedSlots([...selectedSlots, slot]);
-      }
-    } else {
-      if (dragMode.current === "select") {
-        if (!selectedSlots.includes(slot)) {
-          setSelectedSlots((prev) => [...prev, slot]);
-        }
-      } else if (dragMode.current === "deselect") {
-        setSelectedSlots((prev) => prev.filter((s) => s !== slot));
-      }
-    }
-  };
-
   // Handle date selection or drag in monthly view
   const handleDateSelection = (day) => {
     const date = formatDate(day);
@@ -209,94 +147,6 @@ export const GrpSchedule = () => {
     initialSelectedDates.current = [];
   };
 
-  // Mouse events for weekly view
-  const handleMouseDown = (day, timeRange) => {
-    const slot = `${formatDate(day)} ${timeRange}`;
-    dragMode.current = selectedSlots.includes(slot) ? "deselect" : "select";
-    handleSlotClickOrDrag(day, timeRange);
-    isDragging.current = true;
-  };
-
-  const handleMouseOver = (day, timeRange) => {
-    if (isDragging.current) {
-      handleSlotClickOrDrag(day, timeRange, true);
-    }
-  };
-
-  const preventTextSelection = (event) => {
-    event.preventDefault();
-  };
-
-  // Function to save schedule data under the authenticated user's Firestore document
-  const handleProceed = async () => {
-    try {
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
-      const userId = user.uid;
-
-      if (viewMode === "weekly") {
-        // Generate all possible slots
-        const allSlots = [];
-        weekDays.forEach((day) => {
-          hourlyIntervals.forEach((hour) => {
-            const timeRanges = generateTimeRanges(hour);
-            timeRanges.forEach((timeRange) => {
-              const slot = `${formatDate(day)} ${timeRange}`;
-              allSlots.push(slot);
-            });
-          });
-        });
-
-        // Compute unselectedSlots
-        const unselectedSlots = allSlots.filter(
-          (slot) => !selectedSlots.includes(slot)
-        );
-
-        // Prepare data to save
-        const data = {
-          busySlots: selectedSlots,
-          freeSlots: unselectedSlots,
-          timestamp: new Date(),
-        };
-
-        // Save data to Firestore under the user's document
-        await setDoc(
-          doc(firestore, "users", userId, "schedules", "weekly"),
-          data,
-          { merge: true } // Use merge to update existing data
-        );
-      } else if (viewMode === "monthly") {
-        // Generate all possible dates
-        const allDates = monthDays.map((day) => formatDate(day));
-
-        // Compute unselectedDates
-        const unselectedDates = allDates.filter(
-          (date) => !selectedDates.includes(date)
-        );
-
-        // Prepare data to save
-        const data = {
-          busyDates: selectedDates,
-          freeDates: unselectedDates,
-          timestamp: new Date(),
-        };
-
-        // Save data to Firestore under the user's document
-        await setDoc(
-          doc(firestore, "users", userId, "schedules", "monthly"),
-          data,
-          { merge: true } // Use merge to update existing data
-        );
-      }
-
-      alert("Schedule saved successfully!");
-    } catch (error) {
-      console.error("Error saving to Firestore: ", error);
-      alert("Failed to save schedule. Please try again.");
-    }
-  };
-
   const handleClearAll = () => {
     setSelectedSlots([]);
     setSelectedDates([]);
@@ -342,108 +192,16 @@ export const GrpSchedule = () => {
       `${hour}:00-${hour}:15`,
       `${hour}:15-${hour}:30`,
       `${hour}:30-${hour}:45`,
-      `${hour}:45-${(parseInt(hour) + 1).toString().padStart(2, "0")}:00`,
+      `${hour}:45-${(parseInt(hour) + 1).toString().padStart(2, "0`")}:00`,
     ];
     return ranges;
   };
 
-  // Handle column selection (date click)
-  const handleColumnSelection = (day) => {
-    const selectedColumnSlots = hourlyIntervals.flatMap((hour) =>
-      generateTimeRanges(hour).map(
-        (timeRange) => `${formatDate(day)} ${timeRange}`
-      )
-    );
-
-    if (selectedSlots.some((slot) => selectedColumnSlots.includes(slot))) {
-      // If any slot in the column is already selected, deselect the entire column
-      setSelectedSlots(
-        selectedSlots.filter((slot) => !selectedColumnSlots.includes(slot))
-      );
-    } else {
-      // Select the entire column
-      setSelectedSlots([...selectedSlots, ...selectedColumnSlots]);
-    }
-  };
-
-  // Handle row selection (time click)
-  const handleRowSelection = (hour) => {
-    const selectedRowSlots = weekDays.flatMap((day) =>
-      generateTimeRanges(hour).map(
-        (timeRange) => `${formatDate(day)} ${timeRange}`
-      )
-    );
-
-    if (selectedSlots.some((slot) => selectedRowSlots.includes(slot))) {
-      // Deselect the row if any slot in the row is already selected
-      setSelectedSlots(
-        selectedSlots.filter((slot) => !selectedRowSlots.includes(slot))
-      );
-    } else {
-      // Select the entire row
-      setSelectedSlots([...selectedSlots, ...selectedRowSlots]);
-    }
-  };
-
-  const handleAuthSuccess = () => {
-    setShowLoginModal(false);
-    setShowRegisterModal(false);
-    setUser(auth.currentUser);
-  };
-
-  // Function to handle closing the modal and redirecting to home
-  const handleCloseModal = () => {
-    setShowLoginModal(false);
-    setShowRegisterModal(false);
-    navigate("/");
-  };
-
   return (
     <>
-      {/* Header/Navbar */}
-      <header id="grp-header" className="grp-navbar">
-        <div className="grp-container">
-          <div className="grp-navbar-left">
-            <button onClick={() => navigate("/")} className="grp-logo-btn">
-              <img src={KeepTrek} alt="KeepTrek Logo" className="grp-logo" />
-            </button>
-            <button
-              onClick={() => navigate("/schedule")}
-              className="grp-nav-link"
-            >
-              Group Scheduling
-            </button>
-          </div>
-          <div className="grp-navbar-right">
-            <button onClick={() => navigate("#")} className="grp-nav-link">
-              How it Works
-            </button>
-            {/* Updated History button to navigate to /schedule-summary */}
-            <button
-              onClick={() => navigate("/schedule-summary")}
-              className="grp-nav-link"
-            >
-              History
-            </button>
-            {user ? (
-              <button
-                className="grp-profile-btn"
-                onClick={() => auth.signOut()}
-              >
-                <PersonIcon size={24} />
-                Logout
-              </button>
-            ) : (
-              <button
-                className="grp-profile-btn"
-                onClick={() => setShowLoginModal(true)}
-              >
-                <PersonIcon size={24} />
-              </button>
-            )}
-          </div>
-        </div>
-      </header>
+    <SidebarProvider>
+    <AppSidebar />
+    <SidebarTrigger />
 
       {/* Main Content */}
       <div
@@ -491,15 +249,11 @@ export const GrpSchedule = () => {
         {/* Calendar View */}
         {viewMode === "weekly" ? (
           <div className="scrollable-calendar" ref={calendarContainerRef}>
-            <div className="calendar-grid" onMouseDown={preventTextSelection}>
+            <div className="calendar-grid">
               <div className="calendar-header">
                 <div className="time-slot-header"></div>
                 {weekDays.map((day, index) => (
-                  <div
-                    key={index}
-                    className="day-header"
-                    onClick={() => handleColumnSelection(day)}
-                  >
+                  <div key={index} className="day-header">
                     {day.toLocaleDateString("en-US", {
                       weekday: "short",
                       day: "numeric",
@@ -511,12 +265,7 @@ export const GrpSchedule = () => {
               <div className="calendar-body">
                 {hourlyIntervals.map((hour, timeIndex) => (
                   <div key={timeIndex} className="time-row">
-                    <div
-                      className="time-slot"
-                      onClick={() => handleRowSelection(hour)}
-                    >
-                      {hour}:00
-                    </div>
+                    <div className="time-slot">{hour}:00</div>
                     {weekDays.map((day, dayIndex) => (
                       <div key={dayIndex} className="hour-slot">
                         {generateTimeRanges(hour).map((timeRange) => {
@@ -527,14 +276,6 @@ export const GrpSchedule = () => {
                             <div
                               key={timeRange}
                               className={`slot ${isSelected ? "selected" : ""}`}
-                              onMouseDown={() =>
-                                handleMouseDown(day, timeRange)
-                              }
-                              onMouseOver={() =>
-                                handleMouseOver(day, timeRange)
-                              }
-                              onDragStart={(e) => e.preventDefault()}
-                              data-tooltip={timeRange}
                             ></div>
                           );
                         })}
@@ -546,11 +287,7 @@ export const GrpSchedule = () => {
             </div>
           </div>
         ) : (
-          <div
-            className="monthly-view"
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-          >
+          <div className="monthly-view">
             <div className="calendar-month-grid">
               {monthDays.map((day, index) => {
                 const date = formatDate(day);
@@ -561,7 +298,6 @@ export const GrpSchedule = () => {
                     className={`month-day ${isSelected ? "selected" : ""}`}
                     onMouseDown={() => handleDateMouseDown(day)}
                     onMouseOver={() => handleDateMouseOver(day)}
-                    onDragStart={(e) => e.preventDefault()}
                   >
                     {day.getDate()}
                   </div>
@@ -576,34 +312,9 @@ export const GrpSchedule = () => {
           <button className="btn-primary" onClick={handleClearAll}>
             Clear All
           </button>
-          <button className="btn-primary" onClick={handleProceed}>
-            Proceed
-          </button>
         </div>
       </div>
-
-      {/* Modals */}
-      {showLoginModal && (
-        <Login
-          closeModal={handleCloseModal} // Redirects to home on close
-          switchToRegister={() => {
-            setShowLoginModal(false);
-            setShowRegisterModal(true);
-          }}
-          onAuthSuccess={handleAuthSuccess}
-        />
-      )}
-
-      {showRegisterModal && (
-        <Register
-          closeModal={handleCloseModal} // Redirects to home on close
-          switchToLogin={() => {
-            setShowRegisterModal(false);
-            setShowLoginModal(true);
-          }}
-          onAuthSuccess={handleAuthSuccess}
-        />
-      )}
+      </SidebarProvider>
     </>
   );
 };
