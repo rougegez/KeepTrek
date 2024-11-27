@@ -31,6 +31,7 @@ function App() {
         <Route path="/trip-details/:id" element={<TripDetailsPage />} />
         <Route path="/join-team/:teamId" element={<JoinTeam />} />
         <Route path="/itineraryWL" element={<ItineraryWL />}/>
+        <Route path="/schedule" element={<GrpSchedule />}/>
       </Routes>
     </Router>
   );

@@ -13,17 +13,18 @@ export default function BudgetSection() {
     expenses,
     users,
     currentUser,
+    currentGroup,
     addExpense,
     editExpense,
     deleteExpense,
     addUser,
     switchUser,
-    getUserFriends,
     getUserExpenses,
     calculateTotalTripExpense,
     calculateYourExpense,
-    calculateNetBalance
+    calculateNetBalance,
   } = useBudget();
+  
 
   const typeIcons = {
     Food: <Utensils className="w-6 h-6" />,
@@ -56,10 +57,36 @@ export default function BudgetSection() {
     email: ''
   });
 
-  // Get user's friends for the current user
-  const userFriends = currentUser ? getUserFriends(currentUser.id) : [];
+  React.useEffect(() => {
+    setNewExpense(prev => ({
+      ...prev,
+      paidBy: currentUser?.id || ""
+    }));
+  }, [currentUser]);
+
+  const handleAddUser = async () => {
+    if (!newUser.name || !newUser.email) {
+      alert("Please fill in all fields.");
+      return;
+    }
+    
+    try {
+      const addedUser = await addUser(newUser);
+      if (addedUser) {
+        setNewUser({ name: "", email: "" });
+        setShowAddUser(false);
+      }
+    } catch (error) {
+      console.error("Failed to add user:", error);
+      alert("Failed to add user. Please try again.");
+    }
+  };
+
+  // All members of the current group
+  const groupMembers = currentGroup ? users.filter(user => currentGroup.members.includes(user.id)) : [];
 
   const [isOpen, setIsOpen] = useState(false);
+
   // const [form, setForm] = useState({
   //   date: new Date().toISOString().split("T")[0],
   //   type: "Food",
@@ -76,15 +103,18 @@ export default function BudgetSection() {
 
   // Calculate balances
   const calculateBalances = () => {
-    if (!currentUser) return {};
+    if (!currentUser || !currentGroup) return {};
   
     const balances = {};
-    const userFriends = getUserFriends(currentUser.id);
-  
-    userFriends.forEach((friend) => {
-      balances[friend.id] = 0;
+    
+    // Initialize balances for each group member, set to 0
+    currentGroup.members.forEach((memberId) => {
+      if (memberId !== currentUser.id) {
+        balances[memberId] = 0;
+      }
     });
   
+    // Iterate through all expenses that involve the current user and calculate balances
     getUserExpenses(currentUser.id).forEach((expense) => {
       if (expense.paidBy === currentUser.id) {
         // Current user paid
@@ -99,6 +129,10 @@ export default function BudgetSection() {
           (split) => split.friendId === currentUser.id
         );
         if (currentUserSplit) {
+          // Decrease the balance because current user owes money to someone else
+          if (!balances[expense.paidBy]) {
+            balances[expense.paidBy] = 0;
+          }
           balances[expense.paidBy] -= currentUserSplit.amount;
         }
       }
@@ -107,55 +141,56 @@ export default function BudgetSection() {
     return balances;
   };
 
-  const handleAddUser = () => {
-    if (!newUser.name || !newUser.email) return;
-    addUser(newUser);
-    setNewUser({ name: '', email: '' });
-    setShowAddUser(false);
-  };
+
 
   // Event handlers
-  const handleAddExpense = () => {
-    if (!newExpense.description || !newExpense.amount || !newExpense.type) {
+  const handleAddExpense = async () => {
+    if (!newExpense.description || !newExpense.amount || !newExpense.type || !newExpense.paidBy) {
       alert("Please fill all required fields");
       return;
     }
-
+  
     let splits;
     if (newExpense.splitMethod === "equal") {
-      const splitAmount = Number(newExpense.amount) / (userFriends.length + 1);
-      splits = [
-        { friendId: currentUser.id, amount: splitAmount },
-        ...userFriends.map(friend => ({
-          friendId: friend.id,
-          amount: splitAmount
-        }))
-      ];
+      const groupMembers = currentGroup?.members || [];
+      const splitAmount = Number(newExpense.amount) / groupMembers.length;
+      splits = groupMembers.map((memberId) => ({
+        friendId: memberId,
+        amount: splitAmount,
+      }));
     } else {
       splits = newExpense.splits;
     }
-
-    const expense = {
-      id: expenses.length + 1,
+  
+    const expenseToAdd = {
       ...newExpense,
       amount: Number(newExpense.amount),
-      splits
+      splits,
     };
-
-    addExpense(expense);
-    setShowAddExpense(false);
-    setNewExpense({
-      date: new Date().toISOString().split("T")[0],
-      type: '',
-      description: '',
-      amount: '',
-      paidBy: currentUser.id,
-      splits: [],
-      splitMethod: 'equal'
-    });
+  
+    try {
+      await addExpense(expenseToAdd);
+  
+      // Reset form fields after adding
+      setNewExpense({
+        date: new Date().toISOString().split("T")[0],
+        type: "",
+        description: "",
+        amount: "",
+        paidBy: currentUser.id,
+        splits: [],
+        splitMethod: "equal",
+      });
+  
+      // Close the form/modal after adding the expense successfully
+      setShowAddExpense(false);
+    } catch (error) {
+      console.error("Failed to add expense:", error);
+      alert("Failed to add expense. Please try again.");
+    }
   };
 
-  const balances = calculateBalances();
+  const balances = currentUser?calculateBalances():{};
 
 
   if (!currentUser) return <div>Loading...</div>;
@@ -169,64 +204,78 @@ export default function BudgetSection() {
     setSelectedExpense(null);
     setIsExpenseModalOpen(false);
   };
-  const handleEditExpense = (updatedExpense) => {
-    let updatedSplits = updatedExpense.splits;
-  
-    if (updatedExpense.splitMethod === "equal") {
-      const splitAmount =
-        Number(updatedExpense.amount) / (userFriends.length + 1); // Include current user
-      updatedSplits = [
-        { friendId: currentUser.id, amount: splitAmount },
-        ...userFriends.map((friend) => ({
-          friendId: friend.id,
+  const handleEditExpense = async (updatedExpense) => {
+    try {
+      // Validate splits and prepare the updated splits object
+      let updatedSplits = updatedExpense.splits;
+
+      // Check for split method and apply appropriate logic
+      if (updatedExpense.splitMethod === "equal") {
+        const groupMembers = currentGroup?.members || [];
+        const splitAmount = Number(updatedExpense.amount) / groupMembers.length;
+        updatedSplits = groupMembers.map((memberId) => ({
+          friendId: memberId,
           amount: splitAmount,
-        })),
-      ];
-    } else if (updatedExpense.splitMethod === "custom") {
-      // Ensure custom splits are valid
-      const totalCustomAmount = updatedExpense.splits.reduce(
-        (sum, split) => sum + split.amount,
-        0
-      );
-      if (totalCustomAmount > updatedExpense.amount) {
-        alert("Custom split amounts exceed the total expense amount.");
-        return; // Stop processing if invalid
+        }));
+      } else if (updatedExpense.splitMethod === "custom") {
+        const totalCustomAmount = updatedExpense.splits.reduce(
+          (sum, split) => sum + (split.amount || 0),
+          0
+        );
+        if (totalCustomAmount > updatedExpense.amount) {
+          alert("Custom split amounts exceed the total expense amount.");
+          return; // Stop processing if the validation fails
+        }
+      } else if (updatedExpense.splitMethod === "percentage") {
+        const totalPercentage = updatedExpense.splits.reduce(
+          (sum, split) => sum + (split.percentage || 0),
+          0
+        );
+        if (totalPercentage > 100) {
+          alert("Total percentage cannot exceed 100%.");
+          return; // Stop processing if the validation fails
+        }
+        updatedSplits = updatedExpense.splits.map((split) => ({
+          friendId: split.friendId,
+          amount: (split.percentage / 100) * updatedExpense.amount,
+        }));
       }
-    } else if (updatedExpense.splitMethod === "percentage") {
-      // Ensure percentage splits are valid
-      const totalPercentage = updatedExpense.splits.reduce(
-        (sum, split) => sum + split.percentage,
-        0
-      );
-      if (totalPercentage > 100) {
-        alert("Total percentage cannot exceed 100%.");
-        return; // Stop processing if invalid
-      }
-      updatedSplits = updatedExpense.splits.map((split) => ({
-        ...split,
-        amount: (updatedExpense.amount * split.percentage) / 100,
-      }));
+
+      // Create an expense object to be updated
+      const expenseToUpdate = { ...updatedExpense, splits: updatedSplits };
+
+      console.log("Editing expense with data:", expenseToUpdate);
+
+      // Use the `editExpense` function from the context to update the backend
+      await editExpense(expenseToUpdate);
+
+      // Log success message if no error occurs
+      console.log("Expense updated successfully!");
+
+      // Close the expense modal after successful update
+      handleCloseExpenseModal(); // Assuming you have this function defined to close the modal
+    } catch (error) {
+      console.error("Failed to edit expense:", error);
+      alert("Failed to edit expense. Please try again.");
     }
-  
-    const updatedExpenseWithSplits = { ...updatedExpense, splits: updatedSplits };
-  
-    const updatedExpenses = expenses.map((expense) =>
-      expense.id === updatedExpenseWithSplits.id
-        ? updatedExpenseWithSplits
-        : expense
-    );
-  
-    setExpenses(updatedExpenses);
-    localStorage.setItem(EXPENSES_KEY, JSON.stringify(updatedExpenses));
-    handleCloseExpenseModal(); // Close the modal after editing
   };
-  
-  const handleDeleteExpense = (expenseId) => {
-    const updatedExpenses = expenses.filter((expense) => expense.id !== expenseId);
-    setExpenses(updatedExpenses);
-    localStorage.setItem(EXPENSES_KEY, JSON.stringify(updatedExpenses));
-    handleCloseExpenseModal(); // Close the modal after deleting
+  const handleDeleteExpense = async (expenseId) => {
+    try {
+      console.log("Deleting expense with ID:", expenseId);
+
+      // Use the `deleteExpense` function from the context to delete the expense
+      await deleteExpense(expenseId);
+
+      // Log success message if no error occurs
+      console.log("Expense deleted successfully!");
+
+      handleCloseExpenseModal(); // Assuming you have this function to close the modal after deleting
+    } catch (error) {
+      console.error("Failed to delete expense:", error);
+      alert("Failed to delete expense. Please try again.");
+    }
   };
+
 
 
   // const handleAddExpense = () => {
@@ -293,7 +342,7 @@ export default function BudgetSection() {
             </Dialog>
             
             <Dialog open={showAddUser} onOpenChange={setShowAddUser}>
-              <DialogTrigger className="flex items-center bg-green-500 text-white px-3 py-2 rounded-lg">
+              <DialogTrigger className="flex items-center bg-[#4DB6AC] text-white px-3 py-2 rounded-lg">
                 <UserPlus className="w-4 h-4 mr-1" /> Add User
               </DialogTrigger>
               <DialogContent>
@@ -362,14 +411,14 @@ export default function BudgetSection() {
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-xl font-semibold">Expenses</h3>
-          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <Dialog open={showAddExpense} onOpenChange={setShowAddExpense}>
   <DialogTrigger asChild>
     <Button className="bg-[#4DB6AC] hover:bg-[#3B9B91] text-white">
       <Plus className="w-4 h-4 mr-2" />
       Expense
     </Button>
   </DialogTrigger>
-  <DialogContent className="transition-all duration-600 scale-100 data-[state=closed]:scale-0">
+  <DialogContent>
     <DialogHeader>
       <DialogTitle>Add Expense</DialogTitle>
     </DialogHeader>
@@ -419,28 +468,33 @@ export default function BudgetSection() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Paid By</label>
-                  <Select value={newExpense.paidBy.toString()} 
-                  onValueChange={(value) => setNewExpense({ ...newExpense, paidBy: Number(value) })}>
-                    <SelectTrigger className="w-full">
-                      {newExpense.paidBy
-                        ? newExpense.paidBy === currentUser.id
-                          ? `You (${currentUser.name})`
-                          : users.find(user => user.id === newExpense.paidBy)?.name || "Select User"
-                        : "Select User"}
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={currentUser.id.toString()}>You ({currentUser.name})</SelectItem>
-                      {users
-                        .filter((user) => user.id !== currentUser.id)
-                        .map((user) => (
-                          <SelectItem key={user.id} value={user.id.toString()}>
-                            {user.name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                </div>
+  <label className="block text-sm font-medium mb-1">Paid By</label>
+  <Select
+    value={newExpense.paidBy ? newExpense.paidBy.toString() : ""}  // Make sure value is consistent
+    onValueChange={(value) => {
+      console.log("PaidBy changed to:", value); // Debugging log
+      setNewExpense({ ...newExpense, paidBy: value });
+    }}
+  >
+    <SelectTrigger className="w-full">
+      {newExpense.paidBy
+        ? newExpense.paidBy === currentUser.id
+          ? `You (${currentUser.name})`
+          : users.find((user) => user.id === newExpense.paidBy)?.name || "Select User"
+        : "Select User"}
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value={currentUser.id.toString()}>You ({currentUser.name})</SelectItem>
+      {users
+        .filter((user) => user.id !== currentUser.id)
+        .map((user) => (
+          <SelectItem key={user.id} value={user.id}>
+            {user.name}
+          </SelectItem>
+        ))}
+    </SelectContent>
+  </Select>
+</div>
                 <div>
                 <label className="block text-sm font-medium mb-1">Split Method</label>
                 <Select
@@ -466,7 +520,7 @@ export default function BudgetSection() {
       Remaining:{" "}
       {newExpense.splitMethod === "custom"
         ? `RM ${(newExpense.amount - newExpense.splits.reduce((sum, split) => sum + (split.amount || 0), 0)).toFixed(2)}`
-        : `${(100 - newExpense.splits.reduce((sum, split) => sum + (split.percentage || 0), 0)).toFixed(2)}%`}
+        : `Percentage: ${(100 - newExpense.splits.reduce((sum, split) => sum + (split.percentage || 0), 0)).toFixed(2)}%`}
     </p>
 
     {/* Alert if remaining amount/percentage is not zero */}
@@ -480,41 +534,65 @@ export default function BudgetSection() {
     ) : null}
 
     {/* Splits Input */}
-    {[...userFriends, { id: currentUser.id, name: "You" }].map((friend) => (
-      <div key={friend.id} className="flex items-center gap-4 mb-3">
-        <span className="w-1/3">
-          {friend.id === currentUser.id ? "You" : friend.name}:
-        </span>
-        <Input
-          type="number"
-          placeholder={
-            newExpense.splitMethod === "custom" ? "Amount" : "Percentage"
-          }
-          value={
-            newExpense.splits.find((split) => split.friendId === friend.id)
-              ?.[
-                newExpense.splitMethod === "custom"
-                  ? "amount"
-                  : "percentage"
-              ] || ""
-          }
-          onChange={(e) => {
-            const value = parseFloat(e.target.value) || 0;
+    {[...currentGroup.members.map((memberId) => {
+  const member = users.find((user) => user.id === memberId);
+  return {
+    id: member.id,
+    name: member.id === currentUser.id ? "You" : member.name,
+  };
+})].map((friend) => (
+  <div key={friend.id} className="flex items-center gap-4 mb-3">
+    <span className="w-1/3">
+      {friend.id === currentUser.id ? "You" : friend.name}:
+    </span>
+    <Input
+      type="number"
+      placeholder={
+        newExpense.splitMethod === "custom" ? "Amount (RM)" : "Percentage (%)"
+      }
+      value={
+        newExpense.splitMethod === "custom"
+          ? newExpense.splits.find((split) => split.friendId === friend.id)
+              ?.amount || ""
+          : newExpense.splits.find((split) => split.friendId === friend.id)
+              ?.percentage || ""
+      }
+      onChange={(e) => {
+        const value = parseFloat(e.target.value) || 0;
 
-            // Update splits dynamically
-            const updatedSplits = newExpense.splits.filter(
-              (split) => split.friendId !== friend.id
-            );
-            updatedSplits.push({
-              friendId: friend.id,
-              [newExpense.splitMethod === "custom" ? "amount" : "percentage"]: value,
-            });
+        // Update splits dynamically
+        const updatedSplits = newExpense.splits.filter(
+          (split) => split.friendId !== friend.id
+        );
 
-            setNewExpense({ ...newExpense, splits: updatedSplits });
-          }}
-        />
-      </div>
-    ))}
+        if (newExpense.splitMethod === "percentage") {
+          // Ensure total percentage does not exceed 100
+          const currentTotalPercentage = updatedSplits.reduce(
+            (sum, split) => sum + (split.percentage || 0),
+            0
+          );
+          if (currentTotalPercentage + value > 100) {
+            alert("Total percentage cannot exceed 100%.");
+            return;
+          }
+
+          updatedSplits.push({
+            friendId: friend.id,
+            percentage: value,
+            amount: (value / 100) * newExpense.amount, // Calculate amount from percentage
+          });
+        } else {
+          updatedSplits.push({
+            friendId: friend.id,
+            amount: value,
+          });
+        }
+
+        setNewExpense({ ...newExpense, splits: updatedSplits });
+      }}
+    />
+  </div>
+))}
   </div>
 )}
                 </div>
@@ -724,42 +802,45 @@ export default function BudgetSection() {
     ) : null}
 
     {/* Splits Input */}
-    {[...userFriends, { id: currentUser.id, name: "You" }].map((friend) => (
-      <div key={friend.id} className="flex items-center gap-4 mb-3">
-        <span className="w-1/3">
-          {friend.id === currentUser.id ? "You" : friend.name}:
-        </span>
-        <Input
-          type="number"
-          placeholder={
-            selectedExpense.splitMethod === "custom" ? "Amount" : "Percentage"
-          }
-          value={
-            selectedExpense.splits.find((split) => split.friendId === friend.id)
-              ?.[
-                selectedExpense.splitMethod === "custom"
-                  ? "amount"
-                  : "percentage"
-              ] || ""
-          }
-          disabled={selectedExpense.paidBy !== currentUser.id} // Disable if not payer
-          onChange={(e) => {
-            const value = parseFloat(e.target.value) || 0;
+    {[...currentGroup.members.map((memberId) => {
+  const member = users.find((user) => user.id === memberId);
+  return { id: member.id, name: member.id === currentUser.id ? "You" : member.name };
+})].map((friend) => (
+  <div key={friend.id} className="flex items-center gap-4 mb-3">
+    <span className="w-1/3">
+      {friend.id === currentUser.id ? "You" : friend.name}:
+    </span>
+    <Input
+      type="number"
+      placeholder={
+        selectedExpense.splitMethod === "custom" ? "Amount" : "Percentage"
+      }
+      value={
+        selectedExpense.splits.find((split) => split.friendId === friend.id)
+          ?.[
+            selectedExpense.splitMethod === "custom"
+              ? "amount"
+              : "percentage"
+          ] || ""
+      }
+      disabled={selectedExpense.paidBy !== currentUser.id} // Disable if not payer
+      onChange={(e) => {
+        const value = parseFloat(e.target.value) || 0;
 
-            // Update splits dynamically
-            const updatedSplits = selectedExpense.splits.filter(
-              (split) => split.friendId !== friend.id
-            );
-            updatedSplits.push({
-              friendId: friend.id,
-              [selectedExpense.splitMethod === "custom" ? "amount" : "percentage"]: value,
-            });
+        // Update splits dynamically
+        const updatedSplits = selectedExpense.splits.filter(
+          (split) => split.friendId !== friend.id
+        );
+        updatedSplits.push({
+          friendId: friend.id,
+          [selectedExpense.splitMethod === "custom" ? "amount" : "percentage"]: value,
+        });
 
-            setSelectedExpense({ ...selectedExpense, splits: updatedSplits });
-          }}
-        />
-      </div>
-    ))}
+        setSelectedExpense({ ...selectedExpense, splits: updatedSplits });
+      }}
+    />
+  </div>
+))}
   </div>
 )}
 
@@ -782,15 +863,15 @@ export default function BudgetSection() {
     (selectedExpense.splitMethod === "percentage" &&
       100 - selectedExpense.splits.reduce((sum, split) => sum + (split.percentage || 0), 0) !== 0)
   }
->Save Changes
-  
+>
+  Save Changes
 </Button>
-            <Button
-              className="bg-red-500 hover:bg-red-600 text-white"
-              onClick={() => handleDeleteExpense(selectedExpense.id)}
-            >
-              Delete
-            </Button>
+<Button
+  className="bg-red-500 hover:bg-red-600 text-white"
+  onClick={() => handleDeleteExpense(selectedExpense.id)}
+>
+  Delete
+</Button>
           </div>
         ) : (
           <p className="text-gray-600">You do not have permission to edit this expense.</p>
