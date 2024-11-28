@@ -141,6 +141,33 @@
         }
       ],
       "splitMethod": "percentage"
+    },
+    {
+      "id": "98b8",
+      "date": "2024-11-28",
+      "type": "Transport",
+      "description": "food",
+      "amount": 300,
+      "paidBy": "1",
+      "splits": [
+        {
+          "friendId": "1",
+          "amount": 100
+        },
+        {
+          "friendId": "2",
+          "amount": 100
+        },
+        {
+          "friendId": "3",
+          "amount": 50
+        },
+        {
+          "friendId": "6751cfe1-3d5d-45f5-b78f-885f75bc7a65",
+          "amount": 50
+        }
+      ],
+      "splitMethod": "custom"
     }
   ]
 }

@@ -25,7 +25,7 @@ export const TripOverview = ({
   return (
     <div>
       {/* Background Image Card */}
-      <Card className="relative w-[100%] h-[120%] rounded-[20px]
+      <Card className="relative w-[100%] h-[110%] rounded-[20px]
        bg-cover bg-center bg-no-repeat z-1 drop-shadow-keepTrek"
         style={{ backgroundImage: `url(${backgroundImage})` }}>
         <CardContent className="flex justify-end pb-0 pt-3 pr-4">
@@ -54,8 +54,8 @@ export const TripOverview = ({
           </Button>
           </div>    
         </CardHeader>
-        <CardContent className="pt-5 pb-2">
-          <p className="text-[50px] font-semibold">
+        <CardContent className="pt-5 pb-4 h-36">
+          <p className="text-[35px] font-semibold">
             {title}
           </p>
           <p className="text-[20px] text-[rgb(107,114,128)] ml-1">
