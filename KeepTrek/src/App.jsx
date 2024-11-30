@@ -21,7 +21,8 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<TripDetailsPage />} />
-        <Route path="/maptest" element={<MapTestPage />} /> {/*Use this to see the code for the map*/}
+        <Route path="/maptest" element={<MapTestPage />} /> 
+        {/*Use this to see the code for the map*/}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/itinerary" element={<Itinerary />} />
         <Route path="/schedule" element={<GrpSchedule />} />
@@ -39,6 +40,7 @@ function App() {
 }
 
 export default App;
+// npx json-server --watch db.json --port 3001
 
 // // src/App.js
 // import React from "react";

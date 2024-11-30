@@ -44,13 +44,14 @@ export default function BudgetSection() {
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState(null);
   const [newExpense, setNewExpense] = useState({
+    groupId: currentGroup?.id || "",  // Make sure groupId is included initially
     date: new Date().toISOString().split("T")[0],
-    type: '',
-    description: '',
-    amount: '',
-    paidBy: currentUser?.id || '',
+    type: "",
+    description: "",
+    amount: "",
+    paidBy: currentUser?.id || "",
     splits: [],
-    splitMethod: 'equal'
+    splitMethod: "equal",
   });
   const [newUser, setNewUser] = useState({
     name: '',
@@ -60,7 +61,7 @@ export default function BudgetSection() {
   React.useEffect(() => {
     setNewExpense(prev => ({
       ...prev,
-      paidBy: currentUser?.id || ""
+      paidBy: currentUser?.id || "",
     }));
   }, [currentUser]);
 
@@ -164,6 +165,7 @@ export default function BudgetSection() {
   
     const expenseToAdd = {
       ...newExpense,
+      groupId: currentGroup.id,  // Ensure groupId is explicitly added to expense
       amount: Number(newExpense.amount),
       splits,
     };
@@ -173,6 +175,7 @@ export default function BudgetSection() {
   
       // Reset form fields after adding
       setNewExpense({
+        groupId:currentGroup.id,
         date: new Date().toISOString().split("T")[0],
         type: "",
         description: "",
