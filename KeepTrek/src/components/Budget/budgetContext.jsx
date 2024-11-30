@@ -215,45 +215,74 @@ export function BudgetProvider({ children }) {
     };
 
     const calculateYourExpense = () => {
-        if (!currentUser) return 0; // Guard clause
-
-        return expenses.reduce((total, expense) => {
-            const userSplit = expense.splits.find(
-                (split) => split.friendId === currentUser.id
-            );
-            return total + (userSplit ? userSplit.amount : 0);
-        }, 0);
-    };
-
-    const calculateOwedToYou = () => {
-        if (!currentUser) return 0; // Guard clause
-
-        return expenses.reduce((total, expense) => {
-            if (expense.paidBy === currentUser.id) {
-                return total + expense.splits.reduce((sum, split) => {
-                    if (split.friendId !== currentUser.id) {
-                        return sum + split.amount;
-                    }
-                    return sum;
-                }, 0);
+        if (!currentUser || !currentGroup) return 0; // Guard clauses
+    
+        // Get all expenses related to the current group (users in the current group)
+        const groupUsers = currentGroup.members; // IDs of users in the group
+        const relevantExpenses = expenses.filter((expense) => {
+            // Check if the expense was paid by a user in the group (paidBy field)
+            return groupUsers.includes(expense.paidBy);
+        });
+    
+        console.log("Relevant expenses:", relevantExpenses); // Debug log
+    
+        // Sum up the user's split from each relevant expense
+        return relevantExpenses.reduce((total, expense) => {
+            const userSplit = expense.splits.find((split) => split.friendId === currentUser.id);
+    
+            if (userSplit) {
+                console.log(`User ${currentUser.name} owes ${userSplit.amount} for expense ${expense.id}`); // Debug log
+                return total + userSplit.amount;
             }
+    
             return total;
         }, 0);
     };
 
-    const calculateYouOwe = () => {
-        if (!currentUser) return 0; // Guard clause
+const calculateYouOwe = () => {
+    if (!currentUser || !currentGroup) return 0;
 
-        return expenses.reduce((total, expense) => {
-            const currentUserSplit = expense.splits.find(
-                (split) => split.friendId === currentUser.id
-            );
-            if (currentUserSplit && expense.paidBy !== currentUser.id) {
-                return total + currentUserSplit.amount;
-            }
-            return total;
-        }, 0);
-    };
+    const groupUsers = currentGroup.members;
+    const relevantExpenses = expenses.filter((expense) =>
+        groupUsers.includes(expense.paidBy)
+    );
+
+    console.log("Relevant expenses for you owe:", relevantExpenses); // Debug
+
+    return relevantExpenses.reduce((total, expense) => {
+        const userSplit = expense.splits.find((split) => split.friendId === currentUser.id);
+
+        if (userSplit && expense.paidBy !== currentUser.id) {
+            console.log(`${currentUser.name} owes ${userSplit.amount} for expense ${expense.id}`); // Debug
+            return total + userSplit.amount;
+        }
+        return total;
+    }, 0);
+};
+
+const calculateOwedToYou = () => {
+    if (!currentUser || !currentGroup) return 0;
+
+    const groupUsers = currentGroup.members;
+    const relevantExpenses = expenses.filter((expense) =>
+        groupUsers.includes(expense.paidBy)
+    );
+
+    console.log("Relevant expenses for owed to you:", relevantExpenses); // Debug
+
+    return relevantExpenses.reduce((total, expense) => {
+        if (expense.paidBy === currentUser.id) {
+            return total + expense.splits.reduce((sum, split) => {
+                if (split.friendId !== currentUser.id) {
+                    console.log(`${split.friendId} owes ${split.amount} for expense ${expense.id}`); // Debug
+                    return sum + split.amount;
+                }
+                return sum;
+            }, 0);
+        }
+        return total;
+    }, 0);
+};
 
     const calculateNetBalance = () => {
         const owedToYou = calculateOwedToYou();
@@ -262,26 +291,58 @@ export function BudgetProvider({ children }) {
     };
 
     const settleDebt = async (fromUserId, toUserId, amount) => {
-        setExpenses((prevExpenses) => {
-            return prevExpenses.map((expense) => {
-                if (expense.paidBy === toUserId) {
-                    const updatedSplits = expense.splits
-                        .map((split) => {
-                            if (split.friendId === fromUserId) {
-                                const remainingAmount = split.amount - amount;
-                                return remainingAmount > 0
-                                    ? { ...split, amount: remainingAmount }
-                                    : null;
-                            }
-                            return split;
-                        })
-                        .filter(Boolean); // Remove splits with zero amount
-
-                    return { ...expense, splits: updatedSplits };
-                }
-                return expense;
+        try {
+            // First get all affected expenses (where toUserId paid)
+            const relevantExpenses = expenses.filter(expense => 
+                expense.paidBy === toUserId && 
+                expense.splits.some(split => split.friendId === fromUserId)
+            );
+    
+            // Create deep copies of expenses to modify
+            const updatedExpenses = relevantExpenses.map(expense => {
+                const newExpense = { ...expense };
+                newExpense.splits = expense.splits.map(split => {
+                    if (split.friendId === fromUserId) {
+                        // Calculate remaining amount after partial payment
+                        const remainingAmount = Math.max(0, split.amount - amount);
+                        amount = Math.max(0, amount - split.amount); // Update remaining amount to settle
+                        return { ...split, amount: remainingAmount };
+                    }
+                    return { ...split };
+                });
+                return newExpense;
             });
-        });
+    
+            // Update each modified expense in the backend
+            const updatePromises = updatedExpenses.map(async (expense) => {
+                const response = await fetch(`${API_URL}/expenses/${expense.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(expense)
+                });
+    
+                if (!response.ok) {
+                    throw new Error(`Failed to update expense ${expense.id}`);
+                }
+    
+                return response.json();
+            });
+    
+            // Wait for all updates to complete
+            const updatedResults = await Promise.all(updatePromises);
+    
+            // Update local state with the new expenses
+            setExpenses(prev => 
+                prev.map(expense => {
+                    const updated = updatedResults.find(u => u.id === expense.id);
+                    return updated || expense;
+                })
+            );
+    
+        } catch (error) {
+            console.error('Failed to settle debt:', error);
+            throw new Error('Failed to settle debt. Please try again.');
+        }
     };
     const updateGroupBudget = async (userId, budget) => {
       if (!currentGroup) {
@@ -318,6 +379,7 @@ export function BudgetProvider({ children }) {
         throw error;
       }
     };
+    
 
     const value = {
         expenses,
