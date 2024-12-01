@@ -21,7 +21,7 @@ function ItineraryWL() {
           title: "Breakfast @ Ying Her Kopitiam",
           location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
           image: "./src/assets/dummy-image.jpg",
-          notes: "",
+          notes: "test",
         },
         {
           id: "2",
@@ -39,6 +39,20 @@ function ItineraryWL() {
       activities: [
         {
           id: "3",
+          time: "8:00am",
+          duration: "1 hr",
+          title: "Breakfast @ Ying Her Kopitiam",
+          location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
+          image: "./src/assets/dummy-image.jpg",
+          notes: "",
+        },
+      ],
+    },
+    {
+      date: "Day 3",
+      activities: [
+        {
+          id: "4",
           time: "8:00am",
           duration: "1 hr",
           title: "Breakfast @ Ying Her Kopitiam",
@@ -79,13 +93,14 @@ function ItineraryWL() {
     }
   };
 
-  const handleNoteChange = (dayIndex, activityId, newNote) => {
-    const newDays = [...days];
-    const activity = newDays[dayIndex].activities.find((a) => a.id === activityId);
-    if (activity) {
-      activity.notes = newNote;
-    }
-    setDays(newDays);
+  const handleNoteChange = (activityId, newNote) => {
+    const updatedDays = days.map(day => ({
+      ...day,
+      activities: day.activities.map(activity => 
+        activity.id === activityId ? { ...activity, notes: newNote } : activity
+      )
+    }));
+    setDays(updatedDays);
   };
 
   const updateActivities = (newActivities, dayIndex) => {
@@ -100,14 +115,14 @@ function ItineraryWL() {
   };
 
   const handleSaveEdit = (editedActivity) => {
-    const updatedDays = [...days];
-    const { dayIndex, id } = editedActivity;
-    const activityIndex = updatedDays[dayIndex].activities.findIndex((a) => a.id === id);
-
-    if (activityIndex !== -1) {
-      updatedDays[dayIndex].activities[activityIndex] = editedActivity;
-      setDays(updatedDays);
-    }
+    const updatedDays = days.map(day => ({
+      ...day,
+      activities: day.activities.map(activity => 
+        activity.id === editedActivity.id ? editedActivity : activity
+      )
+    }));
+    setDays(updatedDays);
+    setIsEditModalOpen(false);
   };
 
   const handleDeleteClick = (dayIndex, activityId) => {
@@ -148,9 +163,9 @@ function ItineraryWL() {
                 className="space-y-4">
                 {day.activities.map((activity) => (
                   <ActivityCard
-                    key={activity.id}
+                    key={activity.id} 
                     activity={activity}
-                    onNoteChange={(newNote) => handleNoteChange(dayIndex, activity.id, newNote)}
+                    onNoteChange={handleNoteChange}
                     onEditClick={() => handleEditClick(dayIndex, activity)}
                     onDeleteClick={() => handleDeleteClick(dayIndex, activity.id)}
                   />
@@ -174,7 +189,7 @@ function ItineraryWL() {
             onSaveLocation={handleSaveLocation}
             onMapLoad={handleMapLoad}
             initialPlace={searchedPlace}
-            height="800px" />
+            height="800px" /> {/* Need a better way to adjust height, h-full won't work */}
         </div>
       </div>
 
