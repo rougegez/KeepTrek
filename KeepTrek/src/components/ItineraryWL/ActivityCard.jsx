@@ -2,12 +2,13 @@ import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, MapPin, Pencil, X } from 'lucide-react';
 import { Reorder } from "framer-motion";
+import { formatTime } from '../../utils/timeFormat.jsx';
 
 const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick }) => {
   return (
     <Reorder.Item key={activity.id} value={activity} className="relative">
       <div className="absolute left-0 -ml-24 top-12 flex flex-col space-y-1 text-sm text-muted-foreground px-10">
-        <div className="font-medium">{activity.time}</div>
+        <div className="font-medium">{formatTime(activity.time)}</div>
         <div className="flex items-center gap-1">
           <Clock className="w-4 h-4" />
           {activity.duration}

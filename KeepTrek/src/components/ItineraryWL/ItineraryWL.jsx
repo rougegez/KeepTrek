@@ -16,7 +16,8 @@ function ItineraryWL() {
       activities: [
         {
           id: "1",
-          time: "8:00am",
+          time: "08:00",
+          type: "food",
           duration: "1 hr",
           title: "Breakfast @ Ying Her Kopitiam",
           location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
@@ -25,7 +26,8 @@ function ItineraryWL() {
         },
         {
           id: "2",
-          time: "8:00am",
+          time: "08:00",
+          type: "food",
           duration: "1 hr",
           title: "Breakfast @ Ying Her Kopitiam",
           location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
@@ -39,7 +41,8 @@ function ItineraryWL() {
       activities: [
         {
           id: "3",
-          time: "8:00am",
+          time: "08:00",
+          type: "food",
           duration: "1 hr",
           title: "Breakfast @ Ying Her Kopitiam",
           location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
@@ -53,7 +56,8 @@ function ItineraryWL() {
       activities: [
         {
           id: "4",
-          time: "8:00am",
+          time: "08:00",
+          type: "food",
           duration: "1 hr",
           title: "Breakfast @ Ying Her Kopitiam",
           location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
@@ -68,8 +72,7 @@ function ItineraryWL() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentActivity, setCurrentActivity] = useState(null);
   const [mapInstance, setMapInstance] = useState(null);
-  
-  const [savedLocations, setSavedLocations] = useState([]);
+
   const [searchedPlace, setSearchedPlace] = useState(null);
   const [savedLocation, setSavedLocation] = useState(null);
 
@@ -79,18 +82,7 @@ function ItineraryWL() {
 
   const handleSaveLocation = (place) => {
     setSavedLocation(place);
-    setAddModalState({ isOpen: true, selectedDay: null });
-  };
-
-  const handleLocationSearch = (suggestion) => {
-    if (suggestion && suggestion.center) {
-        const place = {
-            name: suggestion.text,
-            address: suggestion.place_name,
-            coordinates: suggestion.center
-        };
-        setSearchedPlace(place);
-    }
+    setAddModalState({ isOpen: true, selectedDay: days[days.length-1].date });
   };
 
   const handleNoteChange = (activityId, newNote) => {
@@ -110,20 +102,37 @@ function ItineraryWL() {
   };
 
   const handleEditClick = (dayIndex, activity) => {
-    setCurrentActivity({ ...activity, dayIndex });
+    setCurrentActivity({ ...activity, day: days[dayIndex].date });
     setIsEditModalOpen(true);
   };
 
   const handleSaveEdit = (editedActivity) => {
-    const updatedDays = days.map(day => ({
-      ...day,
-      activities: day.activities.map(activity => 
-        activity.id === editedActivity.id ? editedActivity : activity
-      )
-    }));
+    const updatedDays = days.map(day => {
+      if (day.date === editedActivity.day) {
+        const activityIndex = day.activities.findIndex(a => a.id === editedActivity.id);
+        if (activityIndex !== -1) {
+          // If the activity is found, update it in place
+          const updatedActivities = [...day.activities];
+          updatedActivities[activityIndex] = editedActivity;
+          return { ...day, activities: updatedActivities };
+        } else {
+          // If the activity is not found (day changed), add it to the end
+          return { ...day, activities: [...day.activities, editedActivity] };
+        }
+      } else {
+        // Remove the activity if it was moved to a different day
+        return {
+          ...day,
+          activities: day.activities.filter(a => a.id !== editedActivity.id)
+        };
+      }
+    });
+    console.log(updatedDays)
     setDays(updatedDays);
     setIsEditModalOpen(false);
+    setCurrentActivity(null);
   };
+  
 
   const handleDeleteClick = (dayIndex, activityId) => {
     const updatedDays = [...days];
@@ -208,9 +217,13 @@ function ItineraryWL() {
 
       <EditActivityModal
         isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setCurrentActivity(null);
+        }}
         currentActivity={currentActivity}
         onSaveEdit={handleSaveEdit}
+        days={days}
       />
     </SidebarProvider>
   );
