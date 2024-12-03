@@ -18,7 +18,7 @@ function ItineraryWL() {
           id: "1",
           time: "08:00",
           type: "food",
-          duration: "1 hr",
+          duration: "1",
           title: "Breakfast @ Ying Her Kopitiam",
           location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
           image: "./src/assets/dummy-image.jpg",
@@ -28,7 +28,7 @@ function ItineraryWL() {
           id: "2",
           time: "08:00",
           type: "food",
-          duration: "1 hr",
+          duration: "1",
           title: "Breakfast @ Ying Her Kopitiam",
           location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
           image: "./src/assets/dummy-image.jpg",
@@ -43,7 +43,7 @@ function ItineraryWL() {
           id: "3",
           time: "08:00",
           type: "food",
-          duration: "1 hr",
+          duration: "1",
           title: "Breakfast @ Ying Her Kopitiam",
           location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
           image: "./src/assets/dummy-image.jpg",
@@ -58,7 +58,7 @@ function ItineraryWL() {
           id: "4",
           time: "08:00",
           type: "food",
-          duration: "1 hr",
+          duration: "1",
           title: "Breakfast @ Ying Her Kopitiam",
           location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
           image: "./src/assets/dummy-image.jpg",
@@ -127,7 +127,6 @@ function ItineraryWL() {
         };
       }
     });
-    console.log(updatedDays)
     setDays(updatedDays);
     setIsEditModalOpen(false);
     setCurrentActivity(null);
@@ -146,7 +145,11 @@ function ItineraryWL() {
     const updatedDays = [...days];
     const dayIndex = updatedDays.findIndex(day => day.date === newActivity.day);
     if (dayIndex !== -1) {
-      updatedDays[dayIndex].activities.push(newActivity);
+      updatedDays[dayIndex].activities.push({
+        ...newActivity,
+        id: `${Date.now()}`,
+        image: "./src/assets/dummy-image.jpg",
+      });
       setDays(updatedDays);
     }
   };

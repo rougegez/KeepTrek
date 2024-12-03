@@ -11,7 +11,7 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick }) =>
         <div className="font-medium">{formatTime(activity.time)}</div>
         <div className="flex items-center gap-1">
           <Clock className="w-4 h-4" />
-          {activity.duration}
+          {activity.duration} hr
         </div>
       </div>
       <Card className="bg-white rounded-xl shadow-sm w-full max-w-4xl">

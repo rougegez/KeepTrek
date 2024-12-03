@@ -9,6 +9,8 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
     const [newActivity, setNewActivity] = useState({
         day: "",
         type: "food",
+        time: "",
+        duration: "",
         title: "",
         location: "",
         notes: "",
@@ -24,7 +26,9 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
         } else {
             setNewActivity({
                 day: "",
-                type: "food",
+                type: "",
+                time: "",
+                duration: "",
                 title: "",
                 location: "",
                 notes: "",
@@ -32,12 +36,21 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
         }
     }, [isOpen, location, selectedDay]);
 
+    const handleLocationChange = (newLocation) => {
+        setNewActivity(prev => ({
+            ...prev,
+            location: newLocation
+        }));
+    };
+
     return (
         <Dialog open={isOpen} onOpenChange={(open) => {
             if (!open) {
                 setNewActivity({
                     day: "",
                     type: "food",
+                    time: "08:00",
+                    duration: "1",
                     title: "",
                     location: "",
                     notes: "",
@@ -92,6 +105,33 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                     </div>
 
                     <div>
+                        <label htmlFor="activity-time" className="block text-sm font-medium text-muted-foreground mb-1">Time</label>
+                        <Input
+                            id="activity-time"
+                            type="time"
+                            value={newActivity.time}
+                            onChange={(e) =>
+                                setNewActivity((prev) => ({ ...prev, time: e.target.value }))
+                            }
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="activity-duration" className="block text-sm font-medium text-muted-foreground mb-1">Duration (in hours)</label>
+                        <Input
+                            id="activity-duration"
+                            type="number"
+                            step="0.5"
+                            min="0"
+                            placeholder="e.g. 1"
+                            value={newActivity.duration}
+                            onChange={(e) =>
+                                setNewActivity((prev) => ({ ...prev, duration: e.target.value }))
+                            }
+                        />
+                    </div>
+
+                    <div>
                         <label htmlFor="activity-name" className="block text-sm font-medium text-muted-foreground mb-1">Activity Name</label>
                         <Input
                             id="activity-name"
@@ -109,9 +149,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                         <MapSearchBar
                             id="address"
                             searchButton={false}
-                            onChange={(value) => {
-                                setNewActivity((prev) => ({ ...prev, location: value}
-                                ))}}
+                            onChange={handleLocationChange}
                             initialPlace={newActivity.location}
                         />
                     </div>
@@ -138,12 +176,17 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                                 onAddActivity({
                                     ...newActivity,
                                     id: `${Date.now()}`,
-                                    time: "8:00am",
-                                    duration: "1 hr",
                                     image: "./src/assets/dummy-image.jpg",
-                                    location: newActivity.location,
                                 });
-                                setNewActivity({ day: "", type: "food", title: "", location: "", notes: "" });
+                                setNewActivity({
+                                    day: "",
+                                    type: "food",
+                                    time: "08:00",
+                                    duration: "1",
+                                    title: "",
+                                    location: "",
+                                    notes: "",
+                                });
                                 onClose();
                             }}
                         >

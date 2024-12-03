@@ -94,11 +94,13 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days}
           </div>
 
           <div>
-            <label htmlFor="activity-duration" className="block text-sm font-medium text-muted-foreground mb-1">Duration</label>
+            <label htmlFor="activity-duration" className="block text-sm font-medium text-muted-foreground mb-1">Duration (in hours)</label>
             <Input
               id="activity-duration"
-              type="text"
-              placeholder="e.g., 1 hr"
+              type="number"
+              min="0"
+              step="0.5"
+              placeholder="e.g. 1 hr"
               value={editedActivity.duration}
               onChange={(e) =>
                 setEditedActivity({ ...editedActivity, duration: e.target.value })
