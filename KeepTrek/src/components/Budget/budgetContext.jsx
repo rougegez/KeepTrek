@@ -10,6 +10,7 @@ export function BudgetProvider({ children }) {
     const [expenses, setExpenses] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
     const [currentGroup, setCurrentGroup] = useState(null);
+    const [settledDebts, setSettledDebts] = useState([]);
 
     // Backend API Base URL
     const API_URL = 'http://localhost:3001';
@@ -18,20 +19,21 @@ export function BudgetProvider({ children }) {
     useEffect(() => {
         const initializeData = async () => {
             try {
-                const [usersRes, groupsRes, expensesRes] = await Promise.all([
+                const [usersRes, groupsRes, expensesRes, settledDebtsRes] = await Promise.all([
                     fetch(`${API_URL}/users`).then((res) => (res.ok ? res.json() : [])),
                     fetch(`${API_URL}/groups`).then((res) => (res.ok ? res.json() : [])),
                     fetch(`${API_URL}/expenses`).then((res) => (res.ok ? res.json() : [])),
+                    fetch(`${API_URL}/settledDebts`).then((res) => (res.ok ? res.json() : [])),
                 ]);
-
+    
                 setUsers(usersRes);
                 setGroups(groupsRes);
                 setExpenses(expensesRes);
-
+                setSettledDebts(settledDebtsRes); // Load settled debts into state
+    
                 // Set default current user and group if available
                 if (usersRes.length > 0) {
                     setCurrentUser(usersRes[0]);
-                    // Assign the current group based on the first user (assuming they are assigned to the first group)
                     const userGroup = groupsRes.find(group => group.members.includes(usersRes[0].id));
                     setCurrentGroup(userGroup || null);
                 }
@@ -39,7 +41,7 @@ export function BudgetProvider({ children }) {
                 console.error('Failed to fetch data:', error);
             }
         };
-
+    
         initializeData();
     }, []);
 
@@ -292,53 +294,10 @@ const calculateOwedToYou = () => {
 
     const settleDebt = async (fromUserId, toUserId, amount) => {
         try {
-            // First get all affected expenses (where toUserId paid)
-            const relevantExpenses = expenses.filter(expense => 
-                expense.paidBy === toUserId && 
-                expense.splits.some(split => split.friendId === fromUserId)
-            );
+            // Add the settlement record
+            await addSettlement(fromUserId, toUserId, amount);
     
-            // Create deep copies of expenses to modify
-            const updatedExpenses = relevantExpenses.map(expense => {
-                const newExpense = { ...expense };
-                newExpense.splits = expense.splits.map(split => {
-                    if (split.friendId === fromUserId) {
-                        // Calculate remaining amount after partial payment
-                        const remainingAmount = Math.max(0, split.amount - amount);
-                        amount = Math.max(0, amount - split.amount); // Update remaining amount to settle
-                        return { ...split, amount: remainingAmount };
-                    }
-                    return { ...split };
-                });
-                return newExpense;
-            });
-    
-            // Update each modified expense in the backend
-            const updatePromises = updatedExpenses.map(async (expense) => {
-                const response = await fetch(`${API_URL}/expenses/${expense.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(expense)
-                });
-    
-                if (!response.ok) {
-                    throw new Error(`Failed to update expense ${expense.id}`);
-                }
-    
-                return response.json();
-            });
-    
-            // Wait for all updates to complete
-            const updatedResults = await Promise.all(updatePromises);
-    
-            // Update local state with the new expenses
-            setExpenses(prev => 
-                prev.map(expense => {
-                    const updated = updatedResults.find(u => u.id === expense.id);
-                    return updated || expense;
-                })
-            );
-    
+            console.log(`Recorded settlement of ${amount} from ${fromUserId} to ${toUserId}`);
         } catch (error) {
             console.error('Failed to settle debt:', error);
             throw new Error('Failed to settle debt. Please try again.');
@@ -379,6 +338,66 @@ const calculateOwedToYou = () => {
         throw error;
       }
     };
+    const addSettlement = async (fromUserId, toUserId, amount) => {
+        try {
+            const settlement = {
+                fromUserId,
+                toUserId,
+                amount,
+                date: new Date().toISOString(),
+            };
+    
+            // Save to database
+            const response = await fetch(`${API_URL}/settledDebts`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(settlement),
+            });
+    
+            if (!response.ok) {
+                throw new Error('Failed to save settlement.');
+            }
+    
+            const newSettlement = await response.json();
+    
+            // Update local state
+            setSettledDebts((prev) => [...prev, newSettlement]);
+    
+        } catch (error) {
+            console.error('Failed to add settlement:', error);
+            throw new Error('Failed to add settlement. Please try again.');
+        }
+    };
+    const fetchSettledDebts = async (groupId) => {
+        try {
+            const response = await fetch(`${API_URL}/settledDebts?groupId=${groupId}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch settled debts.');
+            }
+            const data = await response.json();
+            setSettledDebts(data); // Update the state
+        } catch (error) {
+            console.error('Failed to fetch settled debts:', error);
+        }
+    };
+    const calculateRemainingDebts = () => {
+        const dynamicDebts = calculateDynamicDebts(); // Assume you already have this function
+    
+        const remainingDebts = { ...dynamicDebts };
+    
+        settledDebts.forEach(({ fromUserId, toUserId, amount }) => {
+            if (remainingDebts[fromUserId] && remainingDebts[fromUserId][toUserId]) {
+                remainingDebts[fromUserId][toUserId] -= amount;
+    
+                // Ensure no negative debts
+                if (remainingDebts[fromUserId][toUserId] < 0) {
+                    remainingDebts[fromUserId][toUserId] = 0;
+                }
+            }
+        });
+    
+        return remainingDebts;
+    };
     
 
     const value = {
@@ -400,6 +419,8 @@ const calculateOwedToYou = () => {
         calculateNetBalance,
         settleDebt,
         updateGroupBudget,
+        fetchSettledDebts,
+        calculateRemainingDebts
     };
 
     return (

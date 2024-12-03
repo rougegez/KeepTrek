@@ -75,11 +75,11 @@ export const AppSidebar = () => {
     <Sidebar className="h-screen w-11/12 sticky top-0 bg-white drop-shadow-keepTrek overflow-y-auto z-50">
       <SidebarTrigger />
       <SidebarHeader>
-        <a href="/"><img src='../src/assets/KeepTrek.png' alt="KeepTrek Logo" className='size-18 w-40' /></a>
-        <span className="text-[32px] text-black font-semibold ml-4">Library</span>
+        <a href="/"><img src='../src/assets/KeepTrekNew.png' alt="KeepTrek Logo" className='size-18 w-44 mt-4' /></a>
+        
         
       </SidebarHeader>
-      <SidebarContent className="pl-2">
+      <SidebarContent className="pl-2 mt-14">
         {/* Overview */}
         <Collapsible defaultOpen className="group/collapsible">
           <SidebarGroup>
