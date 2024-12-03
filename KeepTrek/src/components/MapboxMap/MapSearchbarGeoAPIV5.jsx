@@ -2,24 +2,25 @@
 // Properties of the response.json
 // Have to use this until Search function in Mapbox has included Malaysia
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useDebouncedCallback } from 'use-debounce';
 
-const MapSearchBar = ({ mapInstance , onLocationSearch}) => {
+const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton=true, onChange, initialPlace}) => {
+    const [query, setQuery] = useState("");
+    const [suggestions, setSuggestions] = useState([]);
+    const [place, setPlace] = useState("");
 
-    const [query, setQuery] = useState(""); // User input
-    const [suggestions, setSuggestions] = useState([]); // Autocomplete suggestions
-    const [selectedSuggestion, setSelectedSuggestion] = useState(null); // Chosen location details
+    useEffect (() => {
+        if (initialPlace) {
+            setQuery(initialPlace)
+        }
+    }, [initialPlace])
 
-    const handleInputChange = async (e) => {
 
-        const value = e.target.value;
-        setQuery(value);
-
-        if (value.length > 4) {
-
-            // Fetch autocomplete suggestions from Mapbox
+    const debouncedHandleInputChange = useDebouncedCallback(async (value) => {
+        if (value.length > 3) {
             try {
                 const response = await fetch(
                     `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
@@ -33,59 +34,58 @@ const MapSearchBar = ({ mapInstance , onLocationSearch}) => {
                 setSuggestions([]);
             }
         } else {
-            setSuggestions([]); // Clear suggestions for short input
+            setSuggestions([]);
         }
+
+        if (onChange) {
+            onChange(value);
+        }
+    }, 500); // 500ms delay
+
+    const handleInputChange = (e) => {
+        const value = e.target.value;
+        setQuery(value);
+        debouncedHandleInputChange(value);
     };
 
     const handleSuggestionClick = (suggestion) => {
-        setQuery(suggestion.text); // Set the search bar to the clicked suggestion
-        setSelectedSuggestion(suggestion); // Save the selected suggestion details
-        setSuggestions([]); // Clear suggestions
+        setQuery(suggestion.text);
+        setPlace(suggestion);
+        setSuggestions([]);
+        // if (onLocationSearch) {
+        //     onLocationSearch(suggestion);
+        // }
+
+        if (onChange) {
+            onChange(suggestion)
+        }
     };
 
     const handleSearchClick = () => {
-        if (selectedSuggestion && mapInstance) {
-            const [lng, lat] = selectedSuggestion.center; // Extract coordinates
-            console.log("Panning to:", lng, lat); // Debug log
-            mapInstance.flyTo({ 
-                center: [lng, lat], 
-                zoom: 15, 
-                essential: true }); // Pan the map
-                
-            if (onLocationSearch) {
-                onLocationSearch(selectedSuggestion); // Pass to parent
-            }
-        } else {
-            console.error("Map instance is not ready or no suggestion selected.");
-        }
+        onLocationSearch(place);
     };
 
     return (
         <div className="relative w-full max-w-md mb-4">
             <div className="flex gap-2">
-                {/* Input Field */}
                 <Input
                     type="text"
                     placeholder="Search for a location..."
                     value={query}
                     onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border rounded bg-white"
                 />
-
-                {/* Search Button */}
-                <Button
-                    onClick={handleSearchClick}
-                >
+                {searchButton && (
+                <Button onClick={handleSearchClick}>
                     Search
                 </Button>
+                )}
             </div>
-
-            {/* Suggestions Dropdown */}
             {suggestions.length > 0 && (
                 <ul className="absolute w-full bg-white border border-gray-200 rounded mt-1 z-20 shadow-lg">
                     {suggestions.map((suggestion) => (
                         <li
-                            key={suggestion.id} // Use unique Mapbox ID if available
+                            key={suggestion.id}
                             onClick={() => handleSuggestionClick(suggestion)}
                             className="p-2 hover:bg-gray-100 cursor-pointer"
                         >
@@ -99,11 +99,8 @@ const MapSearchBar = ({ mapInstance , onLocationSearch}) => {
                 </ul>
             )}
         </div>
-
     );
-
 };
 
-
-
 export default MapSearchBar;
+

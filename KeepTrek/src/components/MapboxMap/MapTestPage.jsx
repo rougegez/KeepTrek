@@ -1,4 +1,4 @@
-import React, {useState, useRef } from "react";
+import React, { useState , useRef} from "react";
 
 //------------------------------------
 import MapboxMap from "../MapboxMap/MapboxMapV5.jsx";
@@ -13,18 +13,16 @@ import MapSearchBar from "../MapboxMap/MapSearchbarGeoAPIV5.jsx"
 
 export const MapTestPage = () => {
     const [savedLocations, setSavedLocations] = useState([]);
-    const mapRef = useRef(null);
-    const [mapInstance, setMapInstance] = useState(null)
-    const [searchedPlace, setSearchedPlace] = useState(null)
+    const [mapInstance, setMapInstance] = useState(null);
+    const [searchedPlace, setSearchedPlace] = useState(null);
 
     const handleMapLoad = (map) => {
-        setMapInstance(map)
-        mapRef.current = map
-    }
+        setMapInstance(map);
+    };
 
     const addSavedLocation = (location) => {
         setSavedLocations((prev) => [...prev, location]);
-    }
+    };
 
     const handleLocationSearch = (suggestion) => {
         if (suggestion && suggestion.center) {
@@ -48,28 +46,23 @@ export const MapTestPage = () => {
             }
 
             setSearchedPlace(place)
-        }
+        };
     }
-
-    return (
-        <>
-            <div className="py-6">
-                {/* SearchBar, change import for Geocoding or Search API*/}
-                <MapSearchBar 
-                mapInstance={mapInstance}
-                onLocationSearch={handleLocationSearch} />
-
-                {/* Mapbox Map with Save Location Callback */}
+        return (
+            <div className="flex justify-between m-0 p-20">
+                <MapSearchBar
+                    mapInstance={mapInstance}
+                    onLocationSearch={handleLocationSearch}
+                />
                 <MapboxMap
                     onSaveLocation={addSavedLocation}
                     onMapLoad={handleMapLoad}
                     initialPlace={searchedPlace}
+                    height="800px"
                 />
-                {/* Saved Locations Display */}
                 <div className="mt-4">
                     <SavedLocations locations={savedLocations} />
                 </div>
             </div>
-        </>
-    );
-}
+   
+)};
