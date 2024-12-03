@@ -27,7 +27,8 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days 
   const handleLocationChange = (newLocation) => {
     setEditedActivity(prev => ({
       ...prev,
-      location: newLocation
+      location: newLocation.place_name,
+      coordinates: newLocation.center
     }));
   };
 

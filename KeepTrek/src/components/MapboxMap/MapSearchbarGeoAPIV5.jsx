@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useDebouncedCallback } from 'use-debounce';
 
 const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton=true, onChange, initialPlace}) => {
     const [query, setQuery] = useState("");
@@ -14,11 +15,8 @@ const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton=true, onChan
     }, [initialPlace])
 
 
-    const handleInputChange = async (e) => {
-        const value = e.target.value;
-        setQuery(value);
-
-        if (value.length > 4) {
+    const debouncedHandleInputChange = useDebouncedCallback(async (value) => {
+        if (value.length > 3) {
             try {
                 const response = await fetch(
                     `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
@@ -37,20 +35,25 @@ const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton=true, onChan
 
         if (onChange) {
             onChange(value);
-          }
+        }
+    }, 500); // 500ms delay
+
+    const handleInputChange = (e) => {
+        const value = e.target.value;
+        setQuery(value);
+        debouncedHandleInputChange(value);
     };
 
     const handleSuggestionClick = (suggestion) => {
         setQuery(suggestion.text);
         setPlace(suggestion);
-        console.log(place)
         setSuggestions([]);
         // if (onLocationSearch) {
         //     onLocationSearch(suggestion);
         // }
 
         if (onChange) {
-            onChange(suggestion.place_name)
+            onChange(suggestion)
         }
     };
 

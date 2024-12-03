@@ -6,7 +6,12 @@ import { formatTime } from '../../utils/timeFormat.jsx';
 import { Textarea } from '@/components/ui/textarea.jsx';
 import { Button } from '../ui/button.jsx';
 
-const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick }) => {
+const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLocationClick }) => {
+  const truncateText = (text, maxLength) => {
+    if (text.length <= maxLength) return text;
+    return text.slice(0, maxLength) + '...';
+  };
+
   return (
     <Reorder.Item key={activity.id} value={activity} className="relative">
       <div className="absolute left-0 -ml-24 top-12 flex flex-col space-y-1 text-sm text-muted-foreground px-10">
@@ -32,7 +37,14 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick }) =>
 
               {/* Address */}
               <div className="flex items-start gap-1 text-sm text-muted-foreground">
-                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <Button
+                  variant="ghost"
+                  className="relative h-8 w-8 rounded-full"
+                  size="icon"
+                  onClick={() => onLocationClick(activity)}
+                >
+                  <MapPin className="h-4 w-4" />
+                </Button>
                 <span>{activity.location}</span>
               </div>
 

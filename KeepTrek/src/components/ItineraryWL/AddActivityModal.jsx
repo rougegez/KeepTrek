@@ -14,6 +14,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
         duration: "",
         title: "",
         location: "",
+        coordinates: [],
         notes: "",
     });
 
@@ -23,7 +24,8 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                 ...prev,
                 day: selectedDay || "",
                 title: location ? location.name : "",
-                location: location ? location.address : ""
+                location: location ? location.address : "",
+                coordinates: location ? location.coordinates : [],
             }));
         } else {
             setNewActivity({
@@ -33,6 +35,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                 duration: "",
                 title: "",
                 location: "",
+                coordinates: [],
                 notes: "",
             });
         }
@@ -41,7 +44,8 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
     const handleLocationChange = (newLocation) => {
         setNewActivity(prev => ({
             ...prev,
-            location: newLocation
+            location: newLocation.place_name,
+            coordinates: newLocation.center
         }));
     };
 
@@ -156,6 +160,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                         />
                     </div>
 
+                    {/* Input Title */}
                     <div>
                         <label htmlFor="activity-name" className="block text-sm font-medium text-muted-foreground mb-1">Activity Name</label>
                         <Input
@@ -169,6 +174,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                         />
                     </div>
 
+                    {/* Search address */}
                     <div>
                         <label htmlFor="address" className="block text-sm font-medium text-muted-foreground mb-1">Address</label>
                         <MapSearchBar
@@ -179,6 +185,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                         />
                     </div>
 
+                    {/* Input Notes */}
                     <div>
                         <label htmlFor="notes" className="block text-sm font-medium text-muted-foreground mb-1">Notes</label>
                         <Textarea
@@ -193,9 +200,12 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                     </div>
 
                     <div className="flex justify-end gap-2">
+                        {/* Cancel Button */}
                         <Button variant="outline" onClick={onClose}>
                             Cancel
                         </Button>
+
+                        {/* Add Button */}
                         <Button
                             onClick={() => {
                                 onAddActivity({

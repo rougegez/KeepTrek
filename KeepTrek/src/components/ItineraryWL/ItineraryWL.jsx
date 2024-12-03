@@ -21,6 +21,7 @@ function ItineraryWL() {
           duration: "1",
           title: "Breakfast @ Ying Her Kopitiam",
           location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
+          coordinates: [101.61650659978699,3.0643143329228195],
           image: "./src/assets/dummy-image.jpg",
           notes: "test",
         },
@@ -154,6 +155,14 @@ function ItineraryWL() {
     }
   };
 
+  const handleLocationClick = (clickLocation) => {
+    setSearchedPlace({
+      name: clickLocation.title,
+      address: clickLocation.location,
+      coordinates: clickLocation.coordinates
+  })
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -180,6 +189,7 @@ function ItineraryWL() {
                     onNoteChange={handleNoteChange}
                     onEditClick={() => handleEditClick(dayIndex, activity)}
                     onDeleteClick={() => handleDeleteClick(dayIndex, activity.id)}
+                    onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
                   />
                 ))}
               </Reorder.Group>
@@ -201,7 +211,7 @@ function ItineraryWL() {
             onSaveLocation={handleSaveLocation}
             onMapLoad={handleMapLoad}
             initialPlace={searchedPlace}
-            height="800px" /> {/* Need a better way to adjust height, h-full won't work */}
+            height="800px" /> {/*  Need a better way to adjust height, h-full won't work */}
         </div>
       </div>
 
