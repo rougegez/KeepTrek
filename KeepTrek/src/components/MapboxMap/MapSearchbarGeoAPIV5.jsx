@@ -1,3 +1,7 @@
+// https://docs.mapbox.com/api/search/geocoding/#geocoding-response-object
+// Properties of the response.json
+// Have to use this until Search function in Mapbox has included Malaysia
+
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
