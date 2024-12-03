@@ -2,17 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton, onChange, initialPlace}) => {
+const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton=true, onChange, initialPlace}) => {
     const [query, setQuery] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [place, setPlace] = useState("");
-    const [showSearch, setShowSearch] = useState(true);
-
-    useEffect(() => {
-        if (!searchButton) {
-            setShowSearch(false)
-        }
-    }, [searchButton])
 
     useEffect (() => {
         if (initialPlace) {
@@ -75,7 +68,7 @@ const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton, onChange, i
                     onChange={handleInputChange}
                     className="w-full p-2 border rounded bg-white"
                 />
-                {showSearch && (
+                {searchButton && (
                 <Button onClick={handleSearchClick}>
                     Search
                 </Button>

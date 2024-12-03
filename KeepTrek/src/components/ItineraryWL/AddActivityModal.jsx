@@ -4,11 +4,12 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import MapSearchBar from "../MapboxMap/MapSearchbarGeoAPIV5";
+import { Textarea } from '@/components/ui/textarea';
 
 const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, location, days, selectedDay }) => {
     const [newActivity, setNewActivity] = useState({
         day: "",
-        type: "food",
+        type: "",
         time: "",
         duration: "",
         title: "",
@@ -21,6 +22,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
             setNewActivity(prev => ({
                 ...prev,
                 day: selectedDay || "",
+                title: location ? location.name : "",
                 location: location ? location.address : ""
             }));
         } else {
@@ -43,14 +45,37 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
         }));
     };
 
+    const handleDurationChange = (e) => {
+        const inputValue = e.target.value;
+
+        // Allow empty input
+        if (inputValue === '') {
+            setNewActivity({ ...newActivity, duration: '' })
+            return;
+        }
+
+        // Convert to number for validation
+        const numberValue = parseFloat(inputValue);
+
+        // Check if the value is a valid number, positive, within range, and in 0.5 increments
+        if (
+            !isNaN(numberValue) &&
+            numberValue >= 0 &&
+            numberValue <= 99.5 &&
+            numberValue * 2 === Math.round(numberValue * 2) // Check for increments of 0.5
+        ) {
+            setNewActivity({ ...newActivity, duration: inputValue });
+        }
+    };
+
     return (
         <Dialog open={isOpen} onOpenChange={(open) => {
             if (!open) {
                 setNewActivity({
                     day: "",
-                    type: "food",
-                    time: "08:00",
-                    duration: "1",
+                    type: "",
+                    time: "",
+                    duration: "",
                     title: "",
                     location: "",
                     notes: "",
@@ -63,6 +88,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                     <DialogTitle>Add Activity</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
+                    {/* Select Day */}
                     <div>
                         <label htmlFor="day-select" className="block text-sm font-medium text-muted-foreground mb-1">Day</label>
                         <Select
@@ -84,6 +110,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                         </Select>
                     </div>
 
+                    {/* Select Activity Type */}
                     <div>
                         <label htmlFor="activity-type" className="block text-sm font-medium text-muted-foreground mb-1">Activity Type</label>
                         <Select
@@ -104,6 +131,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                         </Select>
                     </div>
 
+                    {/* Select Time */}
                     <div>
                         <label htmlFor="activity-time" className="block text-sm font-medium text-muted-foreground mb-1">Time</label>
                         <Input
@@ -116,18 +144,15 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                         />
                     </div>
 
+                    {/* Input Duration */}
                     <div>
                         <label htmlFor="activity-duration" className="block text-sm font-medium text-muted-foreground mb-1">Duration (in hours)</label>
                         <Input
                             id="activity-duration"
-                            type="number"
-                            step="0.5"
-                            min="0"
-                            placeholder="e.g. 1"
+                            type="text"
+                            placeholder="e.g. 0.5, 1, 1.5"
                             value={newActivity.duration}
-                            onChange={(e) =>
-                                setNewActivity((prev) => ({ ...prev, duration: e.target.value }))
-                            }
+                            onChange={handleDurationChange}
                         />
                     </div>
 
@@ -156,9 +181,9 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
 
                     <div>
                         <label htmlFor="notes" className="block text-sm font-medium text-muted-foreground mb-1">Notes</label>
-                        <textarea
+                        <Textarea
                             id="notes"
-                            className="w-full min-h-[80px] p-2 text-sm bg-muted/50 rounded-lg border-0 resize-none placeholder:text-muted-foreground/50"
+                            className="w-full min-h-[80px] p-2 text-sm bg-white rounded-lg resize-none placeholder:text-muted-foreground/50"
                             placeholder="Add some notes..."
                             value={newActivity.notes}
                             onChange={(e) =>
@@ -177,15 +202,6 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                                     ...newActivity,
                                     id: `${Date.now()}`,
                                     image: "./src/assets/dummy-image.jpg",
-                                });
-                                setNewActivity({
-                                    day: "",
-                                    type: "food",
-                                    time: "08:00",
-                                    duration: "1",
-                                    title: "",
-                                    location: "",
-                                    notes: "",
                                 });
                                 onClose();
                             }}

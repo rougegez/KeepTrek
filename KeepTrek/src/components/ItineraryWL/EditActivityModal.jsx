@@ -4,8 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import MapSearchBar from "../MapboxMap/MapSearchbarGeoAPIV5";
+import { Textarea } from '@/components/ui/textarea';
 
-const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days}) => {
+const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days }) => {
   const [editedActivity, setEditedActivity] = useState(null);
 
   useEffect(() => {
@@ -30,6 +31,29 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days}
     }));
   };
 
+  const handleDurationChange = (e) => {
+    const inputValue = e.target.value;
+
+    // Allow empty input
+    if (inputValue === '') {
+        setEditedActivity({ ...editedActivity, duration: '' })
+      return;
+    }
+
+    // Convert to number for validation
+    const numberValue = parseFloat(inputValue);
+
+    // Check if the value is a valid number, positive, within range, and in 0.5 increments
+    if (
+      !isNaN(numberValue) &&
+      numberValue >= 0 &&
+      numberValue <= 99.5 &&
+      numberValue * 2 === Math.round(numberValue * 2) // Check for increments of 0.5
+    ) {
+      setEditedActivity({ ...editedActivity, duration: inputValue });
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
       if (!open) {
@@ -41,7 +65,10 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days}
         <DialogHeader>
           <DialogTitle>Edit Activity</DialogTitle>
         </DialogHeader>
+
+
         <div className="space-y-4">
+        {/*Select Day*/}
           <div>
             <label htmlFor="day-select" className="block text-sm font-medium text-muted-foreground mb-1">Day</label>
             <Select
@@ -61,6 +88,7 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days}
             </Select>
           </div>
 
+          {/*Select Activity Type*/}
           <div>
             <label htmlFor="activity-type" className="block text-sm font-medium text-muted-foreground mb-1">Activity Type</label>
             <Select
@@ -81,6 +109,7 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days}
             </Select>
           </div>
 
+          {/* Select Time */}
           <div>
             <label htmlFor="activity-time" className="block text-sm font-medium text-muted-foreground mb-1">Time</label>
             <Input
@@ -93,21 +122,19 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days}
             />
           </div>
 
+          {/* Input Duration */}
           <div>
             <label htmlFor="activity-duration" className="block text-sm font-medium text-muted-foreground mb-1">Duration (in hours)</label>
             <Input
               id="activity-duration"
-              type="number"
-              min="0"
-              step="0.5"
-              placeholder="e.g. 1 hr"
+              type="text"
+              placeholder="e.g. 0.5, 1, 1.5"
               value={editedActivity.duration}
-              onChange={(e) =>
-                setEditedActivity({ ...editedActivity, duration: e.target.value })
-              }
+              onChange={handleDurationChange}
             />
           </div>
 
+          {/* Input Title  */}
           <div>
             <label htmlFor="activity-name" className="block text-sm font-medium text-muted-foreground mb-1">Activity Name</label>
             <Input
@@ -120,6 +147,7 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days}
             />
           </div>
 
+          {/* Search Address */}
           <div>
             <label htmlFor="address" className="block text-sm font-medium text-muted-foreground mb-1">Location</label>
             <MapSearchBar
@@ -130,11 +158,12 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days}
             />
           </div>
 
+          {/* Input Notes */}
           <div>
             <label htmlFor="activity-notes" className="block text-sm font-medium text-muted-foreground mb-1">Notes</label>
-            <textarea
+            <Textarea
               id="activity-notes"
-              className="w-full min-h-[80px] p-2 text-sm bg-muted/50 rounded-lg border-0 resize-none placeholder:text-muted-foreground/50"
+              className="w-full min-h-[80px] p-2 text-sm bg-white rounded-lg resize-none placeholder:text-muted-foreground/50"
               value={editedActivity.notes}
               onChange={(e) =>
                 setEditedActivity({ ...editedActivity, notes: e.target.value })
@@ -142,6 +171,7 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days}
             />
           </div>
 
+          {/* Cancel Button */}
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => {
               setEditedActivity(null);
@@ -149,6 +179,8 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days}
             }}>
               Cancel
             </Button>
+
+            {/* Save Button */}
             <Button onClick={() => {
               onSaveEdit(editedActivity);
               setEditedActivity(null);

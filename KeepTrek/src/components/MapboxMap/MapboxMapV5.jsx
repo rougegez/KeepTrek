@@ -149,6 +149,7 @@ const MapboxMap = ({
                     <MapSearchBar 
                         mapInstance={mapRef.current}
                         onLocationSearch={handleLocationSearch}
+                        searchButton={true}
                     />
                 </div>
             </div>
