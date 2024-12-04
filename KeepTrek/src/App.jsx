@@ -13,6 +13,7 @@ import Dashboard from "./components/Dashboard/Dashboard.jsx";
 // import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx";
 import { JoinTeam } from "./components/OldBudget.jsx/JoinTeam.jsx";
 import ItineraryWL from "./components/ItineraryWL/ItineraryWL.jsx";
+import Wishlist from "./components/Wishlist/Wishlist.jsx";
 
 import { MapTestPage } from "./components/MapboxMap/MapTestPage.jsx";
 
@@ -34,6 +35,7 @@ function App() {
         <Route path="/join-team/:teamId" element={<JoinTeam />} />
         <Route path="/itineraryWL" element={<ItineraryWL />}/>
         <Route path="/schedule" element={<GrpSchedule />}/>
+        <Route path="/wishlist" element={<Wishlist />}/>
       </Routes>
     </Router>
   );
