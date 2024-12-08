@@ -36,12 +36,96 @@ body {
   padding: 0;
 }
 
-/*Will probably need to edit this to get the right theme
-hsl(0, 72%, 51%) - red
-hsl(341, 100%, 50%) - pink
-hsl(0, 0%, 100%) - white
-*/
 @layer base {
+  :root  {
+    /* --background: 174 0% 100%;
+    --foreground: 174 0% 10%;
+    --card: 174 0% 100%;
+    --card-foreground: 174 0% 15%;
+    --popover: 174 0% 100%;
+    --popover-foreground: 174 95% 10%; */
+    --background: 0 0% 96%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 174 41.8% 50.8%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 174 10% 90%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 136 10% 95%;
+    --muted-foreground: 174 0% 40%;
+    --accent: 136 10% 90%;
+    --accent-foreground: 174 0% 15%;
+    --destructive: 0 50% 50%;
+    --destructive-foreground: 174 0% 100%;
+    --border: 0 0% 89.8%; /*--border: 174 20% 82%;*/
+    --input: 0 0% 89.8%; /*--input: 174 20% 50%; */
+    --ring: 174 41.8% 50.8%;
+    --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+  .dark  {
+    --background: 174 10% 10%;
+    --foreground: 174 0% 100%;
+    --card: 174 0% 10%;
+    --card-foreground: 174 0% 100%;
+    --popover: 174 10% 5%;
+    --popover-foreground: 174 0% 100%;
+    --primary: 174 41.8% 50.8%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 174 10% 20%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 136 10% 25%;
+    --muted-foreground: 174 0% 65%;
+    --accent: 136 10% 25%;
+    --accent-foreground: 174 0% 95%;
+    --destructive: 0 50% 50%;
+    --destructive-foreground: 174 0% 100%;
+    --border: 174 20% 50%;
+    --input: 174 20% 50%;
+    --ring: 174 41.8% 50.8%;
+    --radius: 0.5rem;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+
+  /* Old theme, revert if issues encountered
   :root {
     --background: 0 0% 98%;
     --foreground: 0 0% 3.9%;
@@ -110,13 +194,4 @@ hsl(0, 0%, 100%) - white
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-}
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
+  } */

@@ -19,6 +19,16 @@
       "id": "6751cfe1-3d5d-45f5-b78f-885f75bc7a65",
       "name": "rajveer",
       "email": "raj@gmail.com"
+    },
+    {
+      "id": "e6ad5f5d-848b-4919-a564-bea45cd5112c",
+      "name": "test",
+      "email": "test@test.com"
+    },
+    {
+      "id": "57a32ba5-45ef-4445-bbf8-8508c2c1e6fc",
+      "name": "Kyle Goh",
+      "email": "kyle@kyle.com"
     }
   ],
   "groups": [
@@ -29,15 +39,87 @@
         "1",
         "2",
         "3",
-        "6751cfe1-3d5d-45f5-b78f-885f75bc7a65"
+        "6751cfe1-3d5d-45f5-b78f-885f75bc7a65",
+        "e6ad5f5d-848b-4919-a564-bea45cd5112c",
+        "57a32ba5-45ef-4445-bbf8-8508c2c1e6fc"
       ],
       "budgets": {
         "1": 1000,
         "2": 1500,
         "3": 2000,
-        "6751cfe1-3d5d-45f5-b78f-885f75bc7a65": 500
+        "6751cfe1-3d5d-45f5-b78f-885f75bc7a65": 500,
+        "57a32ba5-45ef-4445-bbf8-8508c2c1e6fc": 333
       }
     }
   ],
-  "expenses": []
+  "expenses": [
+    {
+      "id": "b36d",
+      "groupId": "g1",
+      "date": "2024-12-05",
+      "type": "Shopping",
+      "description": "KFC",
+      "amount": 100,
+      "paidBy": "1",
+      "splits": [
+        {
+          "friendId": "1",
+          "amount": 20
+        },
+        {
+          "friendId": "2",
+          "amount": 20
+        },
+        {
+          "friendId": "3",
+          "amount": 20
+        },
+        {
+          "friendId": "6751cfe1-3d5d-45f5-b78f-885f75bc7a65",
+          "amount": 20
+        },
+        {
+          "friendId": "e6ad5f5d-848b-4919-a564-bea45cd5112c",
+          "amount": 20
+        }
+      ],
+      "splitMethod": "equal"
+    },
+    {
+      "id": "2370",
+      "groupId": "g1",
+      "date": "2024-12-05",
+      "type": "Food",
+      "description": "McDonalds",
+      "amount": 1000,
+      "paidBy": "57a32ba5-45ef-4445-bbf8-8508c2c1e6fc",
+      "splits": [
+        {
+          "friendId": "1",
+          "amount": 166.66666666666666
+        },
+        {
+          "friendId": "2",
+          "amount": 166.66666666666666
+        },
+        {
+          "friendId": "3",
+          "amount": 166.66666666666666
+        },
+        {
+          "friendId": "6751cfe1-3d5d-45f5-b78f-885f75bc7a65",
+          "amount": 166.66666666666666
+        },
+        {
+          "friendId": "e6ad5f5d-848b-4919-a564-bea45cd5112c",
+          "amount": 166.66666666666666
+        },
+        {
+          "friendId": "57a32ba5-45ef-4445-bbf8-8508c2c1e6fc",
+          "amount": 166.66666666666666
+        }
+      ],
+      "splitMethod": "equal"
+    }
+  ]
 }

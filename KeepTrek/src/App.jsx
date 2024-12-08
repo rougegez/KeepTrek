@@ -3,7 +3,6 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Itinerary } from "./components/Itinerary/Itinerary.jsx";
 import { TripDetailsPage } from "./components/TripDetails/TripDetailsPage.jsx";
-import { LandingPage } from "./components/LandingPage/LandingPage.jsx";
 import { GrpSchedule } from "./components/GrpSchedule/GrpSchedule.jsx";
 import { ScheduleSummary } from "./components/GrpSchedule/ScheduleSummary";
 import { BudgetPage } from "./components/OldBudget.jsx/BudgetPage.jsx";
@@ -16,14 +15,14 @@ import ItineraryWL from "./components/ItineraryWL/ItineraryWL.jsx";
 import Wishlist from "./components/Wishlist/Wishlist.jsx";
 
 import { MapTestPage } from "./components/MapboxMap/MapTestPage.jsx";
+import CreateTrip from "./components/CreateTrip/CreateTrip.jsx";
+
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<TripDetailsPage />} />
-        <Route path="/maptest" element={<MapTestPage />} /> 
-        {/*Use this to see the code for the map*/}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/itinerary" element={<Itinerary />} />
         <Route path="/schedule" element={<GrpSchedule />} />
@@ -33,9 +32,13 @@ function App() {
         <Route path="/schedule-summary" element={<ScheduleSummary />} />
         <Route path="/trip-details/:id" element={<TripDetailsPage />} />
         <Route path="/join-team/:teamId" element={<JoinTeam />} />
-        <Route path="/itineraryWL" element={<ItineraryWL />}/>
-        <Route path="/schedule" element={<GrpSchedule />}/>
-        <Route path="/wishlist" element={<Wishlist />}/>
+        <Route path="/itineraryWL" element={<ItineraryWL />} />
+        <Route path="/schedule" element={<GrpSchedule />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+
+        <Route path="/create-trip" element={<CreateTrip />} />
+
+        {/* <Route path="/maptest" element={<MapTestPage />} /> */}
       </Routes>
     </Router>
   );
