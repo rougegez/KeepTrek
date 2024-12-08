@@ -16,6 +16,7 @@ import Wishlist from "./components/Wishlist/Wishlist.jsx";
 
 import { MapTestPage } from "./components/MapboxMap/MapTestPage.jsx";
 import CreateTrip from "./components/CreateTrip/CreateTrip.jsx";
+import DateFinder from "./components/GrpSchedule/DateFinder.jsx";
 
 
 function App() {
@@ -25,10 +26,10 @@ function App() {
         <Route path="/" element={<TripDetailsPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/itinerary" element={<Itinerary />} />
-        <Route path="/schedule" element={<GrpSchedule />} />
         <Route path="/expense-splitting" element={<TeamBudgetPage />} />
         <Route path="/teams/:teamId" element={<TeamBudgetPage />} />
         <Route path="/team-history" element={<TeamHistory />} />
+        <Route path="/schedule" element={<DateFinder />} />
         <Route path="/schedule-summary" element={<ScheduleSummary />} />
         <Route path="/trip-details/:id" element={<TripDetailsPage />} />
         <Route path="/join-team/:teamId" element={<JoinTeam />} />
