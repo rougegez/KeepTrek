@@ -38,7 +38,7 @@ function App() {
 
         <Route path="/create-trip" element={<CreateTrip />} />
 
-        {/* <Route path="/maptest" element={<MapTestPage />} /> */}
+        <Route path="/maptest" element={<MapTestPage />} />
       </Routes>
     </Router>
   );

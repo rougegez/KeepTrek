@@ -1,14 +1,16 @@
 import React, { useState , useRef} from "react";
 
 //------------------------------------
-import MapboxMap from "../MapboxMap/MapboxMapV5.jsx";
+// import MapboxMap from "../MapboxMap/MapboxMapV5.jsx";
 // import MapboxMap from "../MapboxMap/MapboxMapV6.jsx"; 
+import MapboxMap from "./MapboxMapGoogleSearch.jsx";
 
 import SavedLocations from "../MapboxMap/SavedLocations.jsx";
 
 // import MapSearchBar from "../MapboxMap/MapSearchbarSearchAPI"; 
 // import MapSearchBar from "../MapboxMap/MapSearchbarGeoAPIV6.jsx";
-import MapSearchBar from "../MapboxMap/MapSearchbarGeoAPIV5.jsx"
+// import MapSearchBar from "../MapboxMap/MapSearchbarGeoAPIV5.jsx";
+import MapSearchBar from "./GoogleMapsSearchbar.jsx";
 //------------------------------------
 
 export const MapTestPage = () => {
