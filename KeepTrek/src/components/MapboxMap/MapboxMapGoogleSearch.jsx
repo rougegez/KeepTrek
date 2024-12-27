@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { X } from 'lucide-react'
 import MapSearchBar from './GoogleMapsSearchbar'
-import { data } from 'autoprefixer'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API_KEY
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
@@ -100,7 +99,6 @@ const MapboxMap = ({
                 const response = await fetch(
                     `https://maps.googleapis.com/maps/api/geocode/json?latlng=${e.lngLat.lat},${e.lngLat.lng}&key=${GOOGLE_MAPS_API_KEY}`)
                 const data = await response.json()
-                console.log(data)
                 if (data.results && data.results.length > 0) {
 
                     let feature = ""
@@ -163,7 +161,6 @@ const MapboxMap = ({
                     coordinates: [data.location.longitude, data.location.latitude]
                 }
                 handlePlaceUpdate(newPlace)
-                console.log(data)
             } catch (error) {
                 console.error('Error fetching place information:', error)
             }

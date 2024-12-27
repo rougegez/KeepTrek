@@ -7,7 +7,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import ActivityCard from "./ActivityCard.jsx";
 import AddActivityModal from "./AddActivityModal.jsx";
 import EditActivityModal from "./EditActivityModal.jsx";
-import MapboxMap from "../MapboxMap/MapboxMapV5.jsx";
+import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx";
 
 function ItineraryWL() {
   const [days, setDays] = useState([
