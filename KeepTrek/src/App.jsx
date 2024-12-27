@@ -29,24 +29,21 @@ function App() {
       <Routes>
         <Route path="/" element={<YourTrips />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/itinerary" element={<Itinerary />} />
         <Route path="/schedule" element={<GrpSchedule />} />
-        <Route path="/expense-splitting" element={<TeamBudgetPage />} />
+        <Route path="/expense-splitting/:tripID" element={<TeamBudgetPage />} />
         <Route path="/teams/:teamId" element={<TeamBudgetPage />} />
         <Route path="/team-history" element={<TeamHistory />} />
         <Route path="/schedule-summary" element={<ScheduleSummary />} />
         <Route path="/trip-details/:id" element={<TripDetailsPage />} />
         <Route path="/join-team/:teamId" element={<JoinTeam />} />
-        <Route path="/itineraryWL" element={<ItineraryWL />} />
-        <Route path="/schedule" element={<GrpSchedule />} />
-        <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/itineraryWL/:tripID" element={<ItineraryWL />} />
+        <Route path="/schedule/:tripID" element={<GrpSchedule />} />
+        <Route path="/wishlist/:tripID" element={<Wishlist />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         {/* <Route path="/landing" element={<LandingPage/>}/> */}
         <Route path="/yourTrips" element={<YourTrips />} />
-
         <Route path="/create-trip" element={<CreateTrip />} />
-
         <Route path="/maptest" element={<MapTestPage />} />
       </Routes>
     </Router>

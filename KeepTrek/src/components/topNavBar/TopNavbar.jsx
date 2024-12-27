@@ -36,16 +36,16 @@ export default function TopNavbar() {
             <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-16 py-1">
                     <div className="flex-shrink-0 flex items-center max-w-44">
-                        <NavLink to="/" className="text-2xl font-bold text-gray-800">
+                        <NavLink to="/yourTrips" className="text-2xl font-bold text-gray-800">
                             <img src="../src/assets/KeepTrekNew.png" className="object-scale-down" />
                         </NavLink>
                     </div>
                     <div className="flex sm:ml-6 sm:flex sm:space-x-8">
                         <NavLink
-                            to="/home"
+                            to="/yourTrips"
                             className="border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                         >
-                            Home
+                            Trips
                         </NavLink>
                         <NavLink
                             to="/travel-guides"
