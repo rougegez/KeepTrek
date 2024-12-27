@@ -200,7 +200,7 @@ export const GrpSchedule = () => {
   return (
     <>
     <SidebarProvider>
-    <AppSidebar />
+    <AppSidebar tripID={tripID}/>
     <SidebarTrigger />
 
       {/* Main Content */}
