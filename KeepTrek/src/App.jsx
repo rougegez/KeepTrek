@@ -13,6 +13,7 @@ import Dashboard from "./components/Dashboard/Dashboard.jsx";
 import { JoinTeam } from "./components/OldBudget.jsx/JoinTeam.jsx";
 import ItineraryWL from "./components/ItineraryWL/ItineraryWL.jsx";
 import Wishlist from "./components/Wishlist/Wishlist.jsx";
+import Register from "./components/Authentication/register/page.jsx";
 
 import { MapTestPage } from "./components/MapboxMap/MapTestPage.jsx";
 import CreateTrip from "./components/CreateTrip/CreateTrip.jsx";
@@ -35,6 +36,7 @@ function App() {
         <Route path="/itineraryWL" element={<ItineraryWL />} />
         <Route path="/schedule" element={<GrpSchedule />} />
         <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/register" element={<Register/>}/>
 
         <Route path="/create-trip" element={<CreateTrip />} />
 
