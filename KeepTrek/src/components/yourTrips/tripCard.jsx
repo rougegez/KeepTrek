@@ -1,0 +1,20 @@
+import React from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+
+export default function TripCard({ trip }) {
+  return (
+    <Card className="border border-gray-200 bg-white shadow hover:shadow-md transition-shadow cursor-pointer">
+      <CardHeader>
+        <CardTitle className="text-xl font-semibold text-gray-800">
+          {trip.tripName}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-gray-600">
+          {new Date(trip.startDate).toLocaleDateString()} -{" "}
+          {new Date(trip.endDate).toLocaleDateString()}
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
