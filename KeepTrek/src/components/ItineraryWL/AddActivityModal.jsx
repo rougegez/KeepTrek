@@ -15,6 +15,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
         title: "",
         location: "",
         coordinates: [],
+        image: "../src/assets/dummy-image.jpg",
         notes: "",
     });
 
@@ -36,6 +37,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                 title: "",
                 location: "",
                 coordinates: [],
+                image: "../src/assets/dummy-image.jpg",
                 notes: "",
             });
         }
@@ -82,6 +84,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                     duration: "",
                     title: "",
                     location: "",
+                    image: "../src/assets/dummy-image.jpg",
                     notes: "",
                 });
                 onClose();
@@ -211,7 +214,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                                 onAddActivity({
                                     ...newActivity,
                                     id: `${Date.now()}`,
-                                    image: "./src/assets/dummy-image.jpg",
+                                    image: "../src/assets/dummy-image.jpg",
                                 });
                                 onClose();
                             }}

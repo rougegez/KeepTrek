@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Reorder } from "framer-motion";
 import { Plus } from 'lucide-react'
@@ -8,68 +8,14 @@ import ActivityCard from "./ActivityCard.jsx";
 import AddActivityModal from "./AddActivityModal.jsx";
 import EditActivityModal from "./EditActivityModal.jsx";
 import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx";
+
 import { useParams } from "react-router-dom";
+import { createItinerary, getItinerary, updateItinerary} from "@/APIs/itinerary.js";
 
 function ItineraryWL() {
   const { tripID } = useParams();
-  const [days, setDays] = useState([
-    {
-      date: "Day 1",
-      activities: [
-        {
-          id: "1",
-          time: "08:00",
-          type: "food",
-          duration: "1",
-          title: "Breakfast @ Ying Her Kopitiam",
-          location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
-          coordinates: [101.61650659978699,3.0643143329228195],
-          image: "./src/assets/dummy-image.jpg",
-          notes: "test",
-        },
-        {
-          id: "2",
-          time: "08:00",
-          type: "food",
-          duration: "1",
-          title: "Breakfast @ Ying Her Kopitiam",
-          location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
-          image: "./src/assets/dummy-image.jpg",
-          notes: "",
-        },
-      ],
-    },
-    {
-      date: "Day 2",
-      activities: [
-        {
-          id: "3",
-          time: "08:00",
-          type: "food",
-          duration: "1",
-          title: "Breakfast @ Ying Her Kopitiam",
-          location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
-          image: "./src/assets/dummy-image.jpg",
-          notes: "",
-        },
-      ],
-    },
-    {
-      date: "Day 3",
-      activities: [
-        {
-          id: "4",
-          time: "08:00",
-          type: "food",
-          duration: "1",
-          title: "Breakfast @ Ying Her Kopitiam",
-          location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
-          image: "./src/assets/dummy-image.jpg",
-          notes: "",
-        },
-      ],
-    },
-  ]);
+  
+  const [days, setDays] = useState([]);
 
   const [addModalState, setAddModalState] = useState({ isOpen: false, selectedDay: null });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -78,6 +24,39 @@ function ItineraryWL() {
 
   const [searchedPlace, setSearchedPlace] = useState(null);
   const [savedLocation, setSavedLocation] = useState(null);
+
+  // Fetch itinerary data on component mount
+  useEffect(() => {
+    const fetchItinerary = async () => {
+      try {
+        const data = await getItinerary(tripID);
+        setDays(data.days);
+      } catch (error) {
+        if (error.response?.status === 404) {
+          try {
+            const newItinerary = await createItinerary({ tripID, days: [] });
+            setDays(newItinerary.days);
+          } catch (createError) {
+            console.error("Failed to create itinerary:", createError);
+          }
+        } else {
+          console.error("Failed to fetch itinerary:", error);
+        }
+      }
+    };
+    
+    fetchItinerary();
+  }, [tripID]);
+
+  // Send updates
+  const handleUpdateItinerary = async (updatedDays) => {
+    try {
+      const updatedItinerary = await updateItinerary(tripID, { days: updatedDays });
+      setDays(updatedItinerary.days);
+    } catch (error) {
+      console.error("Failed to update itinerary:", error);
+    }
+  };
 
   const handleMapLoad = (map) => {
     setMapInstance(map);
@@ -150,8 +129,7 @@ function ItineraryWL() {
     if (dayIndex !== -1) {
       updatedDays[dayIndex].activities.push({
         ...newActivity,
-        id: `${Date.now()}`,
-        image: "./src/assets/dummy-image.jpg",
+        id: `${Date.now()}`
       });
       setDays(updatedDays);
     }
@@ -172,9 +150,14 @@ function ItineraryWL() {
       <div className="flex w-full">
         {/* Left side: Itinerary */}
         <div className="w-8/12 px-14 py-8 space-y-8 overflow-y-auto max-h-screen">
-          <div className="space-y-2">
+          <div className="flex justify-between space-y-2">
+            <div>
             <h1 className="text-3xl font-bold">East-Coast Road Trip</h1>
             <p className="text-sm text-muted-foreground">19 June 2024 to 23 June 2024</p>
+            </div>
+            <div>
+              <Button onClick={() => handleUpdateItinerary(days)}>Save</Button>
+            </div>
           </div>
           {days.map((day, dayIndex) => (
             <div key={day.date} className="space-y-4">
