@@ -205,6 +205,14 @@ function ItineraryWL() {
               </Button>
             </div>
           ))}
+          <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={() => setDays([...days, { date: `Day ${days.length + 1}`, activities: [] }])}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Day
+              </Button>
         </div>
 
         {/* Right side: Map */}
