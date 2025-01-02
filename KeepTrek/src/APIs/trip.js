@@ -6,6 +6,11 @@ export const createTrip = async (tripData) => {
   return response.data;
 };
 
+export const getTrip = async (tripID) => {
+  const response = await axios.get(`/trip/${tripID}`);
+  return response.data;
+}
+
 // Join Trip
 export const joinTrip = async (tripID) => {
   const response = await axios.post(`/trip/join/${tripID}`);
