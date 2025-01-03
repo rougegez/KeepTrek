@@ -21,33 +21,38 @@ import YourTrips from "./components/yourTrips/yourTrips.jsx";
 import { MapTestPage } from "./components/MapboxMap/MapTestPage.jsx";
 import CreateTrip from "./components/CreateTrip/CreateTrip.jsx";
 
+import { QueryClient, QueryClientProvider } from "react-query";
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <AuthProvider>
-    <Router>
-      <Routes>
-        <Route path="/" element={<YourTrips />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/schedule" element={<GrpSchedule />} />
-        <Route path="/expense-splitting/:tripID" element={<TeamBudgetPage />} />
-        <Route path="/teams/:teamId" element={<TeamBudgetPage />} />
-        <Route path="/team-history" element={<TeamHistory />} />
-        <Route path="/schedule-summary" element={<ScheduleSummary />} />
-        <Route path="/trip-details/:id" element={<TripDetailsPage />} />
-        <Route path="/join-team/:teamId" element={<JoinTeam />} />
-        <Route path="/itineraryWL/:tripID" element={<ItineraryWL />} />
-        <Route path="/schedule/:tripID" element={<GrpSchedule />} />
-        <Route path="/wishlist/:tripID" element={<Wishlist />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        {/* <Route path="/landing" element={<LandingPage/>}/> */}
-        <Route path="/yourTrips" element={<YourTrips />} />
-        <Route path="/create-trip" element={<CreateTrip />} />
-        <Route path="/maptest" element={<MapTestPage />} />
-      </Routes>
-    </Router>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<YourTrips />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/schedule" element={<GrpSchedule />} />
+            <Route path="/expense-splitting/:tripID" element={<TeamBudgetPage />} />
+            <Route path="/teams/:teamId" element={<TeamBudgetPage />} />
+            <Route path="/team-history" element={<TeamHistory />} />
+            <Route path="/schedule-summary" element={<ScheduleSummary />} />
+            <Route path="/trip-details/:id" element={<TripDetailsPage />} />
+            <Route path="/join-team/:teamId" element={<JoinTeam />} />
+            <Route path="/itineraryWL/:tripID" element={<ItineraryWL />} />
+            <Route path="/schedule/:tripID" element={<GrpSchedule />} />
+            <Route path="/wishlist/:tripID" element={<Wishlist />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            {/* <Route path="/landing" element={<LandingPage/>}/> */}
+            <Route path="/yourTrips" element={<YourTrips />} />
+            <Route path="/create-trip" element={<CreateTrip />} />
+            <Route path="/maptest" element={<MapTestPage />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
