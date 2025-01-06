@@ -112,7 +112,7 @@ export const AppSidebar = ({ tripID }) => {
           <SidebarGroupLabel asChild className="mb-2">
             <SidebarMenuButton>
               <NavLink
-                to={`/expense-splitting/${tripID}`}
+                to={`/expenses/${tripID}`}
                 className={({ isActive }) =>
                   `text-[24px] font-semibold text-black ${
                     isActive

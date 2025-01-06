@@ -22,3 +22,8 @@ export const getUserTrips = async () => {
     const response = await axios.get("/trip/user-trips");
     return response.data;
   };
+
+export const getTripMembers = async (tripID) => {
+  const response = await axios.get(`/trip/${tripID}/users`);
+  return response.data;
+}

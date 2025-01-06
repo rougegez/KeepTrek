@@ -20,6 +20,7 @@ import { AuthProvider } from "./contexts/authContext.jsx";
 import YourTrips from "./components/yourTrips/yourTrips.jsx";
 import { MapTestPage } from "./components/MapboxMap/MapTestPage.jsx";
 import CreateTrip from "./components/CreateTrip/CreateTrip.jsx";
+import MainExpensePage from "./components/Expenses/mainExpensePage.jsx";
 
 
 function App() {
@@ -31,7 +32,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/schedule" element={<GrpSchedule />} />
         <Route path="/expense-splitting/:tripID" element={<TeamBudgetPage />} />
-        <Route path="/teams/:teamId" element={<TeamBudgetPage />} />
+        <Route path="/expenses/:tripID" element={<MainExpensePage />} />
         <Route path="/team-history" element={<TeamHistory />} />
         <Route path="/schedule-summary" element={<ScheduleSummary />} />
         <Route path="/trip-details/:id" element={<TripDetailsPage />} />
