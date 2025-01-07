@@ -1,4 +1,4 @@
-import styles from './Sidebar.module.css'
+import styles from './Sidebar.module.css';
 import { ChevronDown } from "lucide-react";
 import {
   Sidebar,
@@ -18,66 +18,31 @@ import {
   CollapsibleTrigger,
   CollapsibleContent
 }
-  from "@/components/ui/collapsible";
+from "@/components/ui/collapsible";
 
-import {NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
-// Overview items
+// Example of Overview items
 const OverviewItems = [
-  {
-    title: "Trip Summary",
-    url: "",
-  },
-  {
-    title: "Acommodation",
-    url: "",
-  },
-  {
-    title: "Trip Buddy",
-    url: "",
-  },
-  {
-    title: "Notes",
-    url: "",
-  },
-  {
-    title: "Attachments",
-    url: "",
-  },
-]
+  { title: "Trip Summary", url: "" },
+  { title: "Accommodation", url: "" },
+  { title: "Trip Buddy", url: "" },
+  { title: "Notes", url: "" },
+  { title: "Attachments", url: "" },
+];
 
-// Itinerary items
-const ItineraryItems = [
-  {
-    title: "Day 1",
-    url: "",
-  },
-  {
-    title: "Day 2",
-    url: "",
-  },
-  {
-    title: "Day 3",
-    url: "",
-  },
-  {
-    title: "Day 4",
-    url: "",
-  },
-  {
-    title: "Day 5",
-    url: "",
-  }
-]
-
-export const AppSidebar = () => {
+export const AppSidebar = ({ tripID }) => {
   return (
     <Sidebar className="h-screen w-11/12 sticky top-0 bg-white drop-shadow-keepTrek overflow-y-auto z-50">
       <SidebarTrigger />
       <SidebarHeader>
-        <a href="/"><img src='../src/assets/KeepTrekNew.png' alt="KeepTrek Logo" className='size-18 w-44 mt-4' /></a>
-        
-        
+        <a href="/">
+          <img
+            src="../src/assets/KeepTrekNew.png"
+            alt="KeepTrek Logo"
+            className="size-18 w-44 mt-4"
+          />
+        </a>
       </SidebarHeader>
       <SidebarContent className="pl-2 mt-14">
         {/* Overview */}
@@ -85,13 +50,18 @@ export const AppSidebar = () => {
           <SidebarGroup>
             <SidebarGroupLabel asChild className="mb-2">
               <CollapsibleTrigger>
-                <NavLink className={({ isActive }) => 
-                `text-[24px] font-semibold text-black ${
-                isActive ? 
-                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
-                 : 
-                ""}`}
-                 to="/">Overview</NavLink> {/*Need the logic for id*/}
+                <NavLink
+                  to={`/overview/${tripID}`}
+                  className={({ isActive }) =>
+                    `text-[24px] font-semibold text-black ${
+                      isActive
+                        ? "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
+                        : ""
+                    }`
+                  }
+                >
+                  Overview
+                </NavLink>
                 <ChevronDown
                   className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180"
                   style={{ position: "relative" }}
@@ -101,10 +71,13 @@ export const AppSidebar = () => {
             <CollapsibleContent>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {OverviewItems.map((overviewItem) => (
-                    <SidebarMenuItem key={overviewItem.title} className={styles.secondaryItem}>
+                  {OverviewItems.map((item) => (
+                    <SidebarMenuItem
+                      key={item.title}
+                      className={styles.secondaryItem}
+                    >
                       <SidebarMenuButton asChild>
-                        <span>{overviewItem.title}</span>
+                        <span>{item.title}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
@@ -113,93 +86,89 @@ export const AppSidebar = () => {
             </CollapsibleContent>
           </SidebarGroup>
         </Collapsible>
-
-        
 
         {/* Itinerary */}
-        <Collapsible className="group/collapsible">
-          <SidebarGroup>
-            <SidebarGroupLabel asChild className="mb-2">
-              <CollapsibleTrigger>
-                <NavLink className={({ isActive }) => 
-                `text-[24px] font-semibold text-black ${
-                isActive ? 
-                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
-                 : 
-                ""}`}
-                to="/itineraryWL">Itinerary</NavLink>
-
-                <ChevronDown
-                  className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180"
-                  style={{ position: "relative" }}
-                />
-              </CollapsibleTrigger>
-            </SidebarGroupLabel>
-            <CollapsibleContent>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {ItineraryItems.map((itineraryItem) => (
-                    <SidebarMenuItem key={itineraryItem.title} className={styles.secondaryItem}>
-                      <SidebarMenuButton asChild>
-                        <span>{itineraryItem.title}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </SidebarGroup>
-        </Collapsible>
+        <SidebarGroup>
+          <SidebarGroupLabel asChild className="mb-2">
+            <SidebarMenuButton>
+              <NavLink
+                to={`/itineraryWL/${tripID}`}
+                className={({ isActive }) =>
+                  `text-[24px] font-semibold text-black ${
+                    isActive
+                      ? "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
+                      : ""
+                  }`
+                }
+              >
+                Itinerary
+              </NavLink>
+            </SidebarMenuButton>
+          </SidebarGroupLabel>
+        </SidebarGroup>
 
         {/* Budget */}
         <SidebarGroup>
           <SidebarGroupLabel asChild className="mb-2">
-              <SidebarMenuButton>
-                <NavLink className={({ isActive }) => 
-                `text-[24px] font-semibold text-black ${
-                isActive ? 
-                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
-                 : 
-                ""}`}
-                to="/expense-splitting">Budget</NavLink> {/*Link for Budget*/}
-              </SidebarMenuButton>
+            <SidebarMenuButton>
+              <NavLink
+                to={`/expenses/${tripID}`}
+                className={({ isActive }) =>
+                  `text-[24px] font-semibold text-black ${
+                    isActive
+                      ? "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
+                      : ""
+                  }`
+                }
+              >
+                Budget
+              </NavLink>
+            </SidebarMenuButton>
           </SidebarGroupLabel>
         </SidebarGroup>
 
         {/* Wishlist */}
         <SidebarGroup>
           <SidebarGroupLabel asChild className="mb-2">
-              <SidebarMenuButton>
-                <NavLink className={({ isActive }) => 
-                `text-[24px] font-semibold text-black ${
-                isActive ? 
-                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
-                 : 
-                ""}`}
-                to="/wishlist">Wishlist</NavLink> {/*Link for Wishlist*/}
-              </SidebarMenuButton>
+            <SidebarMenuButton>
+              <NavLink
+                to={`/wishlist/${tripID}`}
+                className={({ isActive }) =>
+                  `text-[24px] font-semibold text-black ${
+                    isActive
+                      ? "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
+                      : ""
+                  }`
+                }
+              >
+                Wishlist
+              </NavLink>
+            </SidebarMenuButton>
           </SidebarGroupLabel>
         </SidebarGroup>
 
-        {/* Calender */}
+        {/* Date Finder */}
         <SidebarGroup>
           <SidebarGroupLabel asChild className="mb-2">
-              <SidebarMenuButton>
-                <NavLink className={({ isActive }) => 
-                `text-[24px] font-semibold text-black ${
-                isActive ? 
-                "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
-                 : 
-                ""}`}
-                to="/schedule">Can't find a date?</NavLink> {/*Link for Wishlist*/}
-              </SidebarMenuButton>
+            <SidebarMenuButton>
+              <NavLink
+                to={`/schedule/${tripID}`}
+                className={({ isActive }) =>
+                  `text-[24px] font-semibold text-black ${
+                    isActive
+                      ? "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
+                      : ""
+                  }`
+                }
+              >
+                Can't Find a Date?
+              </NavLink>
+            </SidebarMenuButton>
           </SidebarGroupLabel>
         </SidebarGroup>
-
       </SidebarContent>
     </Sidebar>
-    
-  )
-}
+  );
+};
 
-export default AppSidebar
+export default AppSidebar;

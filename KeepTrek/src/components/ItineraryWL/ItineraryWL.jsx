@@ -7,9 +7,11 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import ActivityCard from "./ActivityCard.jsx";
 import AddActivityModal from "./AddActivityModal.jsx";
 import EditActivityModal from "./EditActivityModal.jsx";
-import MapboxMap from "../MapboxMap/MapboxMapV5.jsx";
+import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx";
+import { useParams } from "react-router-dom";
 
 function ItineraryWL() {
+  const { tripID } = useParams();
   const [days, setDays] = useState([
     {
       date: "Day 1",
@@ -164,8 +166,8 @@ function ItineraryWL() {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
+    <SidebarProvider >
+      <AppSidebar tripID={tripID}/>
       
       <div className="flex w-full">
         {/* Left side: Itinerary */}

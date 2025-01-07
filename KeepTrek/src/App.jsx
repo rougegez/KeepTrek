@@ -9,37 +9,49 @@ import { BudgetPage } from "./components/OldBudget.jsx/BudgetPage.jsx";
 import TeamBudgetPage from "./components/Budget/TeamBudgetPage.jsx"; // Import TeamBudgetPage
 import { TeamHistory } from "./components/OldBudget.jsx/TeamHistory.jsx"; // Import TeamHistory
 import Dashboard from "./components/Dashboard/Dashboard.jsx";
-// import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx";
+import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx";
 import { JoinTeam } from "./components/OldBudget.jsx/JoinTeam.jsx";
 import ItineraryWL from "./components/ItineraryWL/ItineraryWL.jsx";
 import Wishlist from "./components/Wishlist/Wishlist.jsx";
-
+import Login from "./components/Authentication/login/loginPage.jsx";
+import Register from "./components/Authentication/register/registerPage.jsx";
+import { AuthProvider } from "./contexts/authContext.jsx";
+// import { LandingPage } from "./components/LandingPage/LandingPage.jsx";
+import YourTrips from "./components/yourTrips/yourTrips.jsx";
 import { MapTestPage } from "./components/MapboxMap/MapTestPage.jsx";
 import CreateTrip from "./components/CreateTrip/CreateTrip.jsx";
+import MainExpensePage from "./components/Expenses/mainExpensePage.jsx";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<TripDetailsPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/itinerary" element={<Itinerary />} />
-        <Route path="/expense-splitting" element={<TeamBudgetPage />} />
-        <Route path="/teams/:teamId" element={<TeamBudgetPage />} />
-        <Route path="/team-history" element={<TeamHistory />} />
-        <Route path="/schedule" element={<GrpSchedule />} />
-        <Route path="/schedule-summary" element={<ScheduleSummary />} />
-        <Route path="/trip-details/:id" element={<TripDetailsPage />} />
-        <Route path="/join-team/:teamId" element={<JoinTeam />} />
-        <Route path="/itineraryWL" element={<ItineraryWL />} />
-        <Route path="/schedule" element={<GrpSchedule />} />
-        <Route path="/wishlist" element={<Wishlist />} />
-
-        <Route path="/create-trip" element={<CreateTrip />} />
-
-        {/* <Route path="/maptest" element={<MapTestPage />} /> */}
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<YourTrips />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/schedule" element={<GrpSchedule />} />
+          <Route
+            path="/expense-splitting/:tripID"
+            element={<TeamBudgetPage />}
+          />
+          <Route path="/expenses/:tripID" element={<MainExpensePage />} />
+          <Route path="/team-history" element={<TeamHistory />} />
+          <Route path="/schedule" element={<GrpSchedule />} />
+          <Route path="/schedule-summary" element={<ScheduleSummary />} />
+          <Route path="/trip-details/:id" element={<TripDetailsPage />} />
+          <Route path="/join-team/:teamId" element={<JoinTeam />} />
+          <Route path="/itineraryWL/:tripID" element={<ItineraryWL />} />
+          <Route path="/schedule/:tripID" element={<GrpSchedule />} />
+          <Route path="/wishlist/:tripID" element={<Wishlist />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          {/* <Route path="/landing" element={<LandingPage/>}/> */}
+          <Route path="/yourTrips" element={<YourTrips />} />
+          <Route path="/create-trip" element={<CreateTrip />} />
+          <Route path="/maptest" element={<MapTestPage />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 

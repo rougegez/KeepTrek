@@ -4,38 +4,47 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { fetchAvailableTrips, updateAvailability } from "@/apis/dateFinder";
 
 export const GrpSchedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDates, setSelectedDates] = useState(new Set());
+  const [availableTrips, setAvailableTrips] = useState([]);
   const isDragging = useRef(false);
 
-  // Sample available trips data
-  const availableTrips = [
-    {
-      startDate: "2025-03-01",
-      endDate: "2025-03-05",
-      nights: 4,
-      price: "RM 1,000",
-    },
-    {
-      startDate: "2025-03-10",
-      endDate: "2025-03-15",
-      nights: 5,
-      price: "RM 1,500",
-    },
-    {
-      startDate: "2025-04-01",
-      endDate: "2025-04-07",
-      nights: 6,
-      price: "RM 2,000",
-    },
-  ];
+  const token = localStorage.getItem("access_token"); // Replace with your auth logic
+  const tripID = "e66f655b-3197-44ef-9ec2-051eda3266f4"; // Replace with dynamic tripID if necessary
 
-  // Function to get the number of days in a given month
-  const getDaysInMonth = (month, year) => {
-    return new Date(year, month + 1, 0).getDate(); // month is 0-indexed
+  // Fetch available trips from the backend
+  const loadAvailableTrips = async () => {
+    try {
+      const trips = await fetchAvailableTrips(token);
+      setAvailableTrips(trips);
+    } catch (error) {
+      console.error("Error fetching trips:", error);
+      alert("Failed to fetch available trips");
+    }
   };
+
+  // Save selected dates to the database
+  const handleSubmit = async () => {
+    try {
+      const result = await updateAvailability(
+        Array.from(selectedDates),
+        tripID,
+        token
+      );
+      console.log("Availability saved:", result);
+      alert("Availability successfully submitted!");
+    } catch (error) {
+      console.error("Error saving availability:", error);
+      alert("Failed to submit availability");
+    }
+  };
+
+  useEffect(() => {
+    loadAvailableTrips();
+  }, []);
 
   // Generate calendar days for the current month
   const generateCalendar = () => {
@@ -148,17 +157,15 @@ export const GrpSchedule = () => {
           </header>
 
           <main className="flex-1 overflow-hidden">
-            {" "}
-            {/* Changed overflow-auto to overflow-hidden */}
             <div className="max-w-md mx-auto p-4 h-full">
-              {" "}
-              {/* Added h-full to ensure it fits within the container */}
               <div className="mb-8">
                 <h2 className="text-2xl font-bold mb-6">
                   Select your available dates!
                 </h2>
 
+                {/* Calendar and Date Selection */}
                 <div className="mb-4">
+                  {/* Month Navigation */}
                   <div className="flex items-center justify-between mb-4">
                     <button onClick={handlePrevious} className="p-2">
                       <ChevronLeft className="h-4 w-4" />
@@ -174,14 +181,7 @@ export const GrpSchedule = () => {
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-7 gap-2 text-center mb-2">
-                    {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
-                      <div key={day} className="text-sm text-muted-foreground">
-                        {day}
-                      </div>
-                    ))}
-                  </div>
-
+                  {/* Calendar Grid */}
                   <div className="grid grid-cols-7 gap-2">
                     {generateCalendar().map((date, index) => {
                       const formattedDate = date ? formatDate(date) : "";
@@ -215,6 +215,7 @@ export const GrpSchedule = () => {
                   </div>
                 </div>
 
+                {/* Submit Button */}
                 <div className="flex justify-between items-center mt-4">
                   <div className="flex space-x-4">
                     <button
@@ -227,13 +228,14 @@ export const GrpSchedule = () => {
                     <button
                       className="px-4 py-2 border rounded text-white hover:opacity-80"
                       style={{ backgroundColor: "#4DB6AC" }}
-                      onClick={() => console.log("Submit action")}
+                      onClick={handleSubmit}
                     >
                       Submit
                     </button>
                   </div>
                 </div>
 
+                {/* Available Trips */}
                 <div className="space-y-4 mt-8">
                   <h3 className="text-xl font-bold">Available trip dates</h3>
                   {availableTrips.map((trip, index) => (

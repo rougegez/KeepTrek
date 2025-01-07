@@ -56,7 +56,7 @@ export const TripDetailsPage = () => {
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar tripID={tripID}/>
       <main className="main-page">
         
         <TripOverview
