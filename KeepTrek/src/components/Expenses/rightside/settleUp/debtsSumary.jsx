@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useExpenses } from "@/components/Expenses/expenseContext";
-import { balanceMap } from '@/APIs/expenses';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
 
 export default function DebtsSummary() {
   const {
@@ -12,7 +15,95 @@ export default function DebtsSummary() {
     balances,
     isLoading,
     settledDebts,
+    settleUp,
+    editDebt,
+    deleteDebt,
   } = useExpenses();
+
+  const { tripID } = useParams();
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentError, setPaymentError] = useState("");
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedDebt, setSelectedDebt] = useState(null);
+  const [editAmount, setEditAmount] = useState("");
+  const [editError, setEditError] = useState("");
+
+
+
+  const handleSettleUp = async (paidBy, paidTo, amount) => {
+    try {
+      const debtData = {
+        paidBy,
+        paidTo,
+        amount: parseFloat(amount)
+      };
+      await settleUp(debtData);
+      // Handle success
+    } catch (error) {
+      // Handle error
+    }
+  };
+
+  const handlePayClick = (userID, amount) => {
+    setSelectedUser(userID);
+    setPaymentAmount(Math.abs(amount).toString());
+    setShowPayModal(true);
+  };
+
+  const handlePay = async () => {
+    try {
+      const amount = parseFloat(paymentAmount);
+      if (isNaN(amount) || amount <= 0) {
+        setPaymentError("Please enter a valid amount");
+        return;
+      }
+      await handleSettleUp(user, selectedUser, amount);
+      setShowPayModal(false);
+      setPaymentError("");
+    } catch (error) {
+      setPaymentError(error.message);
+    }
+  };
+
+  // Add handlers
+const handleDebtClick = (debt) => {
+  setSelectedDebt(debt);
+  setEditAmount(debt.amount.toString());
+  setShowEditModal(true);
+};
+
+const handleEditDebt = async () => {
+  try {
+    const amount = Number(editAmount);
+    if (isNaN(amount) || amount <= 0) {
+      setEditError("Please enter a valid amount");
+      return;
+    }
+
+    console.log('Sending edit request:', {
+      debtId: selectedDebt.id,
+      amount: amount
+    });
+    
+    await editDebt(selectedDebt.id, amount);
+    setShowEditModal(false);
+    setEditError("");
+  } catch (error) {
+    console.error('Error in handleEditDebt:', error);
+    setEditError(error.message);
+  }
+};
+
+const handleDeleteDebt = async () => {
+  try {
+    await deleteDebt(selectedDebt.id);
+    setShowEditModal(false);
+  } catch (error) {
+    setEditError(error.message);
+  }
+};
 
   const [error, setError] = useState(null);
 
@@ -46,10 +137,18 @@ export default function DebtsSummary() {
   const totalUsersOweYou = usersOweYou.reduce((sum, [_, amount]) => sum + amount, 0);
   const totalYouOweUsers = youOweUsers.reduce((sum, [_, amount]) => sum + amount, 0);
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', { 
+      day: 'numeric',
+      month: 'short'
+    });
+  };
+
   console.log(settledDebts);
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-1">
       {/* Section: Users Who Owe You */}
       <div className="bg-white p-6 rounded-xl shadow-md">
         <h2 className="text-xl font-bold mb-4 text-gray-800">Users Who Owe You</h2>
@@ -95,7 +194,8 @@ export default function DebtsSummary() {
             {youOweUsers.map(([userID, amount]) => (
               <li
                 key={userID}
-                className="flex justify-between items-center border-b border-gray-200 pb-2 last:border-b-0"
+                className="flex justify-between items-center p-3 hover:bg-gray-300 cursor-pointer transition-colors duration-200 rounded-lg"
+                onClick={() => handlePayClick(userID, amount)}
               >
                 <div className="flex items-center gap-4">
                   <div className="bg-gray-300 w-10 h-10 rounded-full flex items-center justify-center">
@@ -127,29 +227,111 @@ export default function DebtsSummary() {
         <p className="text-gray-600">No settled debts yet.</p>
       ) : (
         <ul className="space-y-4">
-          {settledDebts.map((debt, index) => (
-            <li
-              key={`${debt.paidBy}-${debt.paidTo}-${index}`}
-              className="flex justify-between items-center border-b border-gray-200 pb-2 last:border-b-0"
-            >
-              <div className="flex items-center gap-4">
-                <div className="bg-gray-300 w-10 h-10 rounded-full flex items-center justify-center">
-                  <span className="text-sm text-gray-600">💰</span>
-                </div>
-                <span className="text-gray-800">
-                  <span className="font-medium">{getUserName(debt.paidBy)}</span>
-                  {" paid "}
-                  <span className="font-medium">{getUserName(debt.paidTo)}</span>
+          {settledDebts.map((debt) => (
+          <li
+            key={debt.id}
+            className={`flex justify-between items-center p-3 ${
+              debt.paidBy === user 
+                ? 'hover:bg-gray-300 cursor-pointer'
+                : ''
+            } transition-colors duration-200 rounded-lg`}
+            onClick={() => debt.paidBy === user ? handleDebtClick(debt) : null}
+          >
+            <div className="flex items-center gap-4">
+              <div className="bg-gray-300 w-12 h-12 rounded-full flex flex-col items-center justify-center">
+                <span className="text-base text-[20px] font-bold text-gray-700 leading-none">
+                  {String(new Date(debt.timestamp).getDate()).padStart(2, '0')}
+                </span>
+                <span className="text-[14px] font-medium text-gray-600">
+                  {new Date(debt.timestamp).toLocaleDateString('en-GB', { month: 'short' })}
                 </span>
               </div>
+              <span className="text-gray-800">
+                <span className="font-medium">{getUserName(debt.paidBy)}</span>
+                {" paid "}
+                <span className="font-medium">{getUserName(debt.paidTo)}</span>
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
               <span className="text-gray-700 font-medium">
                 RM {debt.amount.toFixed(2)}
               </span>
-            </li>
-          ))}
+            </div>
+          </li>
+        ))}
         </ul>
       )}
     </div>
+    <Dialog open={showPayModal} onOpenChange={setShowPayModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Pay {selectedUser ? getUserName(selectedUser) : ''}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 p-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Amount to Pay (RM)
+              </label>
+              <Input
+                type="number"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+                min="0"
+                step="0.01"
+                className="w-full"
+              />
+            </div>
+            {paymentError && (
+              <p className="text-red-500 text-sm">{paymentError}</p>
+            )}
+            <div className="flex justify-end space-x-3">
+              <Button variant="outline" onClick={() => setShowPayModal(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handlePay}>
+                Pay
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Edit Settled Debt</DialogTitle>
+    </DialogHeader>
+    <div className="space-y-4 p-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Amount (RM)
+        </label>
+        <Input
+          type="number"
+          value={editAmount}
+          onChange={(e) => setEditAmount(e.target.value)}
+          min="0"
+          step="0.01"
+          className="w-full"
+        />
+      </div>
+      {editError && (
+        <p className="text-red-500 text-sm">{editError}</p>
+      )}
+      <div className="flex justify-end space-x-3">
+        <Button
+          variant="destructive"
+          onClick={handleDeleteDebt}
+        >
+          Delete
+        </Button>
+        <Button onClick={handleEditDebt}>
+          Save Changes
+        </Button>
+      </div>
+    </div>
+  </DialogContent>
+</Dialog>
     </div>
   );
 }

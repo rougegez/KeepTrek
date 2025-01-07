@@ -91,34 +91,4 @@ export const UserBalance = async (tripID) => {
   return response.data;
 };
 
-export const balanceMap = async (tripID) => {
-  const response = await axios.get(`/settledDebts/adjusted-balance/${tripID}`);
-  return response.data;
-};
-
-// Get settled debts for a trip
-export const getSettledDebts = async (tripID) => {
-  try {
-    const response = await axios.get(`/settledDebts/${tripID}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching settled debts:', error);
-    throw error;
-  }
-};
-
-// Settle a new debt
-export const settleDebt = async (tripID, debtData) => {
-  try {
-    const response = await axios.post(`/${tripID}/settle-debt`, debtData, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error settling debt:', error);
-    throw error;
-  }
-};
 

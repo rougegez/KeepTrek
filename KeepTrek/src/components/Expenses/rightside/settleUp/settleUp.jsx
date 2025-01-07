@@ -6,8 +6,8 @@ import DebtsSummary from "./debtsSumary";
 // import SettleDebtDialog from "./SettleDebtDialog";
 // import SetBudgetDialog from "./SettleBudgetDialog";
 import { useExpenses } from "@/components/Expenses/expenseContext";
-import { balanceMap } from "@/APIs/expenses";
 import { useParams } from "react-router-dom";
+import {BudgetProgress} from './budgetProgress';
 
 
 export default function SettleUp() {
@@ -24,37 +24,15 @@ export default function SettleUp() {
   return (
     <TabsContent value="settle-up">
       <Card className="p-6">
-        {/* <BudgetProgress
-          currentUserBudget={currentUserBudget}
-          
-          progressPercentage={progressPercentage}
-          onSetBudget={() => setIsBudgetModalOpen(true)}
-          calculateYourExpense={calculateYourExpense}
-        /> */}
+        <BudgetProgress
+          tripID={tripID}/>
+
+        
 
         <DebtsSummary
           tripID={tripID}
         />
       </Card>
-
-      {/* Settle-Up Dialog */}
-      {/* <SettleDebtDialog
-        selectedDebt={selectedDebt}
-        findUserById={findUserById}
-        paymentAmount={paymentAmount}
-        onClose={() => setSelectedDebt(null)}
-        onPaymentChange={(e) => setPaymentAmount(e.target.value)}
-        onPayment={handlePayment}
-      /> */}
-
-      {/* Set Budget Dialog */}
-      {/* <SetBudgetDialog
-        isOpen={isBudgetModalOpen}
-        onClose={() => setIsBudgetModalOpen(false)}
-        userBudget={userBudget}
-        onBudgetChange={(e) => setUserBudget(e.target.value)}
-        onSaveBudget={handleEditBudget}
-      /> */}
     </TabsContent>
   );
 }
