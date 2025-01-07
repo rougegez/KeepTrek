@@ -1,5 +1,6 @@
-import React, { useState, Suspense } from "react";
+import React, { useEffect, useState, Suspense, startTransition } from "react";
 import { useQuery, useQueryClient, useMutation } from "react-query";
+import { withSuspense } from "@/utils/withSuspense.jsx";
 
 import { Button } from "@/components/ui/button";
 import { Reorder } from "framer-motion";
@@ -15,6 +16,7 @@ import { dateFormatter } from "@/utils/dateFormat.jsx";
 import { useParams } from "react-router-dom";
 import { createItinerary, getItinerary, updateItinerary } from "@/APIs/itinerary.js";
 import { getTrip } from "@/APIs/trip.js";
+import { Card, CardContent } from "../ui/card.jsx";
 
 
 function ItineraryWL() {
@@ -29,26 +31,19 @@ function ItineraryWL() {
   const [searchedPlace, setSearchedPlace] = useState(null);
   const [savedLocation, setSavedLocation] = useState(null);
 
-  const { data: itinerary } = useQuery(
-    ['itinerary', tripID],
-    () => getItinerary(tripID).catch(async (error) => {
-      if (error.response?.status === 404) {
-        const newItinerary = await createItinerary({ tripID, days: [] });
-        return newItinerary;
-      }
-      throw error;
-    }),
-    { suspense: true }
-  );
-
-  const [days, setDays] = useState(itinerary.days);
-
-  // Fetch Trip Details
   const { data: tripDetails } = useQuery(
     ['trip', tripID],
     () => getTrip(tripID),
     { suspense: true }
   );
+
+  const { data: itinerary} = useQuery(
+    ['itinerary', tripID],
+    () => getItinerary(tripID),
+    { suspense: true}
+  );
+
+  const [days, setDays] = useState(itinerary.days);
 
   // Mutation to update the entire itinerary
   const updateItineraryMutation = useMutation(
@@ -150,7 +145,6 @@ function ItineraryWL() {
   }
 
   return (
-    <Suspense fallback={<p>TestLoading</p>}>
       <SidebarProvider >
         <AppSidebar tripID={tripID} />
         <div className="flex w-full">
@@ -167,7 +161,7 @@ function ItineraryWL() {
                 <Button onClick={() => handleUpdateItinerary(days)}>Save</Button>
               </div>
             </div>
-            {itinerary.days.map((day, dayIndex) => (
+            {days.map((day, dayIndex) => (
               <div key={day.date} className="space-y-4">
                 <h2 className="text-xl font-semibold">{day.date}</h2>
                 <Reorder.Group
@@ -240,9 +234,8 @@ function ItineraryWL() {
           days={days}
         />
       </SidebarProvider>
-    </Suspense>
   );
 }
 
-export default ItineraryWL;
+export default withSuspense(ItineraryWL);
 
