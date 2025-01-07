@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { fetchAvailableTrips, updateAvailability } from "@/apis/dateFinder";
+import { fetchAvailableTrips, updateAvailability } from "@/APIs/dateFinder.js";
 
 export const GrpSchedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -12,16 +12,15 @@ export const GrpSchedule = () => {
   const [availableTrips, setAvailableTrips] = useState([]);
   const isDragging = useRef(false);
 
-  const token = localStorage.getItem("access_token"); // Replace with your auth logic
   const tripID = "e66f655b-3197-44ef-9ec2-051eda3266f4"; // Replace with dynamic tripID if necessary
 
   // Fetch available trips from the backend
   const loadAvailableTrips = async () => {
     try {
-      const trips = await fetchAvailableTrips(token);
+      const trips = await fetchAvailableTrips();
       setAvailableTrips(trips);
     } catch (error) {
-      console.error("Error fetching trips:", error);
+      console.error("Error fetching trips:", error.message);
       alert("Failed to fetch available trips");
     }
   };
@@ -31,13 +30,12 @@ export const GrpSchedule = () => {
     try {
       const result = await updateAvailability(
         Array.from(selectedDates),
-        tripID,
-        token
+        tripID
       );
       console.log("Availability saved:", result);
       alert("Availability successfully submitted!");
     } catch (error) {
-      console.error("Error saving availability:", error);
+      console.error("Error saving availability:", error.message);
       alert("Failed to submit availability");
     }
   };
