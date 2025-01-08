@@ -3,6 +3,7 @@ import { Bell, UserCircle } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { User } from 'lucide-react';
 
 export default function TopNavbar() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -80,12 +81,13 @@ export default function TopNavbar() {
                                 <Button size="icon" variant="ghost" className="m-2 rounded-full">
                                     <Bell className="h-4 w-4" aria-hidden="true" />
                                 </Button>
-                                <Avatar>
-                                    <AvatarImage src="../src/assets/KeepTrekNew.png"></AvatarImage>
-                                    <AvatarFallback>
-                                        {user?.username?.charAt(0).toUpperCase() || 'U'}
-                                    </AvatarFallback>
-                                </Avatar>
+                                <NavLink to="/profile">
+                                    <Avatar>
+                                        <AvatarFallback className="bg-gray-100">
+                                            <User className="h-5 w-5 text-gray-500" />
+                                        </AvatarFallback>
+                                    </Avatar>
+                                </NavLink>
                                 <Button
                                     className="ml-4 text-sm font-semibold text-red-600"
                                     variant="ghost"

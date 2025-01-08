@@ -2,7 +2,11 @@ import axios from "./axiosConfig";
 
 // Login API
 export const loginUser = async (credentials) => {
-  const response = await axios.post("/auth/login", credentials);
+  const response = await axios.post("/auth/login", credentials,
+    {headers: {
+      'Content-Type': 'application/json'
+    }}
+  );
   return response.data;
 };
 

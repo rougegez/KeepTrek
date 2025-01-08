@@ -21,7 +21,7 @@ import YourTrips from "./components/yourTrips/yourTrips.jsx";
 import { MapTestPage } from "./components/MapboxMap/MapTestPage.jsx";
 import CreateTrip from "./components/CreateTrip/CreateTrip.jsx";
 import MainExpensePage from "./components/Expenses/mainExpensePage.jsx";
-
+import {ProfilePage} from "./components/profilePage/profilePage.jsx";
 
 function App() {
   return (
@@ -46,6 +46,7 @@ function App() {
         <Route path="/yourTrips" element={<YourTrips />} />
         <Route path="/create-trip" element={<CreateTrip />} />
         <Route path="/maptest" element={<MapTestPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </Router>
     </AuthProvider>
