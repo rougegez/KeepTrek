@@ -6,19 +6,25 @@ export const createTrip = async (tripData) => {
   return response.data;
 };
 
+// Get Trip
 export const getTrip = async (tripID) => {
   const response = await axios.get(`/trip/${tripID}`);
   return response.data;
 }
-
-// Join Trip
-export const joinTrip = async (tripID) => {
-  const response = await axios.post(`/trip/join/${tripID}`);
-  return response.data;
-};
 
 // List of trips
 export const getUserTrips = async () => {
     const response = await axios.get("/trip/user-trips");
     return response.data;
   };
+
+// Generate Invite Link
+export const generateInviteLink = async (tripID) => {
+  const response = await axios.get(`/trip/${tripID}/invite`);
+  return response.data;
+}
+
+export const joinTrip = async (inviteCode) => {
+  const response = await axios.post(`/trip/join`, { invite_code: inviteCode });
+  return response.data; 
+}
