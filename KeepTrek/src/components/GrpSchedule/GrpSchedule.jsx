@@ -1,31 +1,49 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { fetchAvailableTrips, updateAvailability } from "@/APIs/dateFinder.js";
+import {
+  fetchAvailableTrips,
+  updateAvailability,
+  getUserAvailability,
+} from "@/APIs/dateFinder";
+import AvailableTrips from "@/components/GrpSchedule/AvailableTrips";
 
 export const GrpSchedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDates, setSelectedDates] = useState(new Set());
   const [availableTrips, setAvailableTrips] = useState([]);
   const isDragging = useRef(false);
+  const { tripID } = useParams();
 
-  const tripID = "e66f655b-3197-44ef-9ec2-051eda3266f4"; // Replace with dynamic tripID if necessary
+  // Load existing availability for the current user
+  const loadUserAvailability = async () => {
+    try {
+      const userAvailability = await getUserAvailability(tripID);
+      setSelectedDates(new Set(userAvailability));
+    } catch (error) {
+      console.error("Error loading user availability:", error.message);
+    }
+  };
 
-  // Fetch available trips from the backend
+  // Fetch trips from the backend
   const loadAvailableTrips = async () => {
     try {
       const trips = await fetchAvailableTrips();
-      setAvailableTrips(trips);
+      const currentTrip = trips.find((trip) => trip.tripID === tripID);
+
+      if (!currentTrip) throw new Error("Trip not found");
+      setAvailableTrips(currentTrip.available_dates || []);
     } catch (error) {
       console.error("Error fetching trips:", error.message);
       alert("Failed to fetch available trips");
     }
   };
 
-  // Save selected dates to the database
+  // Submit selected dates to the backend
   const handleSubmit = async () => {
     try {
       const result = await updateAvailability(
@@ -34,6 +52,7 @@ export const GrpSchedule = () => {
       );
       console.log("Availability saved:", result);
       alert("Availability successfully submitted!");
+      window.location.reload(); // Refresh the page after successful submission
     } catch (error) {
       console.error("Error saving availability:", error.message);
       alert("Failed to submit availability");
@@ -41,17 +60,18 @@ export const GrpSchedule = () => {
   };
 
   useEffect(() => {
+    loadUserAvailability();
     loadAvailableTrips();
   }, []);
 
   // Generate calendar days for the current month
   const generateCalendar = () => {
     const year = currentDate.getFullYear();
-    const month = currentDate.getMonth(); // 0-indexed
+    const month = currentDate.getMonth();
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
     const daysInMonth = lastDayOfMonth.getDate();
-    const startDay = firstDayOfMonth.getDay(); // 0 (Sun) to 6 (Sat)
+    const startDay = firstDayOfMonth.getDay();
 
     const calendar = [];
 
@@ -68,17 +88,17 @@ export const GrpSchedule = () => {
     return calendar;
   };
 
-  // Function to format date as YYYY-MM-DD
+  // Format date as YYYY-MM-DD
   const formatDate = (date) => {
     const year = currentDate.getFullYear();
-    const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+    const month = String(currentDate.getMonth() + 1).padStart(2, "0");
     const day = String(date).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
 
-  // Function to handle date selection/deselection
+  // Handle date selection
   const handleDateSelect = (date) => {
-    if (date === null) return; // Do nothing for empty slots
+    if (date === null) return;
 
     const formattedDate = formatDate(date);
     setSelectedDates((prev) => {
@@ -92,22 +112,19 @@ export const GrpSchedule = () => {
     });
   };
 
-  // Handle the start of dragging
   const handleDragStart = (date) => (e) => {
-    e.preventDefault(); // Prevent text selection
-    if (date === null) return; // Do not initiate drag on empty slots
+    e.preventDefault();
+    if (date === null) return;
     isDragging.current = true;
-    handleDateSelect(date); // Select the first date when dragging starts
+    handleDateSelect(date);
   };
 
-  // Handle mouse dragging over a date (selecting dates)
   const handleDragEnter = (date) => () => {
     if (isDragging.current && date !== null) {
       handleDateSelect(date);
     }
   };
 
-  // Handle the end of dragging
   const handleDragEnd = () => {
     isDragging.current = false;
   };
@@ -132,7 +149,6 @@ export const GrpSchedule = () => {
     setCurrentDate(new Date());
   };
 
-  // Handle global mouse up to end dragging when mouse is released outside the date buttons
   useEffect(() => {
     const handleMouseUpGlobal = () => {
       if (isDragging.current) {
@@ -154,16 +170,13 @@ export const GrpSchedule = () => {
             <h1 className="text-xl font-bold">Group Schedule</h1>
           </header>
 
-          <main className="flex-1 overflow-hidden">
-            <div className="max-w-md mx-auto p-4 h-full">
+          <main className="flex-1 overflow-y-auto">
+            <div className="max-w-md mx-auto p-4">
               <div className="mb-8">
                 <h2 className="text-2xl font-bold mb-6">
                   Select your available dates!
                 </h2>
-
-                {/* Calendar and Date Selection */}
                 <div className="mb-4">
-                  {/* Month Navigation */}
                   <div className="flex items-center justify-between mb-4">
                     <button onClick={handlePrevious} className="p-2">
                       <ChevronLeft className="h-4 w-4" />
@@ -179,7 +192,6 @@ export const GrpSchedule = () => {
                     </button>
                   </div>
 
-                  {/* Calendar Grid */}
                   <div className="grid grid-cols-7 gap-2">
                     {generateCalendar().map((date, index) => {
                       const formattedDate = date ? formatDate(date) : "";
@@ -192,19 +204,15 @@ export const GrpSchedule = () => {
                           onMouseEnter={handleDragEnter(date)}
                           onMouseUp={handleDragEnd}
                           disabled={date === null}
-                          className={`
-                            p-2 rounded-md text-sm
-                            ${
-                              date
-                                ? "hover:bg-primary/10 cursor-pointer"
-                                : "text-muted-foreground cursor-not-allowed"
-                            }
-                            ${
-                              isSelected
-                                ? "bg-primary text-primary-foreground"
-                                : ""
-                            }
-                          `}
+                          className={`p-2 rounded-md text-sm ${
+                            date
+                              ? "hover:bg-primary/10 cursor-pointer"
+                              : "text-muted-foreground cursor-not-allowed"
+                          } ${
+                            isSelected
+                              ? "bg-primary text-primary-foreground"
+                              : ""
+                          }`}
                         >
                           {date || ""}
                         </button>
@@ -213,47 +221,27 @@ export const GrpSchedule = () => {
                   </div>
                 </div>
 
-                {/* Submit Button */}
                 <div className="flex justify-between items-center mt-4">
-                  <div className="flex space-x-4">
-                    <button
-                      className="px-4 py-2 border rounded text-white hover:opacity-80"
-                      style={{ backgroundColor: "#4DB6AC" }}
-                      onClick={handleToday}
-                    >
-                      Today
-                    </button>
-                    <button
-                      className="px-4 py-2 border rounded text-white hover:opacity-80"
-                      style={{ backgroundColor: "#4DB6AC" }}
-                      onClick={handleSubmit}
-                    >
-                      Submit
-                    </button>
-                  </div>
+                  <button
+                    className="px-4 py-2 border rounded text-white hover:opacity-80"
+                    style={{ backgroundColor: "#4DB6AC" }}
+                    onClick={handleToday}
+                  >
+                    Today
+                  </button>
+                  <button
+                    className="px-4 py-2 border rounded text-white hover:opacity-80"
+                    style={{ backgroundColor: "#4DB6AC" }}
+                    onClick={handleSubmit}
+                  >
+                    Submit
+                  </button>
                 </div>
 
-                {/* Available Trips */}
+                {/* Display AvailableTrips component */}
                 <div className="space-y-4 mt-8">
                   <h3 className="text-xl font-bold">Available trip dates</h3>
-                  {availableTrips.map((trip, index) => (
-                    <Card key={index} className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium">
-                            {trip.startDate} - {trip.endDate}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {trip.nights} Days {trip.nights + 1} Nights
-                          </div>
-                          <div className="text-sm font-medium">
-                            {trip.price}
-                          </div>
-                        </div>
-                        <Button>Select</Button>
-                      </div>
-                    </Card>
-                  ))}
+                  <AvailableTrips tripID={tripID} />
                 </div>
               </div>
             </div>
