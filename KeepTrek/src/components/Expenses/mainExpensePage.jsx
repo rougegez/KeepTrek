@@ -1,10 +1,11 @@
 import React from "react";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger, toggleSi } from "@/components/ui/sidebar";
 import {ExpensesLeftside} from "./leftside/ExpensesLeftside.jsx";
 import ExpenseRightSide from "./rightside/expenseRightside.jsx";
 import { ExpensesProvider } from "./expenseContext.jsx";
 import { useParams } from "react-router-dom";
+
 
 
 export default function MainExpensePage() {
@@ -13,7 +14,8 @@ export default function MainExpensePage() {
     <SidebarProvider>
       
       <ExpensesProvider>
-        <AppSidebar tripID={tripID}/>
+        <AppSidebar tripID={tripID} />
+        <SidebarTrigger/>
         <div className="flex h-screen w-screen">
           <div className="flex flex-col flex-1 overflow-hidden">
             <div className="flex flex-1 overflow-hidden">
