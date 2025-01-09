@@ -14,6 +14,7 @@ export default function YourTrips() {
       try {
         const userTrips = await getUserTrips();
         setTrips(userTrips);
+        console.log(userTrips);
       } catch (err) {
         setError(err.response?.data?.detail || "Failed to fetch trips.");
       }
@@ -33,6 +34,7 @@ export default function YourTrips() {
             <TripsList trips={trips} />
           ) : (
             !error && <NoTripsMessage />
+            
           )}
         </div>
       </div>

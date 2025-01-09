@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export const BudgetProgress = () => {
-  const { totalUser, user, userBudgets, handleCreateBudget, handleEditBudget, handleDeleteBudget } = useExpenses();
+  const { totals, user, userBudgets, handleCreateBudget, handleEditBudget, handleDeleteBudget } = useExpenses();
   const [showModal, setShowModal] = useState(false);
   const [budgetAmount, setBudgetAmount] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
@@ -15,7 +15,7 @@ export const BudgetProgress = () => {
   const currentBudgetAmount = userBudget ? userBudget.amount : null;
 
   // Calculate progress percentage
-  const percentage = currentBudgetAmount ? (totalUser / currentBudgetAmount) * 100 : 0;
+  const percentage = currentBudgetAmount ? (totals.totalUser / currentBudgetAmount) * 100 : 0;
 
   const handleOpenModal = () => {
     if (currentBudgetAmount) {
@@ -65,14 +65,14 @@ export const BudgetProgress = () => {
             cy="50"
             r="45"
             fill="none"
-            stroke={totalUser > currentBudgetAmount ? "red" : "#4DB6AC"}
+            stroke={totals.totalUser > currentBudgetAmount ? "red" : "#4DB6AC"}
             strokeWidth="10"
             strokeDasharray={`${percentage * 2.83} 283`}
             transform="rotate(-90 50 50)" />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center flex-col">
           <div className="text-2xl font-bold text-gray-500 cursor-pointer" onClick={handleOpenModal}>
-            {currentBudgetAmount ? `RM ${totalUser.toFixed(2)}` : 'Set a Budget'}
+            {currentBudgetAmount ? `RM ${totals.totalUser.toFixed(2)}` : 'Set a Budget'}
           </div>
           {currentBudgetAmount && (
             <div className="text-sm text-gray-500 text-center">

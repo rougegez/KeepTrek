@@ -19,11 +19,7 @@ export const balanceMap = async (tripID) => {
   // Settle a new debt
   export const settleDebt = async (tripID, debtData) => {
     try {
-      const response = await axios.post(`settledDebts/${tripID}/settle-debt`, debtData, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await axios.post(`settledDebts/${tripID}/settle-debt`, debtData);
       return response.data;
     } catch (error) {
       console.error('Error settling debt:', error);

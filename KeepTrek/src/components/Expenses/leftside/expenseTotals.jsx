@@ -4,8 +4,7 @@ import { Card } from "@/components/ui/card";
 
 export const ExpensesTotals = () => {
   const {
-    totalTrip,
-    totalUser,
+    totals,
     isLoadingTotals,
     error,
     balances,
@@ -33,7 +32,7 @@ export const ExpensesTotals = () => {
       <div className="bg-[#4DB6AC] text-white p-6 rounded-xl w-52 h-44 flex items-center justify-center">
         <div className="text-center">
           <span className="text-4xl font-bold block mb-1">
-            RM {totalTrip?.toFixed(2) || '0.00'}
+            RM {totals.totalTrip?.toFixed(2) || '0.00'}
           </span>
           <span className="text-2xl font-bold block mb-1">
             Total Trip Expense
@@ -45,7 +44,7 @@ export const ExpensesTotals = () => {
           <div className="flex justify-between items-center">
             <span className="text-2xl font-bold block mb-1">Your Expense</span>
             <span className="text-2xl font-bold block mb-1">
-              RM {totalUser?.toFixed(2) || '0.00'}
+              RM {totals.totalUser?.toFixed(2) || '0.00'}
             </span>
           </div>
         </div>

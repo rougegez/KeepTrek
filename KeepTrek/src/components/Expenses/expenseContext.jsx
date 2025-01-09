@@ -57,7 +57,8 @@ export function ExpensesProvider ({ children }) {
   const [isCreatingBudget, setIsCreatingBudget] = useState(false);
   const [isEditingBudget, setIsEditingBudget] = useState(false);
   const [isDeletingBudget, setIsDeletingBudget] = useState(false);
-  const cache = useRef({});
+  const [isLoadingMain, setIsLoadingMain] = useState(false);
+  const [isLoadingDependent, setIsLoadingDependent] = useState(false);
 
   const fetchUser = useCallback(async () => {
     setIsLoadingUser(true);
@@ -104,71 +105,118 @@ export function ExpensesProvider ({ children }) {
     }
   }, [tripID]);
 
-  const fetchMainData = useCallback(async () => {
-    if (!tripID || cache.current.mainData?.tripID === tripID) return;
+  const cache = useRef({
+    mainData: null,
+    totals: null,
+    lastFetch: null,
+    // Cache expires after 5 minutes
+    CACHE_DURATION: 5 * 60 * 1000
+  });
+
+  const isCacheValid = useCallback(() => {
+    return cache.current.lastFetch && 
+           (Date.now() - cache.current.lastFetch) < cache.current.CACHE_DURATION;
+  }, []);
+
+  // Group related data fetches
+  const fetchEssentialData = useCallback(async () => {
+    if (!tripID) return;
+    if (isCacheValid()) {
+      return cache.current.mainData;
+    }
 
     try {
-      const [expensesData, membersData] = await Promise.all([
+      setIsLoadingMain(true);
+      const [user, expenses, members] = await Promise.all([
+        CurrentUser(),
         getExpense(tripID),
-        getTripMembers(tripID),
+        getTripMembers(tripID)
       ]);
 
-      setExpenses(expensesData);
-      setTripMembers(membersData);
+      const data = { user, expenses, members };
+      cache.current.mainData = data;
+      cache.current.lastFetch = Date.now();
 
+      setUser(user);
+      setExpenses(expenses);
+      setTripMembers(members);
+
+      // Create username lookup
       const newUsernames = {};
-      membersData.forEach(member => {
+      members.forEach(member => {
         newUsernames[member.userID] = member.username;
       });
       setUsernames(newUsernames);
 
-      cache.current.mainData = { tripID, expensesData, membersData };
-      
+      return data;
     } catch (error) {
-      console.error('Error fetching main data:', error);
+      console.error('Error fetching essential data:', error);
       setError(error.message);
+    } finally {
+      setIsLoadingMain(false);
     }
-  }, [tripID]);
+  }, [tripID, isCacheValid]);
 
-  const fetchTotals = useCallback(async () => {
-    if (!tripID) return;
+  // Fetch dependent data after essential data
+  const fetchDependentData = useCallback(async (essentialData) => {
+  if (!tripID || !essentialData) return;
 
-    try {
-      setIsLoadingTotals(true);
-      const [tripTotal, userTotal, balance] = await Promise.all([
+  try {
+    setIsLoadingDependent(true);
+    
+    // Use Promise.allSettled instead of Promise.all to handle partial failures
+    const results = await Promise.allSettled([
+      Promise.all([
         totalTripExpense(tripID),
         totalUserExpense(tripID),
-        UserBalance(tripID),
-      ]);
+        UserBalance(tripID)
+      ]),
+      balanceMap(tripID),
+      getSettledDebts(tripID),
+      viewBudgets(tripID)
+    ]);
 
+    // Process results, using default values if any promise fails
+    const [totalsResult, balancesResult, debtsResult, budgetsResult] = results;
+
+    if (totalsResult.status === 'fulfilled') {
+      const [totalTrip, totalUser, userBalance] = totalsResult.value;
       setTotals({
-        totalTrip: tripTotal,
-        totalUser: userTotal,
-        userBalance: balance,
+        totalTrip: totalTrip || 0,
+        totalUser: totalUser || 0,
+        userBalance: userBalance || 0
       });
-    } catch (error) {
-      console.error('Error fetching totals:', error);
-      setError(error.message);
-    }finally{
-      setIsLoadingTotals(false);
-
     }
-  }, [tripID]);
 
+    if (balancesResult.status === 'fulfilled') {
+      setBalances(balancesResult.value || {});
+    }
+
+    if (debtsResult.status === 'fulfilled') {
+      setSettledDebts(debtsResult.value || []);
+    }
+
+    if (budgetsResult.status === 'fulfilled') {
+      setUserBudgets(budgetsResult.value || []);
+    }
+
+  } catch (error) {
+    console.error('Error fetching dependent data:', error);
+    setError(error.message);
+  } finally {
+    setIsLoadingDependent(false);
+  }
+}, [tripID]);
   useEffect(() => {
-    const fetchData = async () => {
-      const userPromise = fetchUser();
-      const mainDataPromise = fetchMainData();
-      const totalsPromise = fetchTotals();
-      const balancesPromise = fetchBalanceMap();
-      const settledDebtsPromise = fetchSettledDebts(); 
-      const userBudgetsPromise = fetchUserBudgets();
-
-      await Promise.allSettled([userPromise, mainDataPromise, totalsPromise, balancesPromise, settledDebtsPromise, userBudgetsPromise]);
+    const fetchAllData = async () => {
+      const essentialData = await fetchEssentialData();
+      if (essentialData) {
+        await fetchDependentData(essentialData);
+      }
     };
 
-    fetchData();
-  }, [fetchUser, fetchMainData, fetchTotals, fetchBalanceMap, fetchSettledDebts, fetchUserBudgets]);
+    fetchAllData();
+  }, [fetchEssentialData, fetchDependentData]);
 
   const createExpense = async (expenseData) => {
     setLoading(true);
@@ -237,12 +285,11 @@ const settleUp = async (debtData) => {
     if (!tripID) {
       throw new Error("Trip ID is required");
     }
-    
+
     // Call the API
-    const result = await settleDebt(tripID, debtData);
+    const result = await settleDebt(tripID,  debtData);
     
-    // Refresh data after successful settle up
-    await refreshTotals();
+   await refreshTotals();
     
     return result;
   } catch (error) {
@@ -337,21 +384,30 @@ const handleDeleteBudget = async (userID) => {
 
 
 
-
-
-
-  const refreshTotals = useCallback(async () => {
-    await fetchTotals();
-    await fetchMainData();
-    await fetchBalanceMap();
-    await fetchSettledDebts();
-  }, [fetchTotals, fetchMainData, fetchBalanceMap, fetchSettledDebts]);
+const refreshTotals = useCallback(async () => {
+  try {
+    // Clear cache to force fresh data
+    cache.current = {
+      mainData: null,
+      totals: null,
+      lastFetch: null
+    };
+    
+    const essentialData = await fetchEssentialData();
+    if (essentialData) {
+      await fetchDependentData(essentialData);
+    }
+  } catch (error) {
+    console.error('Error refreshing data:', error);
+    setError(error.message);
+  }
+}, [fetchEssentialData, fetchDependentData]);
 
   const value = useMemo(() => ({
     user,
     expenses,
     tripMembers,
-    ...totals,
+    totals,
     usernames,
     isLoading: loading || isLoadingUser || isLoadingExpenses || isLoadingTotals,
     error,
