@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import TopNavbar from "../topNavBar/TopNavbar.jsx";
 import { createTrip } from "@/APIs/trip.js";
 import { useNavigate } from "react-router-dom";
+import { createItinerary } from "@/APIs/itinerary.js";
 
 export default function CreateTrip() {
   const [dateRange, setDateRange] = useState({ from: undefined, to: undefined });
@@ -34,7 +35,18 @@ export default function CreateTrip() {
     const endDate = new Date(dateRange.to).toISOString().split("T")[0];
 
     try {
-      await createTrip({ tripName, location, startDate, endDate });
+      const response = await createTrip({ tripName, location, startDate, endDate });
+      const tripID = response.tripID;
+
+      // Create itinerary
+      const dayCount = Math.ceil((new Date(dateRange.to) - new Date(dateRange.from)) / (1000 * 60 * 60 * 24)) + 1;
+      const days = Array.from({ length: dayCount }, (_, i) => ({
+        date: `Day ${i + 1}`,
+        activities: []
+      }));
+      console.log(days);
+      await createItinerary({ tripID, days});
+      
       alert("Trip created successfully!");
       navigate("/trip-details"); // Redirect to homepage or trips page
     } catch (err) {
