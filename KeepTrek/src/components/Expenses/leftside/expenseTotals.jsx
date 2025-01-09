@@ -1,11 +1,12 @@
 import { useExpenses } from '../expenseContext';
 import React from 'react';
 import { Card } from "@/components/ui/card";
+import {LoadingSkeleton} from '@/components/ui/loadingAnimation'; 
 
 export const ExpensesTotals = () => {
   const {
     totals,
-    isLoadingTotals,
+    isLoadingDependent,
     error,
     balances,
     user,
@@ -23,8 +24,8 @@ export const ExpensesTotals = () => {
     return <div>Error: {error}</div>;
   }
 
-  if (isLoadingTotals) {
-    return <div>Loading...</div>;
+  if (isLoadingDependent) {
+    return <LoadingSkeleton />;
   }
 
   return (

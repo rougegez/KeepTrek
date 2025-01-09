@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import {ModalExpense} from '../expenseList/modalExpense';
 import { useParams } from "react-router-dom";
 
+
 export const ExpenseList = () => {
   const { tripID } = useParams();
   const {
@@ -16,6 +17,9 @@ export const ExpenseList = () => {
   } = useExpenses();
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState(null);
+  if (isLoadingExpenses) {
+    return <div>Loading...</div>;
+  }
 
   const typeIcons = useMemo(() => ({
     Food: <Utensils className="w-6 h-6" />,

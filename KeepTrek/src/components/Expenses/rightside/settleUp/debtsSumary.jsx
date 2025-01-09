@@ -4,6 +4,13 @@ import { useExpenses } from "@/components/Expenses/expenseContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import LoadingSkeleton from "@/components/ui/loadingAnimation";
+import { Loader2 } from "lucide-react";
+
+// Add loading spinner component
+const LoadingSpinner = () => (
+  <Loader2 className="h-4 w-4 animate-spin" />
+);
 
 
 export default function DebtsSummary() {
@@ -18,6 +25,7 @@ export default function DebtsSummary() {
     settleUp,
     editDebt,
     deleteDebt,
+    isSettlingUp
   } = useExpenses();
 
   const { tripID } = useParams();
@@ -109,12 +117,12 @@ const handleDeleteDebt = async () => {
 
   // Check for loading state
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LoadingSkeleton />;
   }
 
   // Check for required data
   if (!user || !balances) {
-    return <div>Loading user data...</div>;
+    return <LoadingSkeleton />;
   }
 
   // Check for errors
@@ -288,8 +296,8 @@ const handleDeleteDebt = async () => {
               <Button variant="outline" onClick={() => setShowPayModal(false)}>
                 Cancel
               </Button>
-              <Button onClick={handlePay}>
-                Pay
+              <Button onClick={handlePay} disabled={isSettlingUp}>
+              {isSettlingUp ? <LoadingSpinner /> : 'Pay'}
               </Button>
             </div>
           </div>

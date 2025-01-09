@@ -1,0 +1,41 @@
+.menuItem {
+  @apply transition-colors duration-200 hover:bg-gray-100 rounded-md;
+}
+
+.secondaryItem {
+  @apply pl-6 text-sm text-gray-600 hover:text-gray-900;
+}
+
+.activeLink {
+    @apply absolute flex w-[80%] h-[2.5rem] bg-[#4DB6AC] rounded-[8px] 
+           items-center text-white shadow-sm transition-all duration-200 
+           hover:bg-[#3da399];
+  }
+  
+  .activeLink .icon {
+    @apply h-5 w-5 mr-2;
+  }
+  
+  .icon {
+    @apply h-5 w-5 mr-2;
+  }
+  
+  .sidebarHeader {
+    @apply p-4 border-b flex items-center justify-between;
+  }
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slideIn {
+  animation: slideIn 0.3s ease-out;
+}
+

@@ -1,6 +1,6 @@
 import React from "react";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import {ExpensesLeftside} from "./leftside/ExpensesLeftside.jsx";
 import ExpenseRightSide from "./rightside/expenseRightside.jsx";
 import { ExpensesProvider } from "./expenseContext.jsx";
@@ -11,6 +11,7 @@ export default function MainExpensePage() {
   const { tripID } = useParams();
   return (
     <SidebarProvider>
+      
       <ExpensesProvider>
         <AppSidebar tripID={tripID}/>
         <div className="flex h-screen w-screen">
@@ -22,6 +23,7 @@ export default function MainExpensePage() {
           </div>
         </div>
         </ExpensesProvider>
+        
     </SidebarProvider>
   );
 }

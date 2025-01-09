@@ -7,6 +7,39 @@ import { CurrentUser } from '@/APIs/auth';
 import TopNavbar from '../topNavBar/TopNavbar';
 import TripsList from '../yourTrips/tripList';
 import { getUserTrips } from '@/APIs/trip';
+import { motion } from 'framer-motion'
+import { Skeleton } from "@/components/ui/skeleton"
+
+const ProfileLoadingSkeleton = () => {
+    return (
+        <main className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+          <div className="bg-card rounded-lg shadow p-6 mb-8">
+            <div className="flex flex-col items-center space-y-4 pb-6">
+              <Skeleton className="w-32 h-32 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-64" />
+              </div>
+              <Skeleton className="h-10 w-32" />
+            </div>
+            <div className="grid grid-cols-2 gap-4 py-4">
+              <Skeleton className="h-24 rounded-lg" />
+              <Skeleton className="h-24 rounded-lg" />
+            </div>
+          </div>
+          <div className="bg-card rounded-lg shadow p-6">
+            <Skeleton className="h-8 w-64 mb-6" />
+            <div className="space-y-4">
+              <Skeleton className="h-20 rounded-lg" />
+              <Skeleton className="h-20 rounded-lg" />
+              <Skeleton className="h-20 rounded-lg" />
+            </div>
+          </div>
+        </main>
+      )
+    }
+  
+  
 
 
 export const ProfilePage = () => {
@@ -46,14 +79,11 @@ export const ProfilePage = () => {
         fetchData();
     }, []);
 
-    if (isLoading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
+    const renderContent = () => {
+        if (isLoading) return <ProfileLoadingSkeleton />
+        if (error) return <div className="text-red-500">Error: {error}</div>
 
-    return (
-        <div className="min-h-screen bg-gray-50">
-            <TopNavbar />
-
-            {/* Profile Content */}
+        return (
             <main className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
                 <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
                     <div className="flex flex-col items-center space-y-4 pb-6">
@@ -63,12 +93,12 @@ export const ProfilePage = () => {
                             className="w-32 h-32 rounded-full"
                         />
                         <div className="text-center">
-                            <h1 className="text-2xl font-bold text-gray-900">{userProfile ? userProfile.username : 'Loading...'}</h1>
+                            <h1 className="text-2xl font-bold text-gray-900">{userProfile.username}</h1>
                             <div className="flex items-center justify-center mt-2 text-gray-500">
                                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
-                                <span>{userProfile ? userProfile.email : 'Loading...'}</span>
+                                <span>{userProfile.email}</span>
                             </div>
                         </div>
                         <button 
@@ -101,16 +131,22 @@ export const ProfilePage = () => {
                     <TripsList trips={trips}/>
                 </div>
             </main>
+        )
+    }
 
-            {/* Edit Profile Modal */}
+
+    return (
+        <div className="min-h-screen bg-background">
+            <TopNavbar />
+            {renderContent()}
             {isEditModalOpen && (
                 <EditProfile 
                     isOpen={isEditModalOpen}
                     onClose={() => setIsEditModalOpen(false)}
                     userData={userData}
                     onSave={(newData) => {
-                        setUserData(newData);
-                        setIsEditModalOpen(false);
+                        setUserData(newData)
+                        setIsEditModalOpen(false)
                     }}
                 />
             )}
