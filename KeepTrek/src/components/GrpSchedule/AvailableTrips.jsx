@@ -1,53 +1,74 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Users } from "lucide-react";
 import {
   getSuggestedPeriods,
   fetchTripDetails,
-  getRangeAvailabilityEmails,
+  getRangeAvailabilityUsernames,
   updateTripPeriod,
+  getSelectedPeriod,
 } from "@/APIs/dateFinder";
 
 const AvailabilityIcon = ({ tripID, period, totalPeople }) => {
-  const [emails, setEmails] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [usernames, setUsernames] = useState(null);
+  const [loading, setLoading] = useState(true); // Start in loading state
   const [isOpen, setIsOpen] = useState(false);
+  const popupRef = useRef(null);
 
-  const handleClick = async () => {
-    if (isOpen) {
-      setIsOpen(false);
-      setEmails(null);
-      return;
-    }
+  // Preload usernames when the component mounts
+  useEffect(() => {
+    const fetchUsernames = async () => {
+      try {
+        const fetchedUsernames = await getRangeAvailabilityUsernames(
+          tripID,
+          period.start_date,
+          period.end_date
+        );
+        setUsernames(fetchedUsernames);
+      } catch (error) {
+        console.error("Error fetching usernames:", error);
+        setUsernames(["Error loading usernames"]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    setLoading(true);
-    setIsOpen(true);
+    fetchUsernames();
+  }, [tripID, period.start_date, period.end_date]);
 
-    try {
-      const fetchedEmails = await getRangeAvailabilityEmails(
-        tripID,
-        period.start_date,
-        period.end_date
-      );
-      setEmails(fetchedEmails);
-    } catch (error) {
-      console.error("Error fetching emails:", error);
-      setEmails(["Error loading emails"]);
-    } finally {
-      setLoading(false);
-    }
+  const handleClick = () => {
+    setIsOpen((prev) => !prev); // Toggle popup visibility
   };
 
   const getAvailabilityColor = (peopleCount) => {
     const percentage = (peopleCount / totalPeople) * 100;
     if (percentage >= 80) {
-      return "text-green-500"; // Green for 80% and above
+      return "text-green-500";
     } else if (percentage <= 50) {
-      return "text-red-500"; // Red for 50% and below
+      return "text-red-500";
     } else {
-      return "text-[#C1A00E]"; // Gold for anything in between
+      return "text-[#C1A00E]";
     }
   };
+
+  // Close popup if clicking outside of it
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (popupRef.current && !popupRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    } else {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [isOpen]);
 
   return (
     <div className="relative flex flex-col items-start">
@@ -64,14 +85,17 @@ const AvailabilityIcon = ({ tripID, period, totalPeople }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full mt-2 bg-white shadow-lg p-3 rounded-md w-56 z-10 border border-gray-200">
+        <div
+          ref={popupRef}
+          className="absolute top-full mt-2 bg-white shadow-lg p-3 rounded-md w-56 z-10 border border-gray-200"
+        >
           {loading ? (
             <span className="text-sm text-gray-500">Loading...</span>
           ) : (
             <ul>
-              {emails?.map((email, index) => (
+              {usernames?.map((username, index) => (
                 <li key={index} className="text-sm text-gray-700">
-                  {email}
+                  {username}
                 </li>
               ))}
             </ul>
@@ -82,17 +106,34 @@ const AvailabilityIcon = ({ tripID, period, totalPeople }) => {
   );
 };
 
-const PeriodCard = ({ tripID, period, totalPeople }) => {
+const PeriodCard = ({
+  tripID,
+  period,
+  totalPeople,
+  selectedPeriod,
+  onSelect,
+}) => {
   const [isUpdating, setIsUpdating] = useState(false);
+  const isSelected =
+    selectedPeriod.start_date === period.start_date &&
+    selectedPeriod.end_date === period.end_date;
 
   const handleSelect = async () => {
+    if (isSelected) {
+      return;
+    }
+
     setIsUpdating(true);
     try {
       const newPeriod = {
         startDate: period.start_date,
         endDate: period.end_date,
       };
+
       const result = await updateTripPeriod(tripID, newPeriod);
+
+      onSelect({ start_date: period.start_date, end_date: period.end_date });
+
       alert("Trip period updated successfully!");
       console.log("Updated Trip:", result);
     } catch (error) {
@@ -119,11 +160,13 @@ const PeriodCard = ({ tripID, period, totalPeople }) => {
       <button
         onClick={handleSelect}
         className={`ml-auto px-4 py-2 border rounded text-white hover:opacity-80 ${
-          isUpdating ? "bg-gray-400" : "bg-[#4DB6AC]"
+          isSelected || isUpdating
+            ? "bg-[#22544f] cursor-not-allowed"
+            : "bg-[#4DB6AC]"
         }`}
-        disabled={isUpdating}
+        disabled={isSelected || isUpdating}
       >
-        {isUpdating ? "Updating..." : "Select"}
+        {isUpdating ? "Updating..." : isSelected ? "Selected" : "Select"}
       </button>
     </Card>
   );
@@ -132,6 +175,10 @@ const PeriodCard = ({ tripID, period, totalPeople }) => {
 const AvailableTrips = ({ tripID }) => {
   const [suggestedPeriods, setSuggestedPeriods] = useState(null);
   const [totalPeople, setTotalPeople] = useState(0);
+  const [selectedPeriod, setSelectedPeriod] = useState({
+    start_date: "",
+    end_date: "",
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -141,6 +188,28 @@ const AvailableTrips = ({ tripID }) => {
 
         const periodsData = await getSuggestedPeriods(tripID);
         setSuggestedPeriods(periodsData);
+
+        const currentPeriod = await getSelectedPeriod(tripID);
+
+        const matchingPeriod = periodsData.other_five_seven_day_periods
+          .concat(
+            periodsData.most_people_period,
+            periodsData.longest_period_min_2_people
+          )
+          .find(
+            (period) =>
+              period.start_date === currentPeriod.start_date &&
+              period.end_date === currentPeriod.end_date
+          );
+
+        if (matchingPeriod) {
+          setSelectedPeriod({
+            start_date: currentPeriod.start_date,
+            end_date: currentPeriod.end_date,
+          });
+        } else {
+          setSelectedPeriod({ start_date: "", end_date: "" });
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -148,14 +217,6 @@ const AvailableTrips = ({ tripID }) => {
 
     fetchData();
   }, [tripID]);
-
-  const formatDate = (date) => {
-    if (!date) return "N/A";
-    const parsedDate = new Date(date);
-    return isNaN(parsedDate)
-      ? "Invalid Date"
-      : parsedDate.toLocaleDateString("en-GB");
-  };
 
   if (!suggestedPeriods) return <div>Loading suggested periods...</div>;
 
@@ -174,6 +235,8 @@ const AvailableTrips = ({ tripID }) => {
           tripID={tripID}
           period={most_people_period}
           totalPeople={totalPeople}
+          selectedPeriod={selectedPeriod}
+          onSelect={setSelectedPeriod}
         />
       )}
 
@@ -182,6 +245,8 @@ const AvailableTrips = ({ tripID }) => {
           tripID={tripID}
           period={longest_period_min_2_people}
           totalPeople={totalPeople}
+          selectedPeriod={selectedPeriod}
+          onSelect={setSelectedPeriod}
         />
       )}
 
@@ -195,6 +260,8 @@ const AvailableTrips = ({ tripID }) => {
                 tripID={tripID}
                 period={period}
                 totalPeople={totalPeople}
+                selectedPeriod={selectedPeriod}
+                onSelect={setSelectedPeriod}
               />
             ))}
           </div>

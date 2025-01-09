@@ -4,16 +4,19 @@ import axios from "./axiosConfig";
  * Fetch available trips for the current user.
  * @returns {Promise<object[]>} - The list of available trips.
  */
-export const fetchAvailableTrips = async () => {
-  const response = await axios.get("/trip/user-trips");
-  return response.data;
-};
-
 /**
  * Fetch details of a specific trip.
  * @param {string} tripID - The trip ID to fetch.
  * @returns {Promise<object>} - The trip details.
  */
+
+
+export const fetchAvailableTrips = async () => {
+  const response = await axios.get("/trip/user-trips");
+  return response.data;
+};
+
+
 export const fetchTripDetails = async (tripID) => {
   const response = await axios.get(`/trip/${tripID}`);
   return response.data;
@@ -40,16 +43,16 @@ export const getSuggestedPeriods = async (tripID) => {
   return response.data;
 };
 
-export const getRangeAvailabilityEmails = async (
+export const getRangeAvailabilityUsernames = async (
   tripID,
   startDate,
   endDate
 ) => {
   const response = await axios.get(
-    `/date-finder/trip/${tripID}/availability-emails`,
+    `/date-finder/trip/${tripID}/availability-usernames`,
     { params: { start_date: startDate, end_date: endDate } }
   );
-  return response.data.emails;
+  return response.data.usernames;
 };
 
 export const updateTripPeriod = async (tripID, newPeriod) => {
@@ -65,4 +68,9 @@ export const getUserAvailability = async (tripID) => {
     `/date-finder/trip/${tripID}/user-availability`
   );
   return response.data.available_dates;
+};
+
+export const getSelectedPeriod = async (tripID) => {
+  const response = await axios.get(`/date-finder/trip/${tripID}/selected-period`);
+  return response.data;
 };
