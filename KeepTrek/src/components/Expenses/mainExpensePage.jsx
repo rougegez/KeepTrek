@@ -1,6 +1,6 @@
 import React from "react";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
-import { SidebarProvider, SidebarTrigger, toggleSi } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import {ExpensesLeftside} from "./leftside/ExpensesLeftside.jsx";
 import ExpenseRightSide from "./rightside/expenseRightside.jsx";
 import { ExpensesProvider } from "./expenseContext.jsx";
