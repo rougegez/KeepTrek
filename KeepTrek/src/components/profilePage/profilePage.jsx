@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 const ProfileLoadingSkeleton = () => {
     return (
         <main className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <div className="bg-card rounded-lg shadow p-6 mb-8">
+          <div className="bg-slate-100 rounded-lg shadow p-6 mb-8">
             <div className="flex flex-col items-center space-y-4 pb-6">
               <Skeleton className="w-32 h-32 rounded-full" />
               <div className="space-y-2">

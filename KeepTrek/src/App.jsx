@@ -32,10 +32,7 @@ function App() {
           <Route path="/" element={<YourTrips />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/schedule" element={<GrpSchedule />} />
-          <Route
-            path="/expense-splitting/:tripID"
-            element={<TeamBudgetPage />}
-          />
+          <Route path="/expense-splitting/:tripID" element={<TeamBudgetPage />}/>
           <Route path="/expenses/:tripID" element={<MainExpensePage />} />
           <Route path="/team-history" element={<TeamHistory />} />
           <Route path="/schedule-summary" element={<ScheduleSummary />} />

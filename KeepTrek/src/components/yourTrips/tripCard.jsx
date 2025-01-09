@@ -54,7 +54,7 @@ export default function TripCard({ trip }) {
       whileTap={{ scale: 0.95 }}
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
     >
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden hover:bg-[#f8fffd]">
         <div className="relative h-48">
           <img
             src={trip.image}

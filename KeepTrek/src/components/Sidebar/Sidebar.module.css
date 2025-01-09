@@ -7,7 +7,7 @@
 }
 
 .activeLink {
-    @apply absolute flex w-[80%] h-[2.5rem] bg-[#4DB6AC] rounded-[8px] 
+    @apply absolute flex w-[90%] h-[2.5rem] bg-[#4DB6AC] rounded-[8px] 
            items-center text-white shadow-sm transition-all duration-200 
            hover:bg-[#3da399];
   }
