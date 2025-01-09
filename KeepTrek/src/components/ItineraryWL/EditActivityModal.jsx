@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import MapSearchBar from "../MapboxMap/MapSearchbarGeoAPIV5";
+import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar.jsx";
 import { Textarea } from '@/components/ui/textarea';
 
 const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days }) => {
