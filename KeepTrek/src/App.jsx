@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Itinerary } from "./components/Itinerary/Itinerary.jsx";
 import { TripDetailsPage } from "./components/TripDetails/TripDetailsPage.jsx";
 import { GrpSchedule } from "./components/GrpSchedule/GrpSchedule.jsx";
+import { ScheduleSummary } from "./components/GrpSchedule/ScheduleSummary";
 import { BudgetPage } from "./components/OldBudget.jsx/BudgetPage.jsx";
 import TeamBudgetPage from "./components/Budget/TeamBudgetPage.jsx"; // Import TeamBudgetPage
 import { TeamHistory } from "./components/OldBudget.jsx/TeamHistory.jsx"; // Import TeamHistory
@@ -21,6 +22,8 @@ import { MapTestPage } from "./components/MapboxMap/MapTestPage.jsx";
 import CreateTrip from "./components/CreateTrip/CreateTrip.jsx";
 import MainExpensePage from "./components/Expenses/mainExpensePage.jsx";
 
+import { ProfilePage } from "./components/profilePage/profilePage.jsx";
+
 function App() {
   return (
     <AuthProvider>
@@ -35,7 +38,7 @@ function App() {
           />
           <Route path="/expenses/:tripID" element={<MainExpensePage />} />
           <Route path="/team-history" element={<TeamHistory />} />
-          <Route path="/schedule" element={<GrpSchedule />} />
+          <Route path="/schedule-summary" element={<ScheduleSummary />} />
           <Route path="/trip-details/:id" element={<TripDetailsPage />} />
           <Route path="/join-team/:teamId" element={<JoinTeam />} />
           <Route path="/itineraryWL/:tripID" element={<ItineraryWL />} />
@@ -47,6 +50,7 @@ function App() {
           <Route path="/yourTrips" element={<YourTrips />} />
           <Route path="/create-trip" element={<CreateTrip />} />
           <Route path="/maptest" element={<MapTestPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </Router>
     </AuthProvider>
