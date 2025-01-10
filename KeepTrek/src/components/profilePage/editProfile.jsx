@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { updateUserProfile } from '@/APIs/users';
 
 export const EditProfile = ({ isOpen, onClose, userData, onSave }) => {
     const [formData, setFormData] = useState({
@@ -6,9 +7,22 @@ export const EditProfile = ({ isOpen, onClose, userData, onSave }) => {
         email: userData.email,
     });
 
+    // Handling the user profile update
+    const handleProfileUpdate = async (updatedData) => {
+        try {
+            const response = await updateUserProfile(formData.name, formData.email);
+            console.log('Profile successfully updated', response);
+            onSave(response); // Trigger any additional actions on save
+            onClose(); // Close the modal after saving
+        } catch (error) {
+            console.error('Failed to update user profile:', error.message);
+            // Optionally handle error state in UI, e.g., show an error message
+        }
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSave({
+        handleProfileUpdate({
             ...userData,
             ...formData
         });
