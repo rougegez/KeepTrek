@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import { useQuery, useQueryClient, useMutation } from "react-query";
+import { withSuspense } from "@/utils/withSuspense.jsx";
+
 import { Button } from "@/components/ui/button";
 import { Reorder } from "framer-motion";
 import { Plus } from 'lucide-react'
@@ -8,76 +11,53 @@ import ActivityCard from "./ActivityCard.jsx";
 import AddActivityModal from "./AddActivityModal.jsx";
 import EditActivityModal from "./EditActivityModal.jsx";
 import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx";
+import { dateFormatter } from "@/utils/dateFormat.jsx";
+
 import { useParams } from "react-router-dom";
+import { createItinerary, getItinerary, updateItinerary } from "@/APIs/itinerary.js";
+import { getTrip } from "@/APIs/trip.js";
+import { Card, CardContent } from "../ui/card.jsx";
+
 
 function ItineraryWL() {
+  const queryClient = useQueryClient();
   const { tripID } = useParams();
-  const [days, setDays] = useState([
-    {
-      date: "Day 1",
-      activities: [
-        {
-          id: "1",
-          time: "08:00",
-          type: "food",
-          duration: "1",
-          title: "Breakfast @ Ying Her Kopitiam",
-          location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
-          coordinates: [101.61650659978699,3.0643143329228195],
-          image: "./src/assets/dummy-image.jpg",
-          notes: "test",
-        },
-        {
-          id: "2",
-          time: "08:00",
-          type: "food",
-          duration: "1",
-          title: "Breakfast @ Ying Her Kopitiam",
-          location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
-          image: "./src/assets/dummy-image.jpg",
-          notes: "",
-        },
-      ],
-    },
-    {
-      date: "Day 2",
-      activities: [
-        {
-          id: "3",
-          time: "08:00",
-          type: "food",
-          duration: "1",
-          title: "Breakfast @ Ying Her Kopitiam",
-          location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
-          image: "./src/assets/dummy-image.jpg",
-          notes: "",
-        },
-      ],
-    },
-    {
-      date: "Day 3",
-      activities: [
-        {
-          id: "4",
-          time: "08:00",
-          type: "food",
-          duration: "1",
-          title: "Breakfast @ Ying Her Kopitiam",
-          location: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 41200 Kuantan",
-          image: "./src/assets/dummy-image.jpg",
-          notes: "",
-        },
-      ],
-    },
-  ]);
 
   const [addModalState, setAddModalState] = useState({ isOpen: false, selectedDay: null });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   const [currentActivity, setCurrentActivity] = useState(null);
   const [mapInstance, setMapInstance] = useState(null);
-
   const [searchedPlace, setSearchedPlace] = useState(null);
   const [savedLocation, setSavedLocation] = useState(null);
+
+  const { data: tripDetails } = useQuery(
+    ['trip', tripID],
+    () => getTrip(tripID),
+    { suspense: true }
+  );
+
+  const { data: itinerary} = useQuery(
+    ['itinerary', tripID],
+    () => getItinerary(tripID),
+    { suspense: true}
+  );
+
+  const [days, setDays] = useState(itinerary.days);
+
+  // Mutation to update the entire itinerary
+  const updateItineraryMutation = useMutation(
+    (updatedDays) => updateItinerary(tripID, { days: updatedDays }),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['itinerary', tripID]);
+      },
+    }
+  );
+
+  const handleUpdateItinerary = (updatedDays) => {
+    updateItineraryMutation.mutate(updatedDays);
+  };
 
   const handleMapLoad = (map) => {
     setMapInstance(map);
@@ -85,13 +65,13 @@ function ItineraryWL() {
 
   const handleSaveLocation = (place) => {
     setSavedLocation(place);
-    setAddModalState({ isOpen: true, selectedDay: days[days.length-1].date });
+    setAddModalState({ isOpen: true, selectedDay: days[days.length - 1].date });
   };
 
   const handleNoteChange = (activityId, newNote) => {
     const updatedDays = days.map(day => ({
       ...day,
-      activities: day.activities.map(activity => 
+      activities: day.activities.map(activity =>
         activity.id === activityId ? { ...activity, notes: newNote } : activity
       )
     }));
@@ -134,7 +114,7 @@ function ItineraryWL() {
     setIsEditModalOpen(false);
     setCurrentActivity(null);
   };
-  
+
 
   const handleDeleteClick = (dayIndex, activityId) => {
     const updatedDays = [...days];
@@ -150,99 +130,111 @@ function ItineraryWL() {
     if (dayIndex !== -1) {
       updatedDays[dayIndex].activities.push({
         ...newActivity,
-        id: `${Date.now()}`,
-        image: "./src/assets/dummy-image.jpg",
+        id: `${Date.now()}`
       });
       setDays(updatedDays);
     }
   };
 
   const handleLocationClick = (clickLocation) => {
-    setSearchedPlace({
-      name: clickLocation.title,
-      address: clickLocation.location,
-      coordinates: clickLocation.coordinates
-  })
+    clickLocation.address = clickLocation.location
+    clickLocation.name = clickLocation.title
+    const random = new Date().getTime()
+    setSearchedPlace({random, clickLocation})
   }
 
   return (
-    <SidebarProvider >
-      <AppSidebar tripID={tripID}/>
-      
-      <div className="flex w-full">
-        {/* Left side: Itinerary */}
-        <div className="w-8/12 px-14 py-8 space-y-8 overflow-y-auto max-h-screen">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold">East-Coast Road Trip</h1>
-            <p className="text-sm text-muted-foreground">19 June 2024 to 23 June 2024</p>
-          </div>
-          {days.map((day, dayIndex) => (
-            <div key={day.date} className="space-y-4">
-              <h2 className="text-xl font-semibold">{day.date}</h2>
-              <Reorder.Group
-                axis="y"
-                values={day.activities}
-                onReorder={(newActivities) => updateActivities(newActivities, dayIndex)}
-                className="space-y-4">
-                {day.activities.map((activity) => (
-                  <ActivityCard
-                    key={activity.id} 
-                    activity={activity}
-                    onNoteChange={handleNoteChange}
-                    onEditClick={() => handleEditClick(dayIndex, activity)}
-                    onDeleteClick={() => handleDeleteClick(dayIndex, activity.id)}
-                    onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
-                  />
-                ))}
-              </Reorder.Group>
-              <Button 
-                variant="outline" 
-                className="w-full" 
-                onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date })}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Activity
-              </Button>
+      <SidebarProvider >
+        <AppSidebar tripID={tripID} />
+        <div className="flex w-full">
+          {/* Left side: Itinerary */}
+          <div className="w-8/12 px-14 py-8 space-y-8 overflow-y-auto max-h-screen">
+            <div className="flex justify-between space-y-2">
+              <div>
+                <h1 className="text-3xl font-bold">{tripDetails.tripName}</h1>
+                <p className="text-sm text-muted-foreground">
+                  {dateFormatter(tripDetails.startDate)} to {dateFormatter(tripDetails.endDate)}
+                </p>
+              </div>
+              <div>
+                <Button onClick={() => handleUpdateItinerary(days)}>Save</Button>
+              </div>
             </div>
-          ))}
+            {days.map((day, dayIndex) => (
+              <div key={day.date} className="space-y-4">
+                <h2 className="text-xl font-semibold">{day.date}</h2>
+                <Reorder.Group
+                  axis="y"
+                  values={day.activities}
+                  onReorder={(newActivities) => updateActivities(newActivities, dayIndex)}
+                  className="space-y-4">
+                  {day.activities.map((activity) => (
+                    <ActivityCard
+                      key={activity.id}
+                      activity={activity}
+                      onNoteChange={handleNoteChange}
+                      onEditClick={() => handleEditClick(dayIndex, activity)}
+                      onDeleteClick={() => handleDeleteClick(dayIndex, activity.id)}
+                      onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                    />
+                  ))}
+                </Reorder.Group>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date })}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Activity
+                </Button>
+              </div>
+            ))}
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setDays([...days, { date: `Day ${days.length + 1}`, activities: [] }])}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Day
+            </Button>
+          </div>
+
+          {/* Right side: Map */}
+          <div className="w-5/13">
+            <MapboxMap
+              onSaveLocation={handleSaveLocation}
+              onMapLoad={handleMapLoad}
+              initialPlace={searchedPlace}
+              height="800px" /> {/*  Need a better way to adjust height, h-full won't work */}
+          </div>
         </div>
 
-        {/* Right side: Map */}
-        <div className="w-5/13">
-          <MapboxMap
-            onSaveLocation={handleSaveLocation}
-            onMapLoad={handleMapLoad}
-            initialPlace={searchedPlace}
-            height="800px" /> {/*  Need a better way to adjust height, h-full won't work */}
-        </div>
-      </div>
+        <AddActivityModal
+          isOpen={addModalState.isOpen}
+          onClose={() => {
+            setAddModalState({ isOpen: false, selectedDay: null });
+            setSavedLocation(null);
+          }}
+          onAddActivity={handleAddActivity}
+          mapInstance={mapInstance}
+          location={savedLocation}
+          days={days}
+          selectedDay={addModalState.selectedDay}
+        />
 
-      <AddActivityModal
-        isOpen={addModalState.isOpen}
-        onClose={() => {
-          setAddModalState({ isOpen: false, selectedDay: null });
-          setSavedLocation(null);
-        }}
-        onAddActivity={handleAddActivity}
-        mapInstance={mapInstance}
-        location={savedLocation}
-        days={days}
-        selectedDay={addModalState.selectedDay}
-      />
-
-      <EditActivityModal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setCurrentActivity(null);
-        }}
-        currentActivity={currentActivity}
-        onSaveEdit={handleSaveEdit}
-        days={days}
-      />
-    </SidebarProvider>
+        <EditActivityModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setCurrentActivity(null);
+          }}
+          currentActivity={currentActivity}
+          onSaveEdit={handleSaveEdit}
+          days={days}
+        />
+      </SidebarProvider>
   );
 }
 
-export default ItineraryWL;
+export default withSuspense(ItineraryWL);
 
