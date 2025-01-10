@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import LandingImage from "../../assets/LandingImage.png";
-import KeepTrek from "../../assets/KeepTrekNew.png";
+import TopNavbar from "../topnavbar/topnavbar.jsx";
 import playStore from "../../assets/playstore.svg";
 import instagram from "../../assets/insta icon.png";
 import facebook from "../../assets/facebook icon.png";
@@ -24,42 +24,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white border-b py-4">
-        <div className="container mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <img src={KeepTrek} alt="KeepTrek Logo" className="h-8" />
-          </div>
-          <div className="hidden md:flex items-center gap-10">
-            <a href="#home" className="text-gray-600">
-              Home
-            </a>
-            <a href="#features" className="text-gray-600">
-              Features
-            </a>
-            <a href="#pricing" className="text-gray-600">
-              Pricing
-            </a>
-            <a href="#newsletter" className="text-gray-600">
-              Newsletter
-            </a>
-          </div>
-          <div className="flex gap-3">
-            {/* Sign in Button (React Router) */}
-            <Link to="/login">
-              <Button
-                variant="outline"
-                className="text-teal-500 border-teal-500"
-              >
-                Sign in
-              </Button>
-            </Link>
-            {/* Sign up Button (React Router) */}
-            <Link to="/register">
-              <Button className="bg-teal-500 hover:bg-teal-600">Sign up</Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <TopNavbar />
 
       {/* Hero Section */}
       <section id="home" className="container mx-auto px-6 py-16">

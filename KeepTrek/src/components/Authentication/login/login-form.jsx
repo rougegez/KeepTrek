@@ -2,28 +2,25 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { loginUser } from "@/APIs/auth"; // Ensure this function handles API calls
-import { useNavigate } from "react-router-dom";
+import { loginUser } from "@/APIs/auth"; // Ensure this function makes the login API call
 
-export default function LoginForm({ onSwitchToRegister }) {
+export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(null); // Clear previous errors
-
     try {
-      const response = await loginUser({ email, password }); // Call login API
+      const response = await loginUser({ email, password }); // Call the login API
       const { access_token } = response;
 
       // Save the token in localStorage
       localStorage.setItem("token", access_token);
 
-      alert("Login successful!");
-      navigate("/yourTrips"); // Redirect after login
+      // Trigger the parent callback to indicate successful login
+      if (onLoginSuccess) onLoginSuccess();
     } catch (err) {
       console.error("Login Error:", err.response?.data || err.message);
       setError(err.response?.data?.detail || "Login failed. Please try again.");
@@ -41,15 +38,17 @@ export default function LoginForm({ onSwitchToRegister }) {
         <h2 className="text-lg font-semibold text-gray-800">Welcome Back!</h2>
       </div>
 
+      {/* Social Login */}
       <Button
         variant="outline"
         className="w-full flex items-center justify-center gap-2 border-gray-300"
-        onClick={() => alert("Sorry, this function is still in progress 🥺")}
+        onClick={() => alert("Google login functionality is coming soon!")}
       >
         <img src="../src/assets/google.png" alt="Google" className="h-5 w-5" />
         Sign in with Google
       </Button>
 
+      {/* Divider */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-gray-300"></div>
@@ -59,6 +58,7 @@ export default function LoginForm({ onSwitchToRegister }) {
         </div>
       </div>
 
+      {/* Email and Password Form */}
       <form className="space-y-4" onSubmit={handleLogin}>
         <div className="space-y-2">
           <label htmlFor="email" className="text-sm font-medium">

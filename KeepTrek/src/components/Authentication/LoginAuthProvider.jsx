@@ -5,7 +5,7 @@ import RegisterForm from "@/components/Authentication/register/register-form";
 
 const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
+export function LoginAuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
