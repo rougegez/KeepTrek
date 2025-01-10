@@ -9,7 +9,7 @@ import { BudgetPage } from "./components/OldBudget.jsx/BudgetPage.jsx";
 import TeamBudgetPage from "./components/Budget/TeamBudgetPage.jsx"; // Import TeamBudgetPage
 import { TeamHistory } from "./components/OldBudget.jsx/TeamHistory.jsx"; // Import TeamHistory
 import Dashboard from "./components/Dashboard/Dashboard.jsx";
-import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx";
+// import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx";
 import { JoinTeam } from "./components/OldBudget.jsx/JoinTeam.jsx";
 import ItineraryWL from "./components/ItineraryWL/ItineraryWL.jsx";
 import Wishlist from "./components/Wishlist/Wishlist.jsx";
@@ -20,7 +20,7 @@ import { AuthProvider } from "./contexts/authContext.jsx";
 import YourTrips from "./components/yourTrips/yourTrips.jsx";
 // import { MapTestPage } from "./components/MapboxMap/MapTestPage.jsx";
 import CreateTrip from "./components/CreateTrip/CreateTrip.jsx";
-import MainExpensePage from "./components/Expenses/mainExpensePage.jsx";
+import DateFinder from "./components/GrpSchedule/DateFinder.jsx";
 
 import { QueryClient, QueryClientProvider } from "react-query";
 
