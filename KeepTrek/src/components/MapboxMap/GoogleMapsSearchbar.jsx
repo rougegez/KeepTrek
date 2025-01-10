@@ -31,6 +31,7 @@ const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton = true, onCh
     }, [initialPlace])
 
     const debouncedHandleInputChange = useDebouncedCallback(async (value) => {
+        setPlace("");
         if (value.length > 3) {
             try {
                 const response = await fetch(
@@ -61,10 +62,7 @@ const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton = true, onCh
                 console.error("Error fetching autocomplete suggestions:", error);
                 setSuggestions([]);
             }
-        } else {
-            setSuggestions([]);
         }
-
         if (onChange) {
             onChange(value);
         }
@@ -87,7 +85,9 @@ const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton = true, onCh
     };
 
     const handleSearchClick = () => {
+        if (place) {
         onLocationSearch(place);
+        }
     };
 
     return (
@@ -106,7 +106,7 @@ const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton = true, onCh
                     </Button>
                 )}
             </div>
-            {suggestions.length > 0 && (
+            {suggestions?.length > 0 && (
                 <ul className="absolute w-full bg-white border border-gray-200 rounded mt-1 z-20 shadow-lg">
                     {suggestions.map((suggestion) => (
                         <li
@@ -121,6 +121,11 @@ const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton = true, onCh
                             </span>
                         </li>
                     ))}
+                    <li 
+                    className="p-0 m-0 hover:bg-red-50 cursor-pointer"
+                    onClick={() => setSuggestions([])}>
+                        <span className="text-sm text-red-500">Clear Suggestions</span>
+                    </li>
                 </ul>
             )}
         </div>

@@ -15,6 +15,10 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
         title: "",
         location: "",
         coordinates: [],
+        rating: "",
+        openingHours: "",
+        website: "",
+        link: "",
         image: "../src/assets/dummy-image.jpg",
         notes: "",
     });
@@ -23,23 +27,16 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
         if (isOpen) {
             setNewActivity(prev => ({
                 ...prev,
-                day: selectedDay || "",
+                day: selectedDay ?? "",
                 title: location ? location.name : "",
                 location: location ? location.address : "",
                 coordinates: location ? location.coordinates : [],
+                rating: location ? location.rating : "",
+                image: location ? location.image : "",
+                openingHours: location ? location.openingHours : "",
+                website: location ? location.website : "",
+                link: location ? location.link : "",
             }));
-        } else {
-            setNewActivity({
-                day: "",
-                type: "",
-                time: "",
-                duration: "",
-                title: "",
-                location: "",
-                coordinates: [],
-                image: "../src/assets/dummy-image.jpg",
-                notes: "",
-            });
         }
     }, [isOpen, location, selectedDay]);
 
@@ -214,7 +211,6 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                                 onAddActivity({
                                     ...newActivity,
                                     id: `${Date.now()}`,
-                                    image: "../src/assets/dummy-image.jpg",
                                 });
                                 onClose();
                             }}

@@ -38,7 +38,7 @@ const MapboxMap = ({
 
     useEffect(() => {
         if (initialPlace) {
-            handlePlaceUpdate(initialPlace)
+            handlePlaceUpdate(initialPlace?.clickLocation ?? initialPlace)
         }
     }, [initialPlace])
 
@@ -198,7 +198,7 @@ const MapboxMap = ({
                                     </div>
 
                                     {/* Rating */}
-                                    {place.rating && (
+                                    {place.rating?.rating && (
                                         <div className="flex">
                                             <span className="text-yellow-500 text-[16px]">★</span>
                                             <p className="pl-1 text-gray-500">{place.rating.rating}</p>
@@ -263,12 +263,12 @@ const MapboxMap = ({
 
                                 {/* Image Container */}
                                 {place.image && !imageError && (
-                                    <div className="relative w-50 h-32 flex-shrink-0 overflow-hidden rounded-lg">
+                                    <div className="w-52 h-32 overflow-hidden rounded-lg">
                                         <a href={place.link} target="_blank" rel="noopener noreferrer">
                                             <img
                                                 src={place.image}
                                                 alt={place.name}
-                                                className="w-full h-full object-cover"
+                                                className="w-full h-full object-cover "
                                                 onError={() => setImageError(true)}
                                                 loading="lazy"
                                             />
@@ -318,7 +318,7 @@ const fetchPlaceDetails = async (placeId) => {
             coordinates: [data.location.longitude, data.location.latitude],
             rating: {rating : data.rating, count : data.userRatingCount},
             website: data.websiteUri,
-            openingHours: data.currentOpeningHours.weekdayDescriptions,
+            openingHours: data.currentOpeningHours?.weekdayDescriptions,
             link: data.googleMapsLinks.placeUri,
             image: image
         }

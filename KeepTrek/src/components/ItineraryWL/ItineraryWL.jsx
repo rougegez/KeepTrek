@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Suspense, startTransition } from "react";
+import React, { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "react-query";
 import { withSuspense } from "@/utils/withSuspense.jsx";
 
@@ -137,11 +137,10 @@ function ItineraryWL() {
   };
 
   const handleLocationClick = (clickLocation) => {
-    setSearchedPlace({
-      name: clickLocation.title,
-      address: clickLocation.location,
-      coordinates: clickLocation.coordinates
-    })
+    clickLocation.address = clickLocation.location
+    clickLocation.name = clickLocation.title
+    const random = new Date().getTime()
+    setSearchedPlace({random, clickLocation})
   }
 
   return (
