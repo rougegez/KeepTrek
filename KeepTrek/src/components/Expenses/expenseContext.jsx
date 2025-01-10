@@ -432,6 +432,7 @@ const refreshTotals = useCallback(async () => {
     handleCreateBudget,
     handleEditBudget,
     handleDeleteBudget,
+    isLoadingDependent
   }), [
     user,
     expenses,
@@ -463,6 +464,7 @@ const refreshTotals = useCallback(async () => {
     handleCreateBudget,
     handleEditBudget,
     handleDeleteBudget,
+    isLoadingDependent
   ]);
 
   return (
