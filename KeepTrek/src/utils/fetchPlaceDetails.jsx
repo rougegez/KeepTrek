@@ -24,13 +24,13 @@ const fetchPlaceDetails = async (placeId) => {
             console.error('Error fetching place image:', error)
         }
         const newPlace = {
-            name: data.displayName.text,
-            address: data.formattedAddress,
-            coordinates: [data.location.longitude, data.location.latitude],
-            rating: {rating : data.rating, count : data.userRatingCount},
-            website: data.websiteUri,
-            openingHours: data.currentOpeningHours?.weekdayDescriptions,
-            link: data.googleMapsLinks.placeUri,
+            name: data.displayName.text ?? "",
+            address: data.formattedAddress ?? "",
+            coordinates: [data.location.longitude, data.location.latitude] ?? [],
+            rating: {rating : data.rating ?? 0, count : data.userRatingCount ?? 0},
+            website: data.websiteUri ?? "",
+            openingHours: data.currentOpeningHours?.weekdayDescriptions ?? [],
+            link: data.googleMapsLinks.placeUri ?? "",
             image: image
         }
         return newPlace

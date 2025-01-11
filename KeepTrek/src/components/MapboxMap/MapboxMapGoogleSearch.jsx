@@ -199,7 +199,7 @@ const MapboxMap = ({
                                     </div>
 
                                     {/* Rating */}
-                                    {place.rating?.rating && (
+                                    {place.rating?.rating > 0 && (
                                         <div className="flex">
                                             <span className="text-yellow-500 text-[16px]">★</span>
                                             <p className="pl-1 text-gray-500">{place.rating.rating}</p>
@@ -208,7 +208,7 @@ const MapboxMap = ({
                                     )}
 
                                     {/* Opening Hours */}
-                                    {place.openingHours && (
+                                    {place.openingHours.length > 2 && (
                                         <div className="flex gap-1">
                                             <Clock size={16} />
                                             <Collapsible className="flex gap-1">
