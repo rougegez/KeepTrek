@@ -13,11 +13,14 @@ import TopNavbar from "../topNavBar/TopNavbar.jsx";
 import { createTrip } from "@/APIs/trip.js";
 import { useNavigate } from "react-router-dom";
 import { createItinerary } from "@/APIs/itinerary.js";
+import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar.jsx";
+import { fetchPlaceDetails } from "@/utils/fetchPlaceDetails.jsx";
 
 export default function CreateTrip() {
   const [dateRange, setDateRange] = useState({ from: undefined, to: undefined });
   const [tripName, setTripName] = useState("");
   const [location, setLocation] = useState("");
+  const [image, setImage] = useState("../src/assets/dummy-image.jpg");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
@@ -35,26 +38,32 @@ export default function CreateTrip() {
     const endDate = new Date(dateRange.to).toISOString().split("T")[0];
 
     try {
-      const response = await createTrip({ tripName, location, startDate, endDate });
+      const response = await createTrip({ tripName, location, startDate, endDate, image});
       const tripID = response.tripID;
-
       // Create itinerary
       const dayCount = Math.ceil((new Date(dateRange.to) - new Date(dateRange.from)) / (1000 * 60 * 60 * 24)) + 1;
       const days = Array.from({ length: dayCount }, (_, i) => ({
         date: `Day ${i + 1}`,
         activities: []
       }));
-      console.log(days);
-      await createItinerary({ tripID, days});
-      
+      await createItinerary({ tripID, days});      
       alert("Trip created successfully!");
       navigate("/trip-details"); // Redirect to homepage or trips page
     } catch (err) {
       console.error("Error creating trip:", err);
       setError(err.response?.data?.detail || "Failed to create trip");
     }
-  };
+  }
 
+  const handleLocationChange = async (location) => {
+    if (location?.placePrediction?.structuredFormat?.mainText?.text) {
+      setLocation(location.placePrediction.structuredFormat.mainText.text);
+      const suggestion = await fetchPlaceDetails(location.placePrediction.placeId);
+      setImage(suggestion.image);
+    } else {
+      setLocation(location);
+    }
+  }
   return (
     <div className="min-h-screen bg-gray-50">
       <TopNavbar />
@@ -91,12 +100,10 @@ export default function CreateTrip() {
                 >
                   Location
                 </label>
-                <Input
+                <MapSearchBar
                   id="location"
-                  placeholder="Enter trip location"
-                  className="w-full"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
+                  searchButton={false}
+                  onChange={handleLocationChange}
                 />
               </div>
 

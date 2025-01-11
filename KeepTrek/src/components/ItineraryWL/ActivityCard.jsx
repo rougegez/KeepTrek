@@ -38,6 +38,7 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
                   className="relative h-8 w-8 rounded-full"
                   size="icon"
                   onClick={() => onLocationClick(activity)}
+                  {...(activity.coordinates.length > 1 ? {} : {disabled: true})}
                 >
                   <MapPin className="h-4 w-4" />
                 </Button>
