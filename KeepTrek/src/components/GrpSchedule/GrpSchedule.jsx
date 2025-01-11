@@ -163,7 +163,7 @@ export const GrpSchedule = () => {
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar tripID={tripID}/>
       <div className="flex h-screen w-screen">
         <div className="flex flex-col flex-1 overflow-hidden">
           <header className="flex items-center justify-between p-4 bg-gray-100 shadow">

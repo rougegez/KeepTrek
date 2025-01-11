@@ -48,7 +48,7 @@ export default function CreateTrip() {
       }));
       await createItinerary({ tripID, days});      
       alert("Trip created successfully!");
-      navigate("/trip-details"); // Redirect to homepage or trips page
+      navigate("/itineraryWL"); // Redirect to homepage or trips page
     } catch (err) {
       console.error("Error creating trip:", err);
       setError(err.response?.data?.detail || "Failed to create trip");
