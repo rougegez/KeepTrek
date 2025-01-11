@@ -89,7 +89,8 @@ export default function WishlistPage() {
     setSavedLocation(place);
     setName(place.name);
     setAddress(place.address);
-    setNote("Coordinates: " + place.coordinates.join(", "));
+    setImage(place.image);
+    setNote(place.link);
     setIsCreateModalOpen(true);
   };
 
