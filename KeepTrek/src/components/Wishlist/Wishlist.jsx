@@ -1,27 +1,33 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
-import { SidebarProvider} from "@/components/ui/sidebar";
-import WishlistSection from "./wishlist-section.jsx";
-import { WishlistCard, AddItemCard } from "./wishlist-card.jsx";
-import ItemModal from "./item-modal.jsx";
-import CreateEditModal from "./create-edit-modal.jsx";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import WishlistSection from "./WishlistSection.jsx";
+import { WishlistCard, AddItemCard } from "./WishlistCard.jsx";
+import ItemModal from "./ItemModal.jsx";
+import CreateEditModal from "./CreateEditModal.jsx";
 import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx";
 import { getAllItems, createItem, editItem, deleteItem, upvoteItem, downvoteItem, deleteFile } from "@/APIs/wishlist";
+import { getItinerary, updateItinerary } from "@/APIs/itinerary";
 import { useParams } from "react-router-dom";
 import { CurrentUser } from '@/APIs/auth';
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 
 export default function WishlistPage() {
   const { tripID } = useParams();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   
   const [wishlistData, setWishlistData] = useState({ accommodation: [], activities: [], food: [] });
   const [selectedItem, setSelectedItem] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [category, setCategory] = useState("");
-  const [name, setName] = useState("");
-  const [image, setImage] = useState("");
-  const [address, setAddress] = useState("");
-  const [note, setNote] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // New state for map functionality
@@ -29,11 +35,17 @@ export default function WishlistPage() {
   const [searchedPlace, setSearchedPlace] = useState(null);
   const [savedLocation, setSavedLocation] = useState(null);
 
+  // New state for add mode
+  const [addMode, setAddMode] = useState(false);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [itineraryDays, setItineraryDays] = useState([]);
+  const [selectedDay, setSelectedDay] = useState("");
+
   const fetchWishlistData = async () => {
     const allItems = await getAllItems(tripID);
-    const accommodation = allItems.filter(item => item.category === "Accommodation");
-    const activities = allItems.filter(item => item.category === "Activities");
-    const food = allItems.filter(item => item.category === "Food");
+    const accommodation = allItems.filter(item => item.category === "accommodation");
+    const activities = allItems.filter(item => item.category === "activities");
+    const food = allItems.filter(item => item.category === "food");
     setWishlistData({ accommodation, activities, food });
   };
 
@@ -47,27 +59,20 @@ export default function WishlistPage() {
       }
     }, []);
 
-  /*useEffect(() => {
-    const fetchData = async () => {
-      const userPromise = fetchUser();
-      const itemsPromise = fetchWishlistData();
-
-      await Promise.allSettled([userPromise, itemsPromise]);
-    };
-  }, [fetchUser, fetchWishlistData]);*/
+  const fetchItineraryDays = async () => {
+    const itinerary = await getItinerary(tripID);
+    setItineraryDays(itinerary.days);
+  };
 
   useEffect(() => {
     fetchUser();
     fetchWishlistData();
+    fetchItineraryDays();
   }, []);
 
   const handleItemClick = (item) => {
     setSelectedItem(item);
-    setSearchedPlace({
-      name: item.name,
-      address: item.address,
-      coordinates: item.coordinates, // Assuming coordinates are part of the item data
-    });
+    setIsEditModalOpen(false); // Ensure the edit modal is closed
   };
 
   const handleCreateItem = () => {
@@ -85,6 +90,13 @@ export default function WishlistPage() {
     setMapInstance(map);
   };
 
+  const handleLocationClick = (clickLocation) => {
+    clickLocation.address = clickLocation.location
+    clickLocation.name = clickLocation.title
+    const random = new Date().getTime()
+    setSearchedPlace({random, clickLocation})
+  }
+
   const handleSaveLocation = (place) => {
     setSavedLocation(place);
     setName(place.name);
@@ -96,11 +108,6 @@ export default function WishlistPage() {
 
   const handleEditItem = (item) => {
     setSelectedItem(item);
-    setCategory(item.category);
-    setName(item.name);
-    setImage(item.image);
-    setAddress(item.address);
-    setNote(item.note);
     setIsEditModalOpen(true);
   };
 
@@ -147,12 +154,93 @@ export default function WishlistPage() {
     }
   };
 
+  const handleAddModeToggle = () => {
+    setAddMode(!addMode);
+    setSelectedItems([]);
+  };
+
+  const handleSelectItem = (item) => {
+    if (selectedItems.includes(item)) {
+      setSelectedItems(selectedItems.filter(i => i !== item));
+    } else {
+      setSelectedItems([...selectedItems, item]);
+    }
+  };
+
+  const handleAddToItinerary = async () => {
+    const updatedDays = itineraryDays.map(day => {
+      if (day.date === selectedDay) {
+        return {
+          ...day,
+          activities: [
+            ...day.activities,
+            ...selectedItems.map(item => ({
+              id: `${Date.now()}`,
+              day: selectedDay,
+              type: item.category,
+              time: "",
+              duration: "",
+              title: item.title,
+              location: item.location,
+              coordinates: item.coordinates,
+              rating: item.rating || "",
+              openingHours: item.openingHours || "",
+              website: item.website || "",
+              link: item.link || "",
+              image: item.image || "../src/assets/dummy-image.jpg",
+              notes: item.notes || "",
+            }))
+          ]
+        };
+      }
+      return day;
+    });
+
+    await updateItinerary(tripID, { days: updatedDays });
+    setAddMode(false);
+    setSelectedItems([]);
+    navigate(`/itineraryWL/${tripID}`);
+  };
+
   return (
     <SidebarProvider>
       <AppSidebar tripID={tripID}/>
+      <SidebarTrigger/>
       <div className="flex w-full">
-        <div className="w-7/12 p-6 space-y-8 max-h-100vh overflow-y-auto">
+        <div className="w-7/12 p-6 space-y-6 max-h-100vh overflow-y-auto">
           <h1 className="text-3xl font-bold">Wishlist</h1>
+          <div className="flex justify-between items-center">
+            <Button variant={addMode ? "outline" : "default"} onClick={handleAddModeToggle}>
+              {addMode ? "Cancel" : "Add Items to Itinerary"}
+            </Button>
+            {addMode && (
+              <div className="flex items-center gap-2">
+                <Select
+                  value={selectedDay}
+                  onValueChange={(value) => setSelectedDay(value)}
+                >
+                  <SelectTrigger className="w-full text-white bg-primary">
+                    <SelectValue placeholder="Select a day" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {itineraryDays.map((day, index) => (
+                      <SelectItem key={index} value={day.date}>
+                        {day.date}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button onClick={handleAddToItinerary} disabled={!selectedDay || selectedItems.length === 0}>
+                  Add to Itinerary
+                </Button>
+              </div>
+            )}
+          </div>
+          {addMode && (
+            <p className="text-sm font-normal text-muted-foreground">
+              Select at least 1 wishlist item to add to your itinerary.
+            </p>
+          )}
 
           <WishlistSection title="Accommodation">
             {wishlistData.accommodation.map((item) => (
@@ -162,7 +250,11 @@ export default function WishlistPage() {
                 onClick={() => handleItemClick(item)}
                 onUpvote={() => handleUpvote(item)}
                 onDownvote={() => handleDownvote(item)}
+                onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
                 currUser={user}
+                addMode={addMode}
+                onSelect={handleSelectItem}
+                isSelected={selectedItems.includes(item)}
               />
             ))}
             <AddItemCard onClick={handleCreateItem} />
@@ -176,7 +268,11 @@ export default function WishlistPage() {
                 onClick={() => handleItemClick(item)}
                 onUpvote={() => handleUpvote(item)}
                 onDownvote={() => handleDownvote(item)}
+                onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
                 currUser={user}
+                addMode={addMode}
+                onSelect={handleSelectItem}
+                isSelected={selectedItems.includes(item)}
               />
             ))}
             <AddItemCard onClick={handleCreateItem} />
@@ -190,7 +286,11 @@ export default function WishlistPage() {
                 onClick={() => handleItemClick(item)}
                 onUpvote={() => handleUpvote(item)}
                 onDownvote={() => handleDownvote(item)}
+                onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
                 currUser={user}
+                addMode={addMode}
+                onSelect={handleSelectItem}
+                isSelected={selectedItems.includes(item)}
               />
             ))}
             <AddItemCard onClick={handleCreateItem} />
@@ -216,6 +316,7 @@ export default function WishlistPage() {
         onDelete={() => handleDelete(selectedItem)}
         onUpvote={() => handleUpvote(selectedItem)}
         onDownvote={() => handleDownvote(selectedItem)}
+        onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
         currUser={user}
       />
 
@@ -223,16 +324,6 @@ export default function WishlistPage() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleSubmitCreateItem}
-        category={category}
-        setCategory={setCategory}
-        name={name}
-        setName={setName}
-        image={image}
-        setImage={setImage}
-        address={address}
-        setAddress={setAddress}
-        note={note}
-        setNote={setNote}
         tripId={tripID}
       />
     
@@ -240,19 +331,10 @@ export default function WishlistPage() {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSubmit={handleSubmitEditItem}
-        category={category}
-        setCategory={setCategory}
-        name={name}
-        setName={setName}
-        image={image}
-        setImage={setImage}
-        address={address}
-        setAddress={setAddress}
-        note={note}
-        setNote={setNote}
         isEditMode={true}
         itemId={selectedItem?.id}
         tripId={selectedItem?.tripID}
+        location={selectedItem}
       />
     </SidebarProvider>
   );
