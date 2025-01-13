@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import styles from './Sidebar.module.css';
-import { ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from 'framer-motion';
+import { NavLink } from 'react-router-dom';
+import { ChevronDown, Menu, Home, Hotel, Users, FileText, Paperclip, Calendar, PiggyBank, Heart, CalendarClock, Map, X } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -10,76 +13,102 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
-  SidebarTrigger
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
-
 import {
   Collapsible,
   CollapsibleTrigger,
-  CollapsibleContent
-}
-from "@/components/ui/collapsible";
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-import { NavLink } from 'react-router-dom';
-
-// Example of Overview items
+// Overview items with icons
 const OverviewItems = [
-  { title: "Trip Summary", url: "" },
-  { title: "Accommodation", url: "" },
-  { title: "Trip Buddy", url: "" },
-  { title: "Notes", url: "" },
-  { title: "Attachments", url: "" },
+  { title: "Trip Summary", icon: Home, url: "" },
+  { title: "Accommodation", icon: Hotel, url: "" },
+  { title: "Trip Buddy", icon: Users, url: "" },
+  { title: "Notes", icon: FileText, url: "" },
+  { title: "Attachments", icon: Paperclip, url: "" },
 ];
 
 export const AppSidebar = ({ tripID }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+  const sidebarClassName = cn(
+    "h-screen bg-white drop-shadow-keepTrek overflow-y-auto z-50 transition-all duration-300",
+    isCollapsed ? "w-16" : "w-60", // Adjust width when collapsed or expanded
+    "fixed md:flex"
+  );
   return (
-    <Sidebar className="h-screen w-11/12 sticky top-0 bg-white drop-shadow-keepTrek overflow-y-auto z-50">
-      <SidebarTrigger />
-      <SidebarHeader>
-        <a href="/">
-          <img
-            src="../src/assets/KeepTrekNew.png"
-            alt="KeepTrek Logo"
-            className="size-18 w-44 mt-4"
-          />
-        </a>
+    <>
+      
+      <Sidebar className={sidebarClassName}>
+      <SidebarHeader className={styles.sidebarHeader}>
+        <motion.div
+          initial={false}
+          animate={{ width: "auto" }}
+          className="overflow-hidden"
+        >
+          <a href="/" className="">
+            <img
+              src="../src/assets/KeepTrekNew.png"
+              alt="KeepTrek Logo"
+              className="h-12"
+            />
+          </a>
+        </motion.div>
+        
       </SidebarHeader>
-      <SidebarContent className="pl-2 mt-14">
-        {/* Overview */}
-        <Collapsible defaultOpen className="group/collapsible">
+
+      <SidebarContent className="p-2">
+        {/* Overview Section */}
+        <Collapsible defaultClosed className="group/collapsible">
           <SidebarGroup>
-            <SidebarGroupLabel asChild className="mb-2">
-              <CollapsibleTrigger>
-                <NavLink
-                  to={`/overview/${tripID}`}
-                  className={({ isActive }) =>
-                    `text-[24px] font-semibold text-black ${
-                      isActive
-                        ? "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
-                        : ""
-                    }`
-                  }
-                >
-                  Overview
-                </NavLink>
-                <ChevronDown
-                  className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180"
-                  style={{ position: "relative" }}
-                />
-              </CollapsibleTrigger>
-            </SidebarGroupLabel>
+            <motion.div
+              whileHover={{ scale: 1.01 }}
+              transition={{ duration: 0.2 }}
+            >
+              <SidebarGroupLabel asChild className="mb-2">
+                <CollapsibleTrigger className="w-full">
+                  <NavLink
+                    to={`/overview/${tripID}`}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center text-lg font-semibold text-gray-900 rounded-md p-2",
+                        isActive && styles.activeLink
+                      )
+                    }
+                  >
+                    <Map className={styles.icon} />
+                    Overview
+                  </NavLink>
+                  <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                </CollapsibleTrigger>
+              </SidebarGroupLabel>
+            </motion.div>
+
             <CollapsibleContent>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {OverviewItems.map((item) => (
-                    <SidebarMenuItem
+                    <motion.div
                       key={item.title}
-                      className={styles.secondaryItem}
+                      whileHover={{ x: 4 }}
+                      transition={{ duration: 0.2 }}
                     >
-                      <SidebarMenuButton asChild>
-                        <span>{item.title}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
+                      <SidebarMenuItem className={styles.secondaryItem}>
+                        <SidebarMenuButton asChild>
+                          <span className="flex items-center">
+                            <item.icon className={styles.icon} />
+                            {item.title}
+                          </span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </motion.div>
                   ))}
                 </SidebarMenu>
               </SidebarGroupContent>
@@ -87,88 +116,44 @@ export const AppSidebar = ({ tripID }) => {
           </SidebarGroup>
         </Collapsible>
 
-        {/* Itinerary */}
-        <SidebarGroup>
-          <SidebarGroupLabel asChild className="mb-2">
-            <SidebarMenuButton>
-              <NavLink
-                to={`/itineraryWL/${tripID}`}
-                className={({ isActive }) =>
-                  `text-[24px] font-semibold text-black ${
-                    isActive
-                      ? "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
-                      : ""
-                  }`
-                }
-              >
-                Itinerary
-              </NavLink>
-            </SidebarMenuButton>
-          </SidebarGroupLabel>
-        </SidebarGroup>
-
-        {/* Budget */}
-        <SidebarGroup>
-          <SidebarGroupLabel asChild className="mb-2">
-            <SidebarMenuButton>
-              <NavLink
-                to={`/expense-splitting/${tripID}`}
-                className={({ isActive }) =>
-                  `text-[24px] font-semibold text-black ${
-                    isActive
-                      ? "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
-                      : ""
-                  }`
-                }
-              >
-                Budget
-              </NavLink>
-            </SidebarMenuButton>
-          </SidebarGroupLabel>
-        </SidebarGroup>
-
-        {/* Wishlist */}
-        <SidebarGroup>
-          <SidebarGroupLabel asChild className="mb-2">
-            <SidebarMenuButton>
-              <NavLink
-                to={`/wishlist/${tripID}`}
-                className={({ isActive }) =>
-                  `text-[24px] font-semibold text-black ${
-                    isActive
-                      ? "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
-                      : ""
-                  }`
-                }
-              >
-                Wishlist
-              </NavLink>
-            </SidebarMenuButton>
-          </SidebarGroupLabel>
-        </SidebarGroup>
-
-        {/* Date Finder */}
-        <SidebarGroup>
-          <SidebarGroupLabel asChild className="mb-2">
-            <SidebarMenuButton>
-              <NavLink
-                to={`/schedule/${tripID}`}
-                className={({ isActive }) =>
-                  `text-[24px] font-semibold text-black ${
-                    isActive
-                      ? "absolute flex left-2 w-[calc(100%-1rem)] h-[2.5rem] bg-[#4DB6AC] rounded-[12px] items-center justify-start pl-4 pt-1 text-white"
-                      : ""
-                  }`
-                }
-              >
-                Can't Find a Date?
-              </NavLink>
-            </SidebarMenuButton>
-          </SidebarGroupLabel>
-        </SidebarGroup>
+        {/* Main Navigation Items */}
+        {[ 
+          { title: "Itinerary", icon: Calendar, path: `/itineraryWL/${tripID}` },
+          { title: "Budget", icon: PiggyBank, path: `/expenses/${tripID}` },
+          { title: "Wishlist", icon: Heart, path: `/wishlist/${tripID}` },
+          { title: "Can't Find a Date?", icon: CalendarClock, path: `/schedule/${tripID}` },
+        ].map((item) => (
+          <motion.div
+            key={item.title}
+            whileHover={{ scale: 1.01 }}
+            transition={{ duration: 0.2 }}
+          >
+            <SidebarGroup className="mb-2">
+              <SidebarGroupLabel asChild>
+                <SidebarMenuButton>
+                  <NavLink
+                    to={item.path}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center text-lg font-semibold text-gray-900 rounded-md p-2",
+                        isActive && styles.activeLink
+                      )
+                    }
+                  >
+                    <item.icon className={styles.icon} />
+                    {item.title}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarGroupLabel>
+            </SidebarGroup>
+          </motion.div>
+        ))}
       </SidebarContent>
+
+      
     </Sidebar>
-  );
+    </>
+  )
 };
 
 export default AppSidebar;

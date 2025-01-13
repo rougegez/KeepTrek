@@ -7,10 +7,6 @@ import { Textarea } from '@/components/ui/textarea.jsx';
 import { Button } from '../ui/button.jsx';
 
 const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLocationClick }) => {
-  const truncateText = (text, maxLength) => {
-    if (text.length <= maxLength) return text;
-    return text.slice(0, maxLength) + '...';
-  };
 
   return (
     <Reorder.Item key={activity.id} value={activity} className="relative">
@@ -42,6 +38,7 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
                   className="relative h-8 w-8 rounded-full"
                   size="icon"
                   onClick={() => onLocationClick(activity)}
+                  {...(activity.coordinates.length > 1 ? {} : {disabled: true})}
                 >
                   <MapPin className="h-4 w-4" />
                 </Button>
@@ -59,11 +56,13 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
 
             {/* Image */}
             <div className="flex-none">
+              <a href={activity.link} target="_blank" rel="noreferrer noopener">
               <img
                 src={activity.image}
                 alt=""
                 className="w-48 h-28 rounded-lg object-cover"
               />
+              </a>
             </div>
           </div>
         </CardContent>

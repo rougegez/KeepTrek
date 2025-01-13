@@ -3,8 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import MapSearchBar from "../MapboxMap/MapSearchbarGeoAPIV5";
+import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar.jsx";
 import { Textarea } from '@/components/ui/textarea';
+import { fetchPlaceDetails } from '@/utils/fetchPlaceDetails.jsx';
 
 const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days }) => {
   const [editedActivity, setEditedActivity] = useState(null);
@@ -24,20 +25,39 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days 
     }));
   };
 
-  const handleLocationChange = (newLocation) => {
-    setEditedActivity(prev => ({
-      ...prev,
-      location: newLocation.place_name,
-      coordinates: newLocation.center
-    }));
-  };
+  const handleLocationChange = async (newLocation) => {
+    if (newLocation?.placePrediction?.structuredFormat?.mainText?.text) {
+      const suggestion = await fetchPlaceDetails(newLocation.placePrediction.placeId)
+      setEditedActivity(prev => ({
+        ...prev,
+        location: suggestion?.address ?? newLocation,
+        coordinates: suggestion?.coordinates ?? [],
+        rating: suggestion?.rating ?? "",
+        openingHours: suggestion?.openingHours ?? "",
+        website: suggestion?.website ?? "",
+        link: suggestion?.link ?? "",
+        image: suggestion?.image ?? "../src/assets/dummy-image.jpg"
+      }));
+    } else {
+      setEditedActivity(prev => ({
+        ...prev,
+        location: newLocation,
+        coordinates: [],
+        rating: "",
+        openingHours: "",
+        website: "",
+        link: "",
+        image: "../src/assets/dummy-image.jpg"
+      }));
+    }
+  }
 
   const handleDurationChange = (e) => {
     const inputValue = e.target.value;
 
     // Allow empty input
     if (inputValue === '') {
-        setEditedActivity({ ...editedActivity, duration: '' })
+      setEditedActivity({ ...editedActivity, duration: '' })
       return;
     }
 
@@ -69,7 +89,7 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days 
 
 
         <div className="space-y-4">
-        {/*Select Day*/}
+          {/*Select Day*/}
           <div>
             <label htmlFor="day-select" className="block text-sm font-medium text-muted-foreground mb-1">Day</label>
             <Select

@@ -4,9 +4,16 @@ import React, { useRef, useEffect, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+
 import { Button } from "@/components/ui/button"
-import { X } from 'lucide-react'
+import { Clock, Globe, Map, MapPin, Star, X } from 'lucide-react'
 import MapSearchBar from './GoogleMapsSearchbar'
+import { fetchPlaceDetails } from '@/utils/fetchPlaceDetails.jsx'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API_KEY
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
@@ -27,10 +34,12 @@ const MapboxMap = ({
     const [center, setCenter] = useState(initCenter)
     const [zoom, setZoom] = useState(initZoom)
     const [place, setPlace] = useState(null)
+    const [imageError, setImageError] = useState(false)
+
 
     useEffect(() => {
         if (initialPlace) {
-            handlePlaceUpdate(initialPlace)
+            handlePlaceUpdate(initialPlace?.clickLocation ?? initialPlace)
         }
     }, [initialPlace])
 
@@ -149,21 +158,9 @@ const MapboxMap = ({
     }
 
     const handleLocationSearch = async (suggestion) => {
-        if (suggestion) {
-            try {
-                const response = await fetch(
-                    `https://places.googleapis.com/v1/places/${suggestion.placePrediction.placeId}?fields=displayName,formattedAddress,location,types,viewport&key=${GOOGLE_MAPS_API_KEY}`
-                )
-                const data = await response.json()
-                const newPlace = {
-                    name: data.displayName.text,
-                    address: data.formattedAddress,
-                    coordinates: [data.location.longitude, data.location.latitude]
-                }
-                handlePlaceUpdate(newPlace)
-            } catch (error) {
-                console.error('Error fetching place information:', error)
-            }
+        const newPlace = await fetchPlaceDetails(suggestion.placePrediction.placeId)
+        if (newPlace) {
+            handlePlaceUpdate(newPlace)
         }
     }
 
@@ -193,8 +190,93 @@ const MapboxMap = ({
                             <CardTitle className="align-middle">{place.name}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="mb-2">{place.address}</p>
-                            <Button onClick={handleSaveLocation}>Save Location</Button>
+                            <div className="flex gap-4">
+                                <div className="flex-1">
+                                    {/* Address */}
+                                    <div className="flex items-start gap-1">
+                                        <MapPin size={16} className="flex-shrink-0 mt-1" />
+                                        <p className="text-gray-500 break-words">{place.address}</p>
+                                    </div>
+
+                                    {/* Rating */}
+                                    {place.rating?.rating > 0 && (
+                                        <div className="flex">
+                                            <span className="text-yellow-500 text-[16px]">★</span>
+                                            <p className="pl-1 text-gray-500">{place.rating.rating}</p>
+                                            <p className="pl-1 text-gray-500">({place.rating.count})</p>
+                                        </div>
+                                    )}
+
+                                    {/* Opening Hours */}
+                                    {place.openingHours.length > 2 && (
+                                        <div className="flex gap-1">
+                                            <Clock size={16} />
+                                            <Collapsible className="flex gap-1">
+                                                <div>
+                                                    <CollapsibleContent>
+                                                        {place.openingHours.slice(0, getDayIndex()).map((day, index) => (
+                                                            <div key={`pre-${index}`}>
+                                                                <CollapsibleTrigger className="inline-block">
+                                                                    <p className="text-gray-500">{day}</p>
+                                                                </CollapsibleTrigger>
+                                                            </div>
+                                                        ))}
+                                                    </CollapsibleContent>
+                                                    <CollapsibleTrigger>
+                                                        <span className="text-gray-500">{place.openingHours[getDayIndex()]}</span>
+                                                    </CollapsibleTrigger>
+                                                    <CollapsibleContent>
+                                                        {place.openingHours.slice(getDayIndex() + 1).map((day, index) => (
+                                                            <div key={`post-${index}`}>
+                                                                <CollapsibleTrigger className="inline-block">
+                                                                    <p className="text-gray-500">{day}</p>
+                                                                </CollapsibleTrigger>
+                                                            </div>
+                                                        ))}
+                                                    </CollapsibleContent>
+                                                </div>
+                                            </Collapsible>
+                                        </div>
+                                    )}
+
+                                    {/* Website */}
+                                    {place.website && (
+                                        <div className="flex gap-1">
+                                            <Globe size={16} />
+                                            <a href={place.website} target="_blank" rel="noopener noreferrer" className="text-blue-500">
+                                                {place.website}
+                                            </a>
+                                        </div>
+                                    )}
+
+                                    {/* Google Maps Link */}
+                                    {!place.image && place.link && (
+                                        <div className="flex gap-1">
+                                            <Map size={16} />
+                                            <a href={place.link} target="_blank" rel="noopener noreferrer" className="text-blue-500">
+                                                View on Google Maps
+                                            </a>
+                                        </div>
+                                    )}
+
+                                    <Button onClick={handleSaveLocation} className="mt-2">Save Location</Button>
+                                </div>
+
+                                {/* Image Container */}
+                                {place.image && !imageError && (
+                                    <div className="w-52 h-32 overflow-hidden rounded-lg">
+                                        <a href={place.link} target="_blank" rel="noopener noreferrer">
+                                            <img
+                                                src={place.image}
+                                                alt={place.name}
+                                                className="w-full h-full object-cover "
+                                                onError={() => setImageError(true)}
+                                                loading="lazy"
+                                            />
+                                        </a>
+                                    </div>
+                                )}
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
@@ -202,6 +284,12 @@ const MapboxMap = ({
         </div>
     )
 }
+
+function getDayIndex() {
+    const today = new Date().getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+    return today === 0 ? 6 : today - 1; // Adjusting so Monday = 0
+}
+
 
 export default MapboxMap
 

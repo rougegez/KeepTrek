@@ -3,8 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import MapSearchBar from "../MapboxMap/MapSearchbarGeoAPIV5";
+import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar";
 import { Textarea } from '@/components/ui/textarea';
+import { fetchPlaceDetails } from "@/utils/fetchPlaceDetails.jsx";
 
 const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, location, days, selectedDay }) => {
     const [newActivity, setNewActivity] = useState({
@@ -15,39 +16,55 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
         title: "",
         location: "",
         coordinates: [],
+        rating: "",
+        openingHours: "",
+        website: "",
+        link: "",
+        image: "../src/assets/dummy-image.jpg",
         notes: "",
     });
 
     useEffect(() => {
-        if (isOpen) {
-            setNewActivity(prev => ({
-                ...prev,
-                day: selectedDay || "",
-                title: location ? location.name : "",
-                location: location ? location.address : "",
-                coordinates: location ? location.coordinates : [],
-            }));
-        } else {
-            setNewActivity({
-                day: "",
-                type: "",
-                time: "",
-                duration: "",
-                title: "",
-                location: "",
-                coordinates: [],
-                notes: "",
-            });
-        }
-    }, [isOpen, location, selectedDay]);
-
-    const handleLocationChange = (newLocation) => {
         setNewActivity(prev => ({
             ...prev,
-            location: newLocation.place_name,
-            coordinates: newLocation.center
+            day: selectedDay ?? "",
+            title: location ? location.name : "",
+            location: location ? location.address : "",
+            coordinates: location ? location.coordinates : [],
+            rating: location ? location.rating : "",
+            image: location ? location.image : "../src/assets/dummy-image.jpg",
+            openingHours: location ? location.openingHours : "",
+            website: location ? location.website : "",
+            link: location ? location.link : "",
         }));
-    };
+    }, [isOpen, location, selectedDay]);
+
+    const handleLocationChange = async (newLocation) => {
+        if (newLocation?.placePrediction?.structuredFormat?.mainText?.text) {
+            const suggestion = await fetchPlaceDetails(newLocation.placePrediction.placeId)
+            setNewActivity(prev => ({
+                ...prev,
+                location: suggestion?.address ?? newLocation,
+                coordinates: suggestion?.coordinates ?? [],
+                rating: suggestion?.rating ?? "",
+                openingHours: suggestion?.openingHours ?? "",
+                website: suggestion?.website ?? "",
+                link: suggestion?.link ?? "",
+                image: suggestion?.image ?? "../src/assets/dummy-image.jpg"
+            }));
+        } else {
+            setNewActivity(prev => ({
+                ...prev,
+                location: newLocation,
+                coordinates: [],
+                rating: "",
+                openingHours: "",
+                website: "",
+                link: "",
+                image: "../src/assets/dummy-image.jpg"
+            }));
+        }
+    }
 
     const handleDurationChange = (e) => {
         const inputValue = e.target.value;
@@ -82,6 +99,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                     duration: "",
                     title: "",
                     location: "",
+                    image: "../src/assets/dummy-image.jpg",
                     notes: "",
                 });
                 onClose();
@@ -211,7 +229,6 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                                 onAddActivity({
                                     ...newActivity,
                                     id: `${Date.now()}`,
-                                    image: "./src/assets/dummy-image.jpg",
                                 });
                                 onClose();
                             }}

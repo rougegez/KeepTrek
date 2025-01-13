@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import { loginUser } from "@/APIs/auth";
+import { loginUser, CurrentUser } from "@/APIs/auth";
 
 export const AuthContext = createContext();
 
@@ -12,13 +12,25 @@ export const AuthProvider = ({ children }) => {
     setUser({ email }); // Set additional user details as needed
   };
 
+  // Fetch user details using token
+  const fetchUser = async () => {
+    try {
+      const userId = await CurrentUser();
+      console.log("Fetched user:", userId); // Debug log
+      setUser({ id: userId }); // Store user details in state
+    } catch (error) {
+      console.error("Failed to fetch user:", error);
+      logout(); // Logout if fetching user fails
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("token");
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, fetchUser }}>
       {children}
     </AuthContext.Provider>
   );

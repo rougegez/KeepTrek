@@ -31,6 +31,7 @@ const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton = true, onCh
     }, [initialPlace])
 
     const debouncedHandleInputChange = useDebouncedCallback(async (value) => {
+        setPlace("");
         if (value.length > 3) {
             try {
                 const response = await fetch(
@@ -61,10 +62,7 @@ const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton = true, onCh
                 console.error("Error fetching autocomplete suggestions:", error);
                 setSuggestions([]);
             }
-        } else {
-            setSuggestions([]);
         }
-
         if (onChange) {
             onChange(value);
         }
@@ -87,11 +85,13 @@ const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton = true, onCh
     };
 
     const handleSearchClick = () => {
+        if (place) {
         onLocationSearch(place);
+        }
     };
 
     return (
-        <div className="relative w-full max-w-md mb-4">
+        <div>
             <div className="flex gap-2">
                 <Input
                     type="text"
@@ -106,8 +106,14 @@ const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton = true, onCh
                     </Button>
                 )}
             </div>
-            {suggestions.length > 0 && (
-                <ul className="absolute w-full bg-white border border-gray-200 rounded mt-1 z-20 shadow-lg">
+            {suggestions?.length > 0 && (
+            <div className="relative">
+                <ul className="absolute w-full bg-white border border-gray-200 rounded z-20 shadow-lg ">
+                    <li 
+                    className="pl-2 py-0 m-0 hover:bg-red-50 cursor-pointer"
+                    onClick={() => setSuggestions([])}>
+                        <span className="text-sm text-red-500">Clear Suggestions</span>
+                    </li>
                     {suggestions.map((suggestion) => (
                         <li
                             key={suggestion.placePrediction.placeId}
@@ -122,6 +128,7 @@ const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton = true, onCh
                         </li>
                     ))}
                 </ul>
+            </div>
             )}
         </div>
     );
