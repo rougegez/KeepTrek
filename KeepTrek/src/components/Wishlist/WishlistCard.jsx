@@ -47,17 +47,17 @@ export function WishlistCard({ item, onClick, onUpvote, onDownvote, onLocationCl
           <div className="flex items-start gap-1 text-sm text-muted-foreground">
             <Button
               variant="ghost"
-              className="relative h-3 w-3 rounded-full"
+              className="relative h-5 w-full mb-2"
               size="icon"
               onClick={(e) => {e.stopPropagation(); onLocationClick(item);}}
               {...(item.coordinates.length > 1 ? {} : {disabled: true})}
             >
               <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
+              <h3 className="font-normal truncate">{item.location}</h3>
             </Button> 
-            <h3 className="font-normal truncate mb-1">{item.location}</h3>
           </div>
-          <div className="flex items-start gap-1 text-sm text-muted-foreground">
-            <Notebook className="w-3 h-3 mt-0.5 flex-shrink-0" /> 
+          <div className="flex items-start gap-2 text-sm text-muted-foreground">
+            <Notebook className="w-4 h-4 mt-0.5 flex-shrink-0" /> 
             <p className="text-sm text-muted-foreground truncate">{item.notes || "Add a note..."}</p>
           </div>
         </div>

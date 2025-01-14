@@ -151,7 +151,7 @@ export default function CreateEditModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleCancel}>
-      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[90vw] md:max-w-xl max-h-[90vh] overflow-y-auto rounded-xl">
         <DialogHeader>
           <DialogTitle>{isEditMode ? "Edit Wishlist Item" : "Add to Wishlist"}</DialogTitle>
         </DialogHeader>

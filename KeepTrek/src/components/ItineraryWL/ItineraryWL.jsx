@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useQueryClient, useMutation } from "react-query";
 import { withSuspense } from "@/utils/withSuspense.jsx";
 
 import { Button } from "@/components/ui/button";
 import { Reorder } from "framer-motion";
-import { Plus } from 'lucide-react'
+import { Plus, Menu, ChevronUp, ChevronDown } from 'lucide-react'
 import AppSidebar from "../Sidebar/Sidebar.jsx";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import ActivityCard from "./ActivityCard.jsx";
 import AddActivityModal from "./AddActivityModal.jsx";
 import EditActivityModal from "./EditActivityModal.jsx";
@@ -17,7 +17,9 @@ import { useParams } from "react-router-dom";
 import { createItinerary, getItinerary, updateItinerary } from "@/APIs/itinerary.js";
 import { getTrip } from "@/APIs/trip.js";
 import { Card, CardContent } from "../ui/card.jsx";
-
+import { useMediaQuery } from 'react-responsive';
+import { motion } from "framer-motion";
+import MobileHeader from "../MobileHeader";
 
 function ItineraryWL() {
   const queryClient = useQueryClient();
@@ -30,6 +32,49 @@ function ItineraryWL() {
   const [mapInstance, setMapInstance] = useState(null);
   const [searchedPlace, setSearchedPlace] = useState(null);
   const [savedLocation, setSavedLocation] = useState(null);
+
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
+  const [isMapExpanded, setIsMapExpanded] = useState(true);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const contentRef = useRef(null);
+  const [lastScrollPosition, setLastScrollPosition] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const position = window.scrollY;
+      const scrollDelta = position - lastScrollPosition;
+      
+      // Auto-expand map when scrolling to top
+      if (position < 50) {
+        setIsMapExpanded(true);
+      }
+      // Auto-collapse map when scrolling down past threshold
+      else if (scrollDelta > 10 && position > 10 && isMapExpanded) {
+        setIsMapExpanded(false);
+      }
+      // Auto-expand map when scrolling up quickly
+      //else if (scrollDelta < -50 && !isMapExpanded) {
+      //  setIsMapExpanded(true);
+      //}
+      
+      setLastScrollPosition(position);
+      setScrollPosition(position);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isMapExpanded, lastScrollPosition]);
+
+  const getMapHeight = () => isMapExpanded ? '65vh' : '10vh';
+
+  const MapToggleButton = () => (
+    <Button
+      className="absolute right-4 -bottom-5 z-50 rounded-full p-2 bg-secondary text-muted-foreground shadow-md"
+      onClick={() => setIsMapExpanded(!isMapExpanded)}
+    >
+      {isMapExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+    </Button>
+  );
 
   const { data: tripDetails } = useQuery(
     ['trip', tripID],
@@ -146,12 +191,50 @@ function ItineraryWL() {
   return (
       <SidebarProvider >
         <AppSidebar tripID={tripID} />
+        {!isMobile && <SidebarTrigger />}
+        {isMobile && <MobileHeader title="Itinerary" />}
         <div className="flex w-full">
-          {/* Left side: Itinerary */}
-          <div className="w-8/12 px-14 py-8 space-y-8 overflow-y-auto max-h-screen">
+          {isMobile && (
+            <motion.div
+              className="fixed w-full z-40 bg-background"
+              initial={{ height: '75vh' }}
+              animate={{ 
+                height: getMapHeight(),
+                transition: { duration: 0.3, ease: 'easeInOut' }
+              }}
+              style={{ top: '3.5rem' }}
+            >
+              <MapboxMap
+                onSaveLocation={handleSaveLocation}
+                onMapLoad={handleMapLoad}
+                initialPlace={searchedPlace}
+                height="100%"
+                width="100%"
+              />
+              <MapToggleButton />
+            </motion.div>
+          )}
+
+          <motion.div 
+            ref={contentRef}
+            className={`w-full space-y-6 overflow-y-auto ${
+              isMobile ? 'bg-background relative z-30' : 'p-6 max-h-100vh'
+            }`}
+            animate={isMobile ? {
+              marginTop: `calc(${getMapHeight()} + 3.5rem)`, // Add header height to margin
+              paddingTop: isMapExpanded ? '1.5rem' : '8rem',
+              paddingLeft: '1.5rem',
+              paddingRight: '1.5rem',
+              paddingBottom: '1.5rem',
+              transition: { duration: 0.3, ease: 'easeInOut' }
+            } : {}}
+            style={{
+              minHeight: isMobile ? `calc(100vh - ${getMapHeight()} - 3.5rem)` : 'auto' // Subtract header height
+            }}
+          >
             <div className="flex justify-between space-y-2">
               <div>
-                <h1 className="text-3xl font-bold">{tripDetails.tripName}</h1>
+                <h1 className="text-3xl font-bold truncate">{tripDetails.tripName}</h1>
                 <p className="text-sm text-muted-foreground">
                   {dateFormatter(tripDetails.startDate)} to {dateFormatter(tripDetails.endDate)}
                 </p>
@@ -197,16 +280,18 @@ function ItineraryWL() {
               <Plus className="w-4 h-4 mr-2" />
               Add Day
             </Button>
-          </div>
+          </motion.div>
 
-          {/* Right side: Map */}
-          <div className="w-5/13">
-            <MapboxMap
-              onSaveLocation={handleSaveLocation}
-              onMapLoad={handleMapLoad}
-              initialPlace={searchedPlace}
-              height="800px" /> {/*  Need a better way to adjust height, h-full won't work */}
-          </div>
+          {!isMobile && (
+            <div className="w-5/13" style={{ position: 'sticky', top: 0, height: '100vh' }}>
+              <MapboxMap
+                onSaveLocation={handleSaveLocation}
+                onMapLoad={handleMapLoad}
+                initialPlace={searchedPlace}
+                height="100%"
+              />
+            </div>
+          )}
         </div>
 
         <AddActivityModal

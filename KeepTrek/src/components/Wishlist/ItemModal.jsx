@@ -6,6 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator"
 import { MapPin, Notebook, Pencil, Trash, ThumbsUp, ThumbsDown, User, Map } from 'lucide-react';
 import { getUserProfile } from "@/APIs/users";
 
@@ -48,7 +49,7 @@ export default function ItemModal({ item, isOpen, onClose, onEdit, onDelete, onU
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[95vh] overflow-y-auto">
+      <DialogContent className="max-w-[90vw] md:max-w-3xl max-h-[95vh] overflow-y-auto rounded-xl">
         <DialogHeader>
           <div className="flex items-center justify-between mt-4 mb-2">
             <label className="block text-l font-normal bg-secondary px-3 py-1 rounded-lg">
@@ -65,7 +66,8 @@ export default function ItemModal({ item, isOpen, onClose, onEdit, onDelete, onU
               </Button>
             </div>
           </div>
-          <DialogTitle className="text-3xl">{item.title}</DialogTitle>
+          <Separator />
+          <DialogTitle className="text-3xl pt-4">{item.title}</DialogTitle>
 
           <div className="flex items-center justify-between">
             <div className="flex gap-4">

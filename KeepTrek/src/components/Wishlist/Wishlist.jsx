@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -19,6 +19,10 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { useMediaQuery } from 'react-responsive';
+import { motion } from "framer-motion";
+import { ChevronUp, ChevronDown, Menu } from "lucide-react";
+import MobileHeader from "../MobileHeader";
 
 export default function WishlistPage() {
   const { tripID } = useParams();
@@ -40,6 +44,38 @@ export default function WishlistPage() {
   const [selectedItems, setSelectedItems] = useState([]);
   const [itineraryDays, setItineraryDays] = useState([]);
   const [selectedDay, setSelectedDay] = useState("");
+
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
+  const [isMapExpanded, setIsMapExpanded] = useState(true);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const contentRef = useRef(null);
+  const [lastScrollPosition, setLastScrollPosition] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const position = window.scrollY;
+      const scrollDelta = position - lastScrollPosition;
+      
+      // Auto-expand map when scrolling to top
+      if (position < 50) {
+        setIsMapExpanded(true);
+      }
+      // Auto-collapse map when scrolling down past threshold
+      else if (scrollDelta > 10 && position > 10 && isMapExpanded) {
+        setIsMapExpanded(false);
+      }
+      // Auto-expand map when scrolling up quickly
+      //else if (scrollDelta < -50 && !isMapExpanded) {
+      //  setIsMapExpanded(true);
+      //}
+      
+      setLastScrollPosition(position);
+      setScrollPosition(position);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isMapExpanded, lastScrollPosition]);
 
   const fetchWishlistData = async () => {
     const allItems = await getAllItems(tripID);
@@ -91,11 +127,14 @@ export default function WishlistPage() {
   };
 
   const handleLocationClick = (clickLocation) => {
-    clickLocation.address = clickLocation.location
-    clickLocation.name = clickLocation.title
-    const random = new Date().getTime()
-    setSearchedPlace({random, clickLocation})
-  }
+    clickLocation.address = clickLocation.location;
+    clickLocation.name = clickLocation.title;
+    const random = new Date().getTime();
+    setSearchedPlace({random, clickLocation});
+    if (isMobile) {
+      setIsMapExpanded(true);
+    }
+  };
 
   const handleSaveLocation = (place) => {
     setSavedLocation(place);
@@ -202,13 +241,61 @@ export default function WishlistPage() {
     navigate(`/itineraryWL/${tripID}`);
   };
 
+  const getMapHeight = () => isMapExpanded ? '65vh' : '10vh';
+  
+  const MapToggleButton = () => (
+    <Button
+      className="absolute right-4 -bottom-5 z-50 rounded-full p-2 bg-secondary text-muted-foreground shadow-md"
+      onClick={() => setIsMapExpanded(!isMapExpanded)}
+    >
+      {isMapExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+    </Button>
+  );
+
   return (
     <SidebarProvider>
       <AppSidebar tripID={tripID}/>
-      <SidebarTrigger/>
+      {!isMobile && <SidebarTrigger />}
+      {isMobile && <MobileHeader title="Wishlist" />}
       <div className="flex w-full">
-        <div className="w-7/12 p-6 space-y-6 max-h-100vh overflow-y-auto">
-          <h1 className="text-3xl font-bold">Wishlist</h1>
+        {isMobile && (
+          <motion.div
+            className="fixed w-full z-40 bg-background"
+            initial={{ height: '75vh' }}
+            animate={{ 
+              height: getMapHeight(),
+              transition: { duration: 0.3, ease: 'easeInOut' }
+            }}
+            style={{ top: '3.5rem' }}
+          >
+            <MapboxMap
+              onSaveLocation={handleSaveLocation}
+              onMapLoad={handleMapLoad}
+              initialPlace={searchedPlace}
+              height="100%"
+              width="100%"
+            />
+            <MapToggleButton />
+          </motion.div>
+        )}
+
+        <motion.div 
+          ref={contentRef}
+          className={`w-full space-y-6 overflow-y-auto ${
+            isMobile ? 'bg-background relative z-30' : 'p-6 max-h-100vh'
+          }`}
+          animate={isMobile ? {
+            marginTop: `calc(${getMapHeight()} + 3.5rem)`, // Add header height to margin
+            paddingTop: isMapExpanded ? '1.5rem' : '8rem',
+            paddingLeft: '1.5rem',
+            paddingRight: '1.5rem',
+            transition: { duration: 0.3, ease: 'easeInOut' }
+          } : {}}
+          style={{
+            minHeight: isMobile ? `calc(100vh - ${getMapHeight()} - 3.5rem)` : 'auto' // Subtract header height
+          }}
+        >
+          {!isMobile && <h1 className="text-3xl font-bold">Wishlist</h1>}
           <div className="flex justify-between items-center">
             <Button variant={addMode ? "outline" : "default"} onClick={handleAddModeToggle}>
               {addMode ? "Cancel" : "Add Items to Itinerary"}
@@ -238,7 +325,7 @@ export default function WishlistPage() {
           </div>
           {addMode && (
             <p className="text-sm font-normal text-muted-foreground">
-              Select at least 1 wishlist item to add to your itinerary.
+              {selectedItems.length > 0 ? `${selectedItems.length} items selected.` : "Select at least 1 wishlist item to add to your itinerary."}
             </p>
           )}
 
@@ -295,17 +382,18 @@ export default function WishlistPage() {
             ))}
             <AddItemCard onClick={handleCreateItem} />
           </WishlistSection>
-        </div>
+        </motion.div>
 
-        {/* Right side: Map */}
-        <div className="w-5/13" style={{ position: 'sticky', top: 0, height: '100vh' }}>
-          <MapboxMap
-            onSaveLocation={handleSaveLocation}
-            onMapLoad={handleMapLoad}
-            initialPlace={searchedPlace}
-            height="100%"
-          />
-        </div>
+        {!isMobile && (
+          <div className="w-5/13" style={{ position: 'sticky', top: 0, height: '100vh' }}>
+            <MapboxMap
+              onSaveLocation={handleSaveLocation}
+              onMapLoad={handleMapLoad}
+              initialPlace={searchedPlace}
+              height="100%"
+            />
+          </div>
+        )}
       </div>
 
       <ItemModal
