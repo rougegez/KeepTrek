@@ -68,7 +68,7 @@ export default function TopNavbar() {
                 Features
               </button>
               <button
-                onClick={() => navigateAndScroll("pricing")}
+                onClick={() => navigateAndScroll("pre-launch")}
                 className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium text-gray-600"
               >
                 Pricing
