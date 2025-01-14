@@ -1,7 +1,8 @@
 import { useExpenses } from '../expenseContext';
 import React from 'react';
 import { Card } from "@/components/ui/card";
-import {LoadingSkeleton} from '@/components/ui/loadingAnimation'; 
+import { LoadingSkeleton } from '@/components/ui/loadingAnimation';
+import { useMediaQuery } from 'react-responsive';
 
 export const ExpensesTotals = () => {
   const {
@@ -11,6 +12,7 @@ export const ExpensesTotals = () => {
     balances,
     user,
   } = useExpenses();
+  const isMobile = useMediaQuery({ query: '(max-width: 640px)' });
   const userBalances = balances[user] || {};
   const usersOweYou = Object.entries(userBalances).filter(([_, amount]) => amount > 0);
   const youOweUsers = Object.entries(userBalances).filter(([_, amount]) => amount < 0);
@@ -18,10 +20,8 @@ export const ExpensesTotals = () => {
   const totalYouOwe = youOweUsers.reduce((sum, [_, amount]) => sum + amount, 0);
   const userBalance = totalOwedToYou + totalYouOwe; // Add since totalYouOwe is already negative
 
-  
-
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div className="text-center">Error: {error}</div>;
   }
 
   if (isLoadingDependent) {
@@ -29,39 +29,40 @@ export const ExpensesTotals = () => {
   }
 
   return (
-    <div className="flex p-6 gap-6">
-      <div className="bg-[#4DB6AC] text-white p-6 rounded-xl w-52 h-44 flex items-center justify-center">
+    <div className={`flex flex-col sm:flex-row p-4 sm:p-6 gap-4 sm:gap-6`}>
+      <Card className="bg-[#4DB6AC] text-white p-4 sm:p-6 rounded-xl w-full sm:w-52 h-auto sm:h-44 flex items-center justify-center">
         <div className="text-center">
-          <span className="text-4xl font-bold block mb-1">
+          <span className="text-3xl sm:text-4xl font-bold block mb-1">
             RM {totals.totalTrip?.toFixed(2) || '0.00'}
           </span>
-          <span className="text-2xl font-bold block mb-1">
+          <span className="text-xl sm:text-2xl font-bold block mb-1">
             Total Trip Expense
           </span>
         </div>
-      </div>
-      <div className="space-y-4 flex-1 flex flex-col justify-center">
-        <div className="bg-[#E0F7FA] p-3 rounded-xl w-full h-20">
-          <div className="flex justify-between items-center">
-            <span className="text-2xl font-bold block mb-1">Your Expense</span>
-            <span className="text-2xl font-bold block mb-1">
+      </Card>
+      <div className="space-y-4 flex-1 flex flex-col justify-center w-full">
+        <Card className="bg-[#E0F7FA] p-3 rounded-xl w-full h-auto sm:h-20">
+          <div className="flex flex-col sm:flex-row justify-between items-center sm:items-center text-center sm:text-left">
+            <span className="text-xl sm:text-2xl font-bold block mb-1 sm:mb-0">Your Expense</span>
+            <span className="text-xl sm:text-2xl font-bold block">
               RM {totals.totalUser?.toFixed(2) || '0.00'}
             </span>
           </div>
-        </div>
-        <div className="bg-[#E8F5E9] p-3 rounded-xl w-full h-20">
-          <div className="flex justify-between items-center">
-            <span className="text-2xl font-bold block mb-1">
+        </Card>
+        <Card className="bg-[#E8F5E9] p-3 rounded-xl w-full h-auto sm:h-20">
+          <div className="flex flex-col sm:flex-row justify-between items-center sm:items-center text-center sm:text-left">
+            <span className="text-xl sm:text-2xl font-bold block mb-1 sm:mb-0">
               {(userBalance || 0) >= 0 ? "You Are Owed" : "You Owe"}
             </span>
-            <span className="text-2xl font-bold block mb-1">
+            <span className="text-xl sm:text-2xl font-bold block">
               RM {Math.abs(userBalance || 0).toFixed(2)}
             </span>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );
 };
 
 export default ExpensesTotals;
+

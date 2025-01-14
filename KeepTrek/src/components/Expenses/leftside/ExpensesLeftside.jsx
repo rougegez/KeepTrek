@@ -9,7 +9,7 @@ export const ExpensesLeftside = () => {
     const { tripID } = useParams();
     return(
         <ExpensesProvider>
-        <div className="flex-[6] overflow-y-auto p-8 max-h-full">
+        <div className="flex-[6] overflow-y-auto p-6 max-h-full">
         <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold">Expenses</h1>
         </div>

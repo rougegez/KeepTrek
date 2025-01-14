@@ -158,7 +158,7 @@ const handleDeleteDebt = async () => {
   return (
     <div className="space-y-6 p-1">
       {/* Section: Users Who Owe You */}
-      <div className="bg-white p-6 rounded-xl shadow-md">
+      
         <h2 className="text-xl font-bold mb-4 text-gray-800">Users Who Owe You</h2>
         {usersOweYou.length === 0 ? (
           <p className="text-gray-600">No users owe you money.</p>
@@ -190,10 +190,10 @@ const handleDeleteDebt = async () => {
             RM {totalUsersOweYou.toFixed(2)}
           </span>
         </div>
-      </div>
+     
 
       {/* Section: Users You Owe */}
-      <div className="bg-white p-6 rounded-xl shadow-md">
+      
         <h2 className="text-xl font-bold mb-4 text-gray-800">Users You Owe</h2>
         {youOweUsers.length === 0 ? (
           <p className="text-gray-600">You don't owe any users money.</p>
@@ -226,10 +226,10 @@ const handleDeleteDebt = async () => {
             RM {Math.abs(totalYouOweUsers).toFixed(2)}
           </span>
         </div>
-      </div>
+      
 
       {/* Settled Debts Card */}
-    <div className="bg-white p-6 rounded-xl shadow-md">
+    
       <h2 className="text-xl font-bold mb-4 text-gray-800">Settled Debts</h2>
       {!settledDebts || settledDebts.length === 0 ? (
         <p className="text-gray-600">No settled debts yet.</p>
@@ -269,7 +269,7 @@ const handleDeleteDebt = async () => {
         ))}
         </ul>
       )}
-    </div>
+    
     <Dialog open={showPayModal} onOpenChange={setShowPayModal}>
         <DialogContent>
           <DialogHeader>

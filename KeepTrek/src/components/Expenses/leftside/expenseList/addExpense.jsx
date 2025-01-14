@@ -104,7 +104,7 @@ export const AddExpense = () => {
               Expense
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent >
             <DialogHeader>
               <DialogTitle>Add Expense</DialogTitle>
             </DialogHeader>
