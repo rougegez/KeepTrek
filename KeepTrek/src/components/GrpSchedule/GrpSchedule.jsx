@@ -11,6 +11,8 @@ import {
   getUserAvailability,
 } from "@/APIs/dateFinder";
 import AvailableTrips from "@/components/GrpSchedule/AvailableTrips";
+import MobileHeader from "../MobileHeader";
+import { useMediaQuery } from "react-responsive";
 
 export const GrpSchedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -18,6 +20,7 @@ export const GrpSchedule = () => {
   const [availableTrips, setAvailableTrips] = useState([]);
   const isDragging = useRef(false);
   const { tripID } = useParams();
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
 
   // Load existing availability for the current user
   const loadUserAvailability = async () => {
@@ -164,6 +167,7 @@ export const GrpSchedule = () => {
   return (
     <SidebarProvider>
       <AppSidebar tripID={tripID}/>
+      {isMobile && <MobileHeader title="Group Schedule" />}
       <div className="flex h-screen w-screen">
         <div className="flex flex-col flex-1 overflow-hidden">
           <header className="flex items-center justify-between p-4 bg-gray-100 shadow">
