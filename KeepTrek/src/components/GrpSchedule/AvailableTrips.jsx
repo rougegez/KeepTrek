@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react"; 
 import { Card } from "@/components/ui/card";
 import { Users } from "lucide-react";
 import {
@@ -148,8 +148,8 @@ const PeriodCard = ({
     <Card className="p-4 flex items-center">
       <div>
         <div className="font-medium">
-          {new Date(period.start_date).toLocaleDateString()} -{" "}
-          {new Date(period.end_date).toLocaleDateString()}
+          {new Date(period.start_date).toLocaleDateString("en-GB")} -{" "}
+          {new Date(period.end_date).toLocaleDateString("en-GB")}
         </div>
         <AvailabilityIcon
           tripID={tripID}
@@ -227,46 +227,56 @@ const AvailableTrips = ({ tripID }) => {
   } = suggestedPeriods;
 
   return (
-    <div className="space-y-4 mt-8">
-      <h3 className="text-xl font-bold">Recommended Periods</h3>
+    <div className="space-y-4 mt-8 max-w-md mx-auto">
 
-      {most_people_period && (
-        <PeriodCard
-          tripID={tripID}
-          period={most_people_period}
-          totalPeople={totalPeople}
-          selectedPeriod={selectedPeriod}
-          onSelect={setSelectedPeriod}
-        />
-      )}
-
-      {longest_period_min_2_people && (
-        <PeriodCard
-          tripID={tripID}
-          period={longest_period_min_2_people}
-          totalPeople={totalPeople}
-          selectedPeriod={selectedPeriod}
-          onSelect={setSelectedPeriod}
-        />
-      )}
-
-      {other_five_seven_day_periods &&
-        other_five_seven_day_periods.length > 0 && (
-          <div>
-            <h4 className="text-lg font-semibold">Five to Seven Day Periods</h4>
-            {other_five_seven_day_periods.map((period, index) => (
-              <PeriodCard
-                key={index}
-                tripID={tripID}
-                period={period}
-                totalPeople={totalPeople}
-                selectedPeriod={selectedPeriod}
-                onSelect={setSelectedPeriod}
-              />
-            ))}
-          </div>
-        )}
+  {most_people_period && (
+    <div className="mb-4">
+      <h4 className="text-lg font-semibold mb-2">
+        5-7 day with most people available
+      </h4>
+      <PeriodCard
+        tripID={tripID}
+        period={most_people_period}
+        totalPeople={totalPeople}
+        selectedPeriod={selectedPeriod}
+        onSelect={setSelectedPeriod}
+      />
     </div>
+  )}
+
+  {longest_period_min_2_people && (
+    <div className="mb-4">
+      <h4 className="text-lg font-semibold mb-2">
+        Longest period with at least 2 people <br />available
+      </h4>
+      <PeriodCard
+        tripID={tripID}
+        period={longest_period_min_2_people}
+        totalPeople={totalPeople}
+        selectedPeriod={selectedPeriod}
+        onSelect={setSelectedPeriod}
+      />
+    </div>
+  )}
+
+  {other_five_seven_day_periods &&
+    other_five_seven_day_periods.length > 0 && (
+      <div>
+        <h4 className="text-lg font-semibold mb-2">Other Five to Seven Day Periods</h4>
+        {other_five_seven_day_periods.map((period, index) => (
+          <PeriodCard
+            key={index}
+            tripID={tripID}
+            period={period}
+            totalPeople={totalPeople}
+            selectedPeriod={selectedPeriod}
+            onSelect={setSelectedPeriod}
+          />
+        ))}
+      </div>
+    )}
+</div>
+
   );
 };
 
