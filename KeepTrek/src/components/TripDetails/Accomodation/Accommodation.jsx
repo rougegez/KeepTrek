@@ -39,9 +39,9 @@ const AccommodationCard = ({
         <span className="address">
           {address}
           <img 
-            src="/api/placeholder/24/24"
+            src="../src/assets/google.png"
             alt="Google Maps Icon"
-            className="maps-icon"
+            className="ml-2 size-5"
           />
         </span>
       </div>
@@ -77,24 +77,24 @@ const AccommodationCard = ({
 const Accommodation = () => {
   const accommodations = [
     {
-      hotelName: "Swiss-Belhotel Kuantan",
-      address: "1, Jalan Tanjung Lumpur, Tanjung Lumpur, 26060 Kuantan, Pahang",
-      checkInDate: "19 June",
-      checkOutDate: "21 June 2024",
-      checkInTime: "3:00pm",
+      hotelName: "Jazz Hotel Penang",
+      address: "1, Jalan Seri Tg Pinang, Seri Tanjung Pinang, 10470 Tanjung Tokong, Pulau Pinang, Malaysia",
+      checkInDate: "15 January 2025",
+      checkOutDate: "16 January 2025",
+      checkInTime: "9:00pm",
       checkOutTime: "12:00pm",
-      nights: "2",
+      nights: "1",
       bookedWith: "Agoda"
     },
     {
-      hotelName: "CiptaRase Homestay",
-      address: "14, Jalan Sultan Zainal, Kampung Kapur, 20000 Kuala Terengganu, Terengganu",
-      checkInDate: "21 June",
-      checkOutDate: "23 June 2024",
-      checkInTime: "3:00pm",
-      checkOutTime: "12:00pm",
-      nights: "2",
-      bookedWith: "Airbnb"
+      hotelName: "Kimberly Hotel Georgetown",
+      address: "36 G-01, Jalan Sungai Ujong, George Town, 10100 George Town, Pulau Pinang, Malaysia",
+      checkInDate: "16 January 2025",
+      checkOutDate: "17 Januaray 2025",
+      checkInTime: "9:00 pm",
+      checkOutTime: "12:00 pm",
+      nights: "1",
+      bookedWith: "Booking.com"
     }
   ];
 

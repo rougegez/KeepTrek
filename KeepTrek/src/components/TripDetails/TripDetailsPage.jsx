@@ -30,8 +30,8 @@ export const TripDetailsPage = () => {
           // Simulate API call
           const fetchedItinerary = {
             id,
-            title: "East Coast Road-Trip",
-            dateRange: "19 June 2024 to 23 June 2024",
+            title: "Penang Trip w/ the Boys",
+            dateRange: "15 Jan 2025 to 17 Jan 2025",
           };
           setItinerary(fetchedItinerary);
         } catch (error) {
@@ -60,11 +60,10 @@ export const TripDetailsPage = () => {
       {isMobile && <MobileHeader title="Overview" />}
 
       <main className="main-page">
-
         <TripOverview
           title={itinerary.title}
           dateRange={itinerary.dateRange}
-          backgroundImage="../src/assets/Langkawi.jpg"
+          backgroundImage="https://a0.muscache.com/im/pictures/INTERNAL/INTERNAL-ImageByPlaceId-ChIJ3ZBTCQOUSjARP2OP86UFwyk-large_background/original/5236a99e-56b9-4091-a889-47b7ad33f02b.jpeg"
         />
         <div id="TripSummary">
           <h2 className="trip-summary-title">Trip Summary</h2>

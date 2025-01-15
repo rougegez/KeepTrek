@@ -1,11 +1,13 @@
 import React from 'react';
 import styles from './Attachments.module.css';
 import { Plus } from 'lucide-react'; 
+import { Button } from '@/components/ui/button';
+import { Car, StickyNote, Hotel , Ellipsis} from 'lucide-react';
 
 const attachments = [
-  { icon: '✈️', name: 'WeiLeeGan_KULtoBKK.pdf' },
-  { icon: '📄', name: 'WatArun_GroupTicket.pdf' },
-  { icon: '🏨', name: 'PhatumWan_Hotel2D3N.pdf' },
+  { icon: <Car size={18}/>, name: 'Fuel Receipt' },
+  { icon: <StickyNote size={18}/>, name: 'ESCAPE Penang Tickets' },
+  { icon: <Hotel size={18}/>, name: 'Hotel Receipt' },
 ];
 
 // I think icon can be a string based cateogry and icons are assigned locally.
@@ -18,18 +20,18 @@ const Attachments = () => (
   <ul className={styles.attachmentList}>
     {attachments.map((attachment, index) => (
       <li key={index} className={styles.attachmentItem}>
-        <div className={styles.attachmentIconContainer}>
+        <div className="bg-gray-100 p-4 rounded-full size-10 flex items-center justify-center mr-2">
           <p>{attachment.icon}</p>
         </div>
         {/* <img src={attachment.icon} alt={attachment.name} className={styles.attachmentIcon} /> */}
         <span className={styles.attachmentName}>{attachment.name}</span>
-        <button className={styles.attachmentAction}>
-          <img src='../src/assets/more.svg' alt="Action" className={styles.actionIcon} />
-        </button>
+        <Button size="icon" variant="ghost" className="rounded-full">
+              <Ellipsis />
+            </Button>
       </li>
     ))}
     <li className={styles.attachmentItem}>
-      <button className={styles.addFileButton}><Plus className={styles.plusIcon}/></button>
+      <Button className={styles.addFileButton} size="icon"><Plus className={styles.plusIcon}/></Button>
       <span className={styles.attachmentAddText}>Add File...</span>
     </li>
   </ul>

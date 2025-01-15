@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import styles from './Notes.module.css';
 import { Plus } from 'lucide-react'
+import { Button } from '@/components/ui/button';
 
 const Notes = () => {
   const [note, setNote] = useState('');
@@ -22,8 +23,8 @@ const Notes = () => {
   return (
     <div className={styles.noteContainer}>
       <div className={styles.noteHeader}>
-        <h2 className={styles.noteTitle}>Notes</h2>
-        <button className={styles.addNoteButton}><Plus/></button>
+        <h1 className={styles.noteTitle}>Notes</h1>
+        <Button className={styles.addNoteButton}><Plus/></Button>
       </div>
       <textarea
         ref={textareaRef}

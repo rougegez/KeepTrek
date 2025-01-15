@@ -18,12 +18,12 @@ import {
 } from 'lucide-react';
 
 export const TripOverview = ({
-  title = "East Coast Road-Trip",
-  dateRange = "19 June 2024 to 23 June 2024",
-  backgroundImage = "../src/assets/dummy-image.jpg",
+  title = "Penang Trip w/ the Boys",
+  dateRange = "15 Jan 2025 to 17 Jan 2025",
+  backgroundImage = "https://a0.muscache.com/im/pictures/INTERNAL/INTERNAL-ImageByPlaceId-ChIJ3ZBTCQOUSjARP2OP86UFwyk-large_background/original/5236a99e-56b9-4091-a889-47b7ad33f02b.jpeg",
 }) => {
   return (
-    <div>
+    <div className="mt-5">
       {/* Background Image Card */}
       <Card className="relative w-[100%] h-[110%] rounded-[20px]
        bg-cover bg-center bg-no-repeat z-1 drop-shadow-keepTrek"
