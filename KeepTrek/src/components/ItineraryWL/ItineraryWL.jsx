@@ -20,6 +20,7 @@ import { Card, CardContent } from "../ui/card.jsx";
 import { useMediaQuery } from 'react-responsive';
 import { motion } from "framer-motion";
 import MobileHeader from "../MobileHeader";
+import InviteButton from "../Invite/InviteButton.jsx";
 
 function ItineraryWL() {
   const queryClient = useQueryClient();
@@ -238,6 +239,7 @@ function ItineraryWL() {
                 <p className="text-sm text-muted-foreground">
                   {dateFormatter(tripDetails.startDate)} to {dateFormatter(tripDetails.endDate)}
                 </p>
+                {/* <InviteButton tripID={tripID} /> */}
               </div>
               <div>
                 <Button onClick={() => handleUpdateItinerary(days)}>Save</Button>
