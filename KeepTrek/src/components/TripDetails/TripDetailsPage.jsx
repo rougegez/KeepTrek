@@ -1,18 +1,16 @@
-import React, { useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
-import KeepTrek from "../../assets/KeepTrek.png";
 import "./TripDetailsPage.css";
-
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-
-
+import MobileHeader from "../MobileHeader";
 import TripBuddy from "./TripBuddy/TripBuddy.jsx";
 import TripOverview from "./TripOverview/TripOverview.jsx";
 import Notes from "./Notes/Notes.jsx";
 import Attachments from "./Attachments/Attachments.jsx";
 import TripSummary from "./TripSummary/TripSummary.jsx";
 import Accommodation from "./Accomodation/Accommodation.jsx";
+import { useMediaQuery } from 'react-responsive';
 
 export const TripDetailsPage = () => {
   const location = useLocation();
@@ -22,6 +20,7 @@ export const TripDetailsPage = () => {
   const [itinerary, setItinerary] = useState(location.state?.itinerary || null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
 
   useEffect(() => {
     // Mock fetch for itinerary if not provided in location state
@@ -56,9 +55,12 @@ export const TripDetailsPage = () => {
 
   return (
     <SidebarProvider>
-      <AppSidebar tripID={tripID}/>
+      {!isMobile && <AppSidebar />}
+      {!isMobile && <SidebarTrigger />}
+      {isMobile && <MobileHeader title="Overview" />}
+
       <main className="main-page">
-        
+
         <TripOverview
           title={itinerary.title}
           dateRange={itinerary.dateRange}
@@ -105,3 +107,4 @@ export const TripDetailsPage = () => {
     </SidebarProvider>
   );
 };
+

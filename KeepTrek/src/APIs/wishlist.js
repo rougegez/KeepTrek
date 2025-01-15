@@ -1,7 +1,7 @@
 import axios from "./axiosConfig"; // Base Axios instance
 
 // Create Item
-export const createItem = async (tripID, itemData) => {
+export const createItem = async (tripID, itemData) => {    
     const response = await axios.post(`/wishlist/${tripID}/new-item`, itemData);
     return response.data;
 };

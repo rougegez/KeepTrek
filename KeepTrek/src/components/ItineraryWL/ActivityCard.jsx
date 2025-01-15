@@ -71,10 +71,10 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
       <div className="absolute -right-12 top-10 flex flex-col gap-4">
         {/* Edit Button */}
         <Button
-          className="p-2 rounded-full bg-gray-100 hover:bg-gray-300 transition-colors"
+          className="p-2 rounded-full bg-[#E9FEFC] hover:bg-[#cbfaf6] transition-colors"
           size="icon"
           onClick={onEditClick}>
-          <Pencil className="w-4 h-4 text-muted-foreground" />
+          <Pencil className="w-4 h-4 text-[#439f96]" />
         </Button>
         {/* Delete Button */}
         <Button

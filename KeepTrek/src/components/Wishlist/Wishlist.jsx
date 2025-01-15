@@ -38,6 +38,11 @@ export default function WishlistPage() {
   const [mapInstance, setMapInstance] = useState(null);
   const [searchedPlace, setSearchedPlace] = useState(null);
   const [savedLocation, setSavedLocation] = useState(null);
+  // const [category, setCategory] = useState("");
+  // const [name, setName] = useState("");
+  // const [image, setImage] = useState("");
+  // const [address, setAddress] = useState("");
+  // const [note, setNote] = useState("");
 
   // New state for add mode
   const [addMode, setAddMode] = useState(false);

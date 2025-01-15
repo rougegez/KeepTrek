@@ -250,7 +250,7 @@ function ItineraryWL() {
                   axis="y"
                   values={day.activities}
                   onReorder={(newActivities) => updateActivities(newActivities, dayIndex)}
-                  className="space-y-4">
+                  className="space-y-4 w-[92%] ml-8">
                   {day.activities.map((activity) => (
                     <ActivityCard
                       key={activity.id}
@@ -264,7 +264,7 @@ function ItineraryWL() {
                 </Reorder.Group>
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="w-[92%] ml-8"
                   onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date })}
                 >
                   <Plus className="w-4 h-4 mr-2" />

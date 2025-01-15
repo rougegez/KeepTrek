@@ -75,7 +75,7 @@ export const AppSidebar = ({ tripID }) => {
               <SidebarGroupLabel asChild className="mb-2">
                 <CollapsibleTrigger className="w-full">
                   <NavLink
-                    to={`/overview/${tripID}`}
+                    to={`/trip-details`}
                     className={({ isActive }) =>
                       cn(
                         "flex items-center text-lg font-semibold text-gray-900 rounded-md p-2",

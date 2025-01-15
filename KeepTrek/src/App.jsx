@@ -61,7 +61,7 @@ function App() {
                     <Route path="/expense-splitting/:tripID" element={<TeamBudgetPage />} />
                     <Route path="/expenses/:tripID" element={<MainExpensePage />} />
                     <Route path="/team-history" element={<TeamHistory />} />
-                    <Route path="/trip-details/:id" element={<TripDetailsPage />} />
+                    <Route path="/trip-details" element={<TripDetailsPage />} />
                     <Route path="/join-team/:teamId" element={<JoinTeam />} />
                     <Route path="/itineraryWL/:tripID" element={<ItineraryWL />} />
                     <Route path="/schedule/:tripID" element={<GrpSchedule />} />

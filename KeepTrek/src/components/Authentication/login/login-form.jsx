@@ -3,13 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { loginUser } from "@/APIs/auth"; // Ensure this function makes the login API call
+import { Loader2 } from "lucide-react";
+
+const LoadingSpinner = () => (
+  <Loader2 className="h-4 w-4 animate-spin" />
+);
 
 export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [islogingIn, setIslogingIn]= useState(null);
 
   const handleLogin = async (e) => {
+    setIslogingIn(true);
     e.preventDefault();
     setError(null); // Clear previous errors
     try {
@@ -19,11 +26,18 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
       // Save the token in localStorage
       localStorage.setItem("token", access_token);
 
+
+      // Refresh the page after successful login
+      window.location.reload(); 
+
       // Trigger the parent callback to indicate successful login
       if (onLoginSuccess) onLoginSuccess();
     } catch (err) {
       console.error("Login Error:", err.response?.data || err.message);
       setError(err.response?.data?.detail || "Login failed. Please try again.");
+      throw error;
+    }finally{
+      setIslogingIn(false);
     }
   };
 
@@ -90,8 +104,10 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
         <Button
           type="submit"
           className="w-full bg-teal-500 hover:bg-teal-600 text-white"
+          disabled={islogingIn}
         >
-          Login
+      
+          {islogingIn ? <LoadingSpinner /> : 'Login'}
         </Button>
       </form>
 
