@@ -208,7 +208,7 @@ const MapboxMap = ({
                                     )}
 
                                     {/* Opening Hours */}
-                                    {place.openingHours.length > 2 && (
+                                    {place.openingHours?.length > 2 && (
                                         <div className="flex gap-1">
                                             <Clock size={16} />
                                             <Collapsible className="flex gap-1">
