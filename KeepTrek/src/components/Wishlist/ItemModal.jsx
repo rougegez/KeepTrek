@@ -10,11 +10,20 @@ import { Separator } from "@/components/ui/separator"
 import { MapPin, Notebook, Pencil, Trash, ThumbsUp, ThumbsDown, User, Map } from 'lucide-react';
 import { getUserProfile } from "@/APIs/users";
 
-export default function ItemModal({ item, isOpen, onClose, onEdit, onDelete, onUpvote, onDownvote, onLocationClick, currUser }) {
+export default function ItemModal({ 
+  item, 
+  isOpen, 
+  onClose, 
+  onEdit, 
+  onDelete, 
+  onUpvote, 
+  onDownvote, 
+  onLocationClick, 
+  currUser,
+  optimisticVotes // Add this prop
+}) {
   const [creatorName, setCreatorName] = useState("");
   const [editorNames, setEditorNames] = useState([]);
-  const [upvoterNames, setUpvoterNames] = useState([]);
-  const [downvoterNames, setDownvoterNames] = useState([]);
 
   useEffect(() => {
     const fetchUsernames = async () => {
@@ -24,17 +33,19 @@ export default function ItemModal({ item, isOpen, onClose, onEdit, onDelete, onU
 
         const editorProfiles = await Promise.all(item.editors.map(id => getUserProfile(id)));
         setEditorNames(editorProfiles.map(profile => profile.username));
-
-        const upvoterProfiles = await Promise.all(item.upvotes.map(id => getUserProfile(id)));
-        setUpvoterNames(upvoterProfiles.map(profile => profile.username));
-
-        const downvoterProfiles = await Promise.all(item.downvotes.map(id => getUserProfile(id)));
-        setDownvoterNames(downvoterProfiles.map(profile => profile.username));
       }
     };
 
     fetchUsernames();
   }, [item]);
+
+  const handleUpvote = async () => {
+    await onUpvote(item);
+  };
+  
+  const handleDownvote = async () => {
+    await onDownvote(item);
+  };
 
   const handleDelete = async () => {
     onDelete(item);
@@ -44,8 +55,6 @@ export default function ItemModal({ item, isOpen, onClose, onEdit, onDelete, onU
   if (!item) return null;
 
   const currentUser = currUser;
-  const upvotes = item.upvotes || []; // Ensure upvotes is an array
-  const downvotes = item.downvotes || []; // Ensure downvotes is an array
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -81,19 +90,23 @@ export default function ItemModal({ item, isOpen, onClose, onEdit, onDelete, onU
             </div>
             <div className="flex flex-col items-end space-y-1">
               <div className="flex gap-2 items-center">
-                <span className="text-right text-sm text-muted-foreground">{upvoterNames.join(", ")}</span>
-                <Button size="icon" variant="secondary" className={`flex gap-1 h-6 bg-white/80 backdrop-blur-sm`} onClick={(e) => { e.stopPropagation(); onUpvote(item); }}>
+                <span className="text-right text-sm text-muted-foreground">
+                  {optimisticVotes[item.id]?.upvoterNames.join(", ")}
+                </span>
+                <Button size="icon" variant="secondary" className={`flex gap-1 h-6 bg-white/80 backdrop-blur-sm`} onClick={handleUpvote}>
                   <span className="sr-only">Upvote</span>
-                  <ThumbsUp className={`w-3 h-3 mt-0.5 flex-shrink-0 ${upvotes.includes(currentUser) ? 'fill-current text-blue-500' : ''}`} />
-                  <span>{upvotes.length}</span>
+                  <ThumbsUp className={`w-3 h-3 mt-0.5 flex-shrink-0 ${optimisticVotes[item.id]?.upvotes.includes(currUser) ? 'fill-current text-blue-500' : ''}`} />
+                  <span>{optimisticVotes[item.id]?.upvotes.length || 0}</span>
                 </Button>
               </div>
               <div className="flex gap-2 items-center">
-                <span className="text-right text-sm text-muted-foreground">{downvoterNames.join(", ")}</span>
-                <Button size="icon" variant="secondary" className={`flex gap-1 h-6 bg-white/80 backdrop-blur-sm`} onClick={(e) => { e.stopPropagation(); onDownvote(item); }}>
+                <span className="text-right text-sm text-muted-foreground">
+                  {optimisticVotes[item.id]?.downvoterNames.join(", ")}
+                </span>
+                <Button size="icon" variant="secondary" className={`flex gap-1 h-6 bg-white/80 backdrop-blur-sm`} onClick={handleDownvote}>
                   <span className="sr-only">Downvote</span>
-                  <ThumbsDown className={`w-3 h-3 mt-0.5 flex-shrink-0 ${downvotes.includes(currentUser) ? 'fill-current text-red-500' : ''}`} />
-                  <span>{downvotes.length}</span>
+                  <ThumbsDown className={`w-3 h-3 mt-0.5 flex-shrink-0 ${optimisticVotes[item.id]?.downvotes.includes(currUser) ? 'fill-current text-red-500' : ''}`} />
+                  <span>{optimisticVotes[item.id]?.downvotes.length || 0}</span>
                 </Button>
               </div>
             </div>

@@ -56,6 +56,8 @@ export default function WishlistPage() {
   const contentRef = useRef(null);
   const [lastScrollPosition, setLastScrollPosition] = useState(0);
 
+  const [optimisticVotes, setOptimisticVotes] = useState({});
+
   useEffect(() => {
     const handleScroll = () => {
       const position = window.scrollY;
@@ -110,6 +112,46 @@ export default function WishlistPage() {
     fetchWishlistData();
     fetchItineraryDays();
   }, []);
+
+  useEffect(() => {
+    // Initialize optimistic votes from items
+    const initialVotes = {};
+    wishlistData.accommodation.concat(wishlistData.activities, wishlistData.food).forEach(item => {
+      initialVotes[item.id] = {
+        upvotes: item.upvotes,
+        downvotes: item.downvotes,
+        upvoterNames: [], // Will be populated when modal opens
+        downvoterNames: [] // Will be populated when modal opens
+      };
+    });
+    setOptimisticVotes(initialVotes);
+  }, [wishlistData]);
+
+  const handleVote = async (item, isUpvote) => {
+    const voteType = isUpvote ? 'upvotes' : 'downvotes';
+    const oppositeType = isUpvote ? 'downvotes' : 'upvotes';
+    const currentVotes = optimisticVotes[item.id];
+    
+    const isVoted = currentVotes[voteType].includes(user);
+    const newVotes = isVoted 
+      ? currentVotes[voteType].filter(id => id !== user)
+      : [...currentVotes[voteType], user];
+    
+    setOptimisticVotes(prev => ({
+      ...prev,
+      [item.id]: {
+        ...prev[item.id],
+        [voteType]: newVotes,
+        [oppositeType]: currentVotes[oppositeType].filter(id => id !== user)
+      }
+    }));
+
+    if (isUpvote) {
+      await handleUpvote(item);
+    } else {
+      await handleDownvote(item);
+    }
+  };
 
   const handleItemClick = (item) => {
     setSelectedItem(item);
@@ -183,19 +225,11 @@ export default function WishlistPage() {
   const handleUpvote = async (item) => {
     await upvoteItem(item.tripID, item.id);
     await fetchWishlistData();
-    if (selectedItem != null) {
-      const updatedItem = (await getAllItems(item.tripID)).find(i => i.id === item.id);
-      setSelectedItem(updatedItem);
-    }
   };
 
   const handleDownvote = async (item) => {
     await downvoteItem(item.tripID, item.id);
     await fetchWishlistData();
-    if (selectedItem != null) {
-      const updatedItem = (await getAllItems(item.tripID)).find(i => i.id === item.id);
-      setSelectedItem(updatedItem);
-    }
   };
 
   const handleAddModeToggle = () => {
@@ -340,13 +374,14 @@ export default function WishlistPage() {
                 key={item.id}
                 item={item}
                 onClick={() => handleItemClick(item)}
-                onUpvote={() => handleUpvote(item)}
-                onDownvote={() => handleDownvote(item)}
+                onUpvote={(item) => handleVote(item, true)}
+                onDownvote={(item) => handleVote(item, false)}
                 onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
                 currUser={user}
                 addMode={addMode}
                 onSelect={handleSelectItem}
                 isSelected={selectedItems.includes(item)}
+                optimisticVotes={optimisticVotes}
               />
             ))}
             <AddItemCard onClick={handleCreateItem} />
@@ -358,13 +393,14 @@ export default function WishlistPage() {
                 key={item.id}
                 item={item}
                 onClick={() => handleItemClick(item)}
-                onUpvote={() => handleUpvote(item)}
-                onDownvote={() => handleDownvote(item)}
+                onUpvote={(item) => handleVote(item, true)}
+                onDownvote={(item) => handleVote(item, false)}
                 onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
                 currUser={user}
                 addMode={addMode}
                 onSelect={handleSelectItem}
                 isSelected={selectedItems.includes(item)}
+                optimisticVotes={optimisticVotes}
               />
             ))}
             <AddItemCard onClick={handleCreateItem} />
@@ -376,13 +412,14 @@ export default function WishlistPage() {
                 key={item.id}
                 item={item}
                 onClick={() => handleItemClick(item)}
-                onUpvote={() => handleUpvote(item)}
-                onDownvote={() => handleDownvote(item)}
+                onUpvote={(item) => handleVote(item, true)}
+                onDownvote={(item) => handleVote(item, false)}
                 onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
                 currUser={user}
                 addMode={addMode}
                 onSelect={handleSelectItem}
                 isSelected={selectedItems.includes(item)}
+                optimisticVotes={optimisticVotes}
               />
             ))}
             <AddItemCard onClick={handleCreateItem} />
@@ -407,10 +444,11 @@ export default function WishlistPage() {
         onClose={() => setSelectedItem(null)}
         onEdit={handleEditItem}
         onDelete={() => handleDelete(selectedItem)}
-        onUpvote={() => handleUpvote(selectedItem)}
-        onDownvote={() => handleDownvote(selectedItem)}
+        onUpvote={(item) => handleVote(item, true)}
+        onDownvote={(item) => handleVote(item, false)}
         onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
         currUser={user}
+        optimisticVotes={optimisticVotes}
       />
 
       <CreateEditModal // Create modal

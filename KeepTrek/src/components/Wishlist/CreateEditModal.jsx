@@ -179,32 +179,16 @@ export default function CreateEditModal({
             </Select>
           </div>
 
-          {/* Input Title */}
+          {/* Location Input */}
           <div className="grid gap-2">
-            <label htmlFor="item-name" className="block text-sm font-medium text-muted-foreground mb-1">
-              Name<span className="text-red-500">*</span>
-            </label>
-            <Input
-                id="item-name"
-                type="text"
-                placeholder="Enter item name"
-                value={newItem.title}
-                onChange={(e) =>
-                    setNewItem((prev) => ({ ...prev, title: e.target.value }))
-                }
-            />
-          </div>
-
-          {/* Search address */}
-          <div className="grid gap-2">
-            <label htmlFor="address" className="block text-sm font-medium text-muted-foreground mb-1">
-              Address<span className="text-red-500">*</span>
+            <label htmlFor="location" className="block text-sm font-medium text-muted-foreground mb-1">
+              Location<span className="text-red-500">*</span>
             </label>
             <MapSearchBar
-                id="address"
+                id="location"
                 searchButton={false}
                 onChange={handleLocationChange}
-                initialPlace={newItem.location}
+                initialPlace={newItem.title}
             />
           </div>
 
@@ -213,7 +197,7 @@ export default function CreateEditModal({
             <label className="block text-sm font-medium text-muted-foreground mb-1">
               Image
             </label>
-            <FileUploader className="w-full" tripId={tripId} onValueChange={(files) => setFile(files[0])} initialImage={newItem.image} />
+            <FileUploader className="w-full h-full" tripId={tripId} onValueChange={(files) => setFile(files[0])} initialImage={newItem.image} />
           </div>
           
           {/* Input Notes */}
@@ -232,11 +216,14 @@ export default function CreateEditModal({
             />
           </div>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-
-          <DialogFooter>
-            <Button onClick={handleCancel} variant="outline">Cancel</Button>
-            <Button type="submit">{isEditMode ? "Save Changes" : "Add Item"}</Button>
+          <DialogFooter className="pt-4 flex justify-between items-center">
+            <div className="flex-1">
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+            </div>
+            <div className="flex space-x-2">
+              <Button onClick={handleCancel} variant="outline">Cancel</Button>
+              <Button type="submit">{isEditMode ? "Save Changes" : "Add Item"}</Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>
