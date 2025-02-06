@@ -2,13 +2,24 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { MapPin, Notebook, ThumbsUp, ThumbsDown, Plus, CheckIcon } from 'lucide-react'
 
-export function WishlistCard({ item, onClick, onUpvote, onDownvote, onLocationClick, currUser, addMode, onSelect, isSelected }) {
+export function WishlistCard({ 
+  item, 
+  onClick, 
+  onUpvote, 
+  onDownvote, 
+  onLocationClick, 
+  currUser, 
+  addMode, 
+  onSelect, 
+  isSelected,
+  optimisticVotes // Add this prop
+}) {
   const handleUpvote = async () => {
-    onUpvote(item);
+    await onUpvote(item);
   };
   
   const handleDownvote = async () => {
-    onDownvote(item);
+    await onDownvote(item);
   };
 
   const currentUser = currUser;
@@ -31,13 +42,13 @@ export function WishlistCard({ item, onClick, onUpvote, onDownvote, onLocationCl
             <>
               <Button size="icon" variant="secondary" className={`flex gap-1 h-6 bg-white/80 backdrop-blur-sm`} onClick={(e) => { e.stopPropagation(); handleUpvote(); }}>
                 <span className="sr-only">Upvote</span>
-                <ThumbsUp className={`w-3 h-3 mt-0.5 flex-shrink-0 ${item.upvotes.includes(currentUser) ? 'fill-current text-blue-500' : ''}`} />
-                <span>{item.upvotes.length}</span>
+                <ThumbsUp className={`w-3 h-3 mt-0.5 flex-shrink-0 ${optimisticVotes[item.id]?.upvotes.includes(currUser) ? 'fill-current text-blue-500' : ''}`} />
+                <span>{optimisticVotes[item.id]?.upvotes.length || 0}</span>
               </Button>
               <Button size="icon" variant="secondary" className={`flex gap-1 h-6 bg-white/80 backdrop-blur-sm`} onClick={(e) => { e.stopPropagation(); handleDownvote(); }}>
                 <span className="sr-only">Downvote</span>
-                <ThumbsDown className={`w-3 h-3 mt-0.5 flex-shrink-0 ${item.downvotes.includes(currentUser) ? 'fill-current text-red-500' : ''}`} />
-                <span>{item.downvotes.length}</span>
+                <ThumbsDown className={`w-3 h-3 mt-0.5 flex-shrink-0 ${optimisticVotes[item.id]?.downvotes.includes(currUser) ? 'fill-current text-red-500' : ''}`} />
+                <span>{optimisticVotes[item.id]?.downvotes.length || 0}</span>
               </Button>
             </>
           )}
