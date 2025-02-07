@@ -5,7 +5,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import WishlistSection from "./WishlistSection.jsx";
 import { WishlistCard, AddItemCard } from "./WishlistCard.jsx";
 import ItemModal from "./ItemModal.jsx";
-import CreateEditModal from "./CreateEditModal.jsx";
+import CreateEditItemModal from "./CreateEditItemModal.jsx";
 import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx";
 import { getAllItems, createItem, editItem, deleteItem, upvoteItem, downvoteItem, deleteFile } from "@/APIs/wishlist";
 import { getItinerary, updateItinerary } from "@/APIs/itinerary";
@@ -451,14 +451,14 @@ export default function WishlistPage() {
         optimisticVotes={optimisticVotes}
       />
 
-      <CreateEditModal // Create modal
+      <CreateEditItemModal // Create modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleSubmitCreateItem}
         tripId={tripID}
       />
     
-      <CreateEditModal // Edit modal
+      <CreateEditItemModal // Edit modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSubmit={handleSubmitEditItem}

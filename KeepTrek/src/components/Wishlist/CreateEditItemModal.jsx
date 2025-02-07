@@ -21,7 +21,7 @@ import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar";
 import { fetchPlaceDetails } from "@/utils/fetchPlaceDetails.jsx";
 import { Textarea } from '@/components/ui/textarea';
 
-export default function CreateEditModal({ 
+export default function CreateEditItemModal({ 
   isOpen,
   onClose,
   onSubmit,
@@ -197,7 +197,11 @@ export default function CreateEditModal({
             <label className="block text-sm font-medium text-muted-foreground mb-1">
               Image
             </label>
-            <FileUploader className="w-full h-full" tripId={tripId} onValueChange={(files) => setFile(files[0])} initialImage={newItem.image} />
+            <FileUploader 
+              className="w-full h-full" 
+              tripId={tripId} 
+              onValueChange={(files) => setFile(files[0])}
+              initialImage={newItem.image} />
           </div>
           
           {/* Input Notes */}
