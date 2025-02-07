@@ -239,7 +239,7 @@ function ItineraryWL() {
                 <p className="text-sm text-muted-foreground">
                   {dateFormatter(tripDetails.startDate)} to {dateFormatter(tripDetails.endDate)}
                 </p>
-                {/* <InviteButton tripID={tripID} /> */}
+                <InviteButton tripID={tripID} />
               </div>
               <div>
                 <Button onClick={() => handleUpdateItinerary(days)}>Save</Button>
