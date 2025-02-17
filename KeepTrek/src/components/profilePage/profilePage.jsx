@@ -94,8 +94,6 @@ export const ProfilePage = () => {
         if (isLoading) return <ProfileLoadingSkeleton />
         if (error) return <div className="text-red-500">Error: {error}</div>
 
-        console.log("Profile image URL:", userProfile.image); // Add this line for debugging
-
         return (
             <main className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
                 <div className="bg-white rounded-lg shadow-lg p-6 mb-8">

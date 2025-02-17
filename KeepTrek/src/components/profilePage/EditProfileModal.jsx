@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Avatar } from "./avatar";
 
 export default function EditProfileModal({ 
   isOpen, 
@@ -32,6 +34,7 @@ export default function EditProfileModal({
   const [file, setFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [open, setOpen] = useState(false); // Add this for popover control
 
   const handleFileChange = (files) => {
     const file = files[0];
@@ -41,7 +44,7 @@ export default function EditProfileModal({
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
       // Close the popover
-      setIsPopoverOpen(false);
+      setOpen(false); // Close popover after file selection
     }
   };
 
@@ -69,7 +72,6 @@ export default function EditProfileModal({
         const formData = new FormData();
         formData.append("file", file);
         const avatarUrl = await uploadFile(userProfile.id, formData);
-        console.log(`Uploaded file url:`, avatarUrl);
         updatedUser.image = avatarUrl;
       } catch (err) {
         console.error("Error uploading file:", err);
@@ -79,7 +81,6 @@ export default function EditProfileModal({
     }
 
     try {
-      console.log(`Updating profile:`, updatedUser);
       await updateUserProfile(updatedUser);
       if (onUpdate) {
         onUpdate(updatedUser);
@@ -98,14 +99,30 @@ export default function EditProfileModal({
           <DialogTitle>Edit Profile</DialogTitle>
         </DialogHeader>
         <form className="grid gap-4 py-4" onSubmit={handleSubmit}>
-          <div className="grid gap-2">
-            <label className="text-sm font-medium text-muted-foreground">
-              Avatar
-            </label>
-            <FileUploader 
-              className="w-full h-full" 
-              onValueChange={(files) => setFile(files[0])}
-              initialImage={newUser.image} />
+          <div className="flex flex-col items-center gap-2">
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" className="relative h-32 w-32 rounded-full p-0 hover:bg-slate-50">
+                  <Avatar 
+                    src={imagePreview || newUser.image} 
+                    alt="Profile picture"
+                    className="h-full w-full cursor-pointer"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60 opacity-0 hover:opacity-100 transition-opacity">
+                    <Pencil className="h-1/2 w-1/2 text-white" />
+                  </div>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80">
+                <div className="space-y-4">
+                  <h4 className="font-medium leading-none">Upload New Avatar</h4>
+                  <FileUploader
+                    className="w-full"
+                    onValueChange={(files) => handleFileChange(files)}
+                  />
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="grid gap-2">
