@@ -1,12 +1,16 @@
 import React from 'react';
-import {User} from 'lucide-react';
+import { Avatar as ShadcnAvatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { User } from "lucide-react";
 
-export const Avatar = ({ src, alt, className }) => {
-    return (
-        <div className={`${className} bg-gray-100 flex items-center justify-center overflow-hidden`}>
-            <User className="w-3/4 h-3/4 text-gray-500" />
-        </div>
-    );
-};
+export function Avatar({ src, alt, className }) {
+  return (
+    <ShadcnAvatar className={className}>
+      <AvatarImage src={src} alt={alt} />
+      <AvatarFallback>
+        <User className="w-1/2 h-1/2 text-gray-500" />
+      </AvatarFallback>
+    </ShadcnAvatar>
+  );
+}
 
 export default Avatar;

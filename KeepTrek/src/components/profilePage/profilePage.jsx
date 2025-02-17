@@ -1,8 +1,9 @@
 import React from 'react';
 import { Avatar } from './avatar';
 import { EditProfile } from './EditProfile';
+import EditProfileModal from './EditProfileModal';
 import { useState, useEffect } from 'react';
-import { getUserProfile } from '@/APIs/users';
+import { getUserProfile, updateUserProfile } from '@/APIs/users';
 import { CurrentUser } from '@/APIs/auth';  
 import TopNavbar from '../topNavBar/TopNavbar';
 import TripsList from '../yourTrips/tripList';
@@ -39,9 +40,6 @@ const ProfileLoadingSkeleton = () => {
       )
     }
   
-  
-
-
 export const ProfilePage = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [userProfile, setUserProfile] = useState(null);
@@ -79,17 +77,32 @@ export const ProfilePage = () => {
         fetchData();
     }, []);
 
+    const handleProfileUpdate = async (updatedProfile) => {
+        try {
+            await updateUserProfile(updatedProfile);
+            setUserProfile(prev => ({
+                ...prev,
+                ...updatedProfile
+            }));
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            setError(error.message);
+        }
+    };
+
     const renderContent = () => {
         if (isLoading) return <ProfileLoadingSkeleton />
         if (error) return <div className="text-red-500">Error: {error}</div>
+
+        console.log("Profile image URL:", userProfile.image); // Add this line for debugging
 
         return (
             <main className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
                 <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
                     <div className="flex flex-col items-center space-y-4 pb-6">
                         <Avatar 
-                            src="/placeholder.svg" 
-                            alt="Profile picture"
+                            src={userProfile?.image || ''} 
+                            alt={`${userProfile?.username}'s profile picture`}
                             className="w-32 h-32 rounded-full"
                         />
                         <div className="text-center">
@@ -140,14 +153,11 @@ export const ProfilePage = () => {
             <TopNavbar />
             {renderContent()}
             {isEditModalOpen && (
-                <EditProfile 
+                <EditProfileModal 
                     isOpen={isEditModalOpen}
                     onClose={() => setIsEditModalOpen(false)}
-                    userData={userData}
-                    onSave={(newData) => {
-                        setUserData(newData)
-                        setIsEditModalOpen(false)
-                    }}
+                    userProfile={userProfile}
+                    onUpdate={handleProfileUpdate}
                 />
             )}
         </div>

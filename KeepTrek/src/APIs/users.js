@@ -29,22 +29,14 @@ export const getUserProfile = async (userId) => {
   }
 };
 
-export const updateUserProfile = async (username, email) => {
-  console.log('Updating profile with:', { username, email });
-  const token = localStorage.getItem("token"); // Log the payload
+export const updateUserProfile = async (updateData) => {
   try {
-    const response = await axios.put(`/users/profile`, null ,{
-      params: {username: username, // Send null if username is not provided
-               email: email },
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      // Send null if email is not provided
-    });
-    console.log('Profile updated:', response.data);
+    const response = await axios.put(`/users/profile`, updateData);
+    
+    // Clear the cache when profile is updated
+    userProfileCache.clear();
     return response.data;
   } catch (error) {
-    // Handle errors and provide feedback similar to your other functions
     if (error.response) {
       console.error('Error response:', error.response.data);
       const { status, data } = error.response;
@@ -58,4 +50,44 @@ export const updateUserProfile = async (username, email) => {
     }
     throw new Error("Failed to update user profile");
   }
+};
+
+// Upload File
+export const uploadFile = async (userId, fileData) => {
+  try {
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    };
+    const response = await axios.post(
+      `/users/profile/${userId}/upload-file`,
+      fileData,
+      config
+    );
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 422) {
+      throw new Error("Unprocessable Entity: Invalid file data");
+    }
+    throw error;
+  }
+};
+
+// Get All Files
+export const getAllFiles = async (userId) => {
+  const response = await axios.get(`/users/profile/${userId}/all-files`);
+  return response.data;
+};
+
+// Get File URL
+export const getFileURL = async (fileID) => {
+  const response = await axios.get(`/users/profile/${fileID}/url`);
+  return response.data;
+};
+
+// Delete File
+export const deleteFile = async (fileID) => {
+  const response = await axios.delete(`/users/profile/${fileID}/delete-file`);
+  return response.data;
 };

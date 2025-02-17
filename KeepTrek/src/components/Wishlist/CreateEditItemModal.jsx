@@ -114,6 +114,8 @@ export default function CreateEditItemModal({
       return;
     }
 
+    // not actually being used with location search implementation
+    /*
     let imageUrl = newItem.image;
 
     if (file) {
@@ -128,6 +130,7 @@ export default function CreateEditItemModal({
         return;
       }
     }
+    */
 
     try {
       await onSubmit(newItem);
