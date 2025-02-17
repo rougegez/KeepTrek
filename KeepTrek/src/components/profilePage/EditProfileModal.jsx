@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,8 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FileUploader } from "@/components/ui/file-uploader";
-import { uploadFile } from "@/APIs/users";
-import { updateUserProfile } from "@/APIs/users";
+import { uploadFile, updateUserProfile, deleteFile } from "@/APIs/users";
 import {
   Popover,
   PopoverContent,
@@ -33,19 +32,30 @@ export default function EditProfileModal({
   const [error, setError] = useState("");
   const [file, setFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [open, setOpen] = useState(false); // Add this for popover control
+  const [open, setOpen] = useState(false);
+  const [shouldDeleteAvatar, setShouldDeleteAvatar] = useState(false);
+
+  const extractFileNameFromUrl = (url) => {
+    if (!url) return null;
+    const matches = url.match(/\/([^/]+)$/);
+    return matches ? decodeURIComponent(matches[1]) : null;
+  };
 
   const handleFileChange = (files) => {
     const file = files[0];
     if (file) {
       setFile(file);
-      // Create preview URL for the image
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
-      // Close the popover
-      setOpen(false); // Close popover after file selection
+      setOpen(false);
     }
+  };
+
+  const handleDeleteAvatar = () => {
+    setShouldDeleteAvatar(true);
+    setImagePreview(null);
+    setFile(null);
+    setNewUser(prev => ({ ...prev, image: '' }));
   };
 
   // Cleanup preview URL when component unmounts or modal closes
@@ -67,20 +77,19 @@ export default function EditProfileModal({
 
     const updatedUser = { ...newUser };
 
-    if (file) {
-      try {
+    try {
+      if (shouldDeleteAvatar && userProfile.image) {
+        const fileName = extractFileNameFromUrl(userProfile.image);
+        if (fileName) {
+          await deleteFile(userProfile.id, fileName);
+        }
+      } else if (file) {
         const formData = new FormData();
         formData.append("file", file);
         const avatarUrl = await uploadFile(userProfile.id, formData);
         updatedUser.image = avatarUrl;
-      } catch (err) {
-        console.error("Error uploading file:", err);
-        setError("Failed to upload file.");
-        return;
       }
-    }
 
-    try {
       await updateUserProfile(updatedUser);
       if (onUpdate) {
         onUpdate(updatedUser);
@@ -100,29 +109,47 @@ export default function EditProfileModal({
         </DialogHeader>
         <form className="grid gap-4 py-4" onSubmit={handleSubmit}>
           <div className="flex flex-col items-center gap-2">
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" className="relative h-32 w-32 rounded-full p-0 hover:bg-slate-50">
-                  <Avatar 
-                    src={imagePreview || newUser.image} 
-                    alt="Profile picture"
-                    className="h-full w-full cursor-pointer"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60 opacity-0 hover:opacity-100 transition-opacity">
-                    <Pencil className="h-1/2 w-1/2 text-white" />
+            <div className="flex items-center">
+              <div className="w-10" />
+              
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" className="relative h-32 w-32 mx-4 rounded-full p-0 hover:bg-slate-50">
+                    <Avatar 
+                      src={imagePreview || newUser.image} 
+                      alt="Profile picture"
+                      className="h-full w-full cursor-pointer"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60 opacity-0 hover:opacity-100 transition-opacity">
+                      <Pencil className="h-6 w-6 text-white" />
+                    </div>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div className="space-y-4">
+                    <h4 className="font-medium leading-none">Upload New Avatar</h4>
+                    <FileUploader
+                      className="w-full"
+                      onValueChange={(files) => handleFileChange(files)}
+                    />
                   </div>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80">
-                <div className="space-y-4">
-                  <h4 className="font-medium leading-none">Upload New Avatar</h4>
-                  <FileUploader
-                    className="w-full"
-                    onValueChange={(files) => handleFileChange(files)}
-                  />
-                </div>
-              </PopoverContent>
-            </Popover>
+                </PopoverContent>
+              </Popover>
+
+              <div className="w-10">
+                {(imagePreview || newUser.image) && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-10 w-10 rounded-full text-red-500 hover:text-red-600 hover:bg-red-50"
+                    onClick={handleDeleteAvatar}
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="grid gap-2">

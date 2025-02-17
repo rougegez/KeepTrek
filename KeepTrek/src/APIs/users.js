@@ -87,7 +87,7 @@ export const getFileURL = async (fileID) => {
 };
 
 // Delete File
-export const deleteFile = async (fileID) => {
-  const response = await axios.delete(`/users/profile/${fileID}/delete-file`);
+export const deleteFile = async (userId, fileID) => {
+  const response = await axios.delete(`/users/profile/${userId}/${fileID}/delete-file`);
   return response.data;
 };
