@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar } from './avatar';
+import { UserAvatar } from './avatar';
 import { EditProfile } from './EditProfile';
 import EditProfileModal from './EditProfileModal';
 import { useState, useEffect } from 'react';
@@ -98,7 +98,7 @@ export const ProfilePage = () => {
             <main className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
                 <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
                     <div className="flex flex-col items-center space-y-4 pb-6">
-                        <Avatar 
+                        <UserAvatar 
                             src={userProfile?.image || ''} 
                             alt={`${userProfile?.username}'s profile picture`}
                             className="w-32 h-32 rounded-full"

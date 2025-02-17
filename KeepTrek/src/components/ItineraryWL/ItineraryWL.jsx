@@ -21,6 +21,7 @@ import { useMediaQuery } from 'react-responsive';
 import { motion } from "framer-motion";
 import MobileHeader from "../MobileHeader";
 import InviteButton from "../Invite/InviteButton.jsx";
+import { UserAvatarStack } from '../profilePage/avatar';
 
 function ItineraryWL() {
   const queryClient = useQueryClient();
@@ -239,11 +240,14 @@ function ItineraryWL() {
                 <p className="text-sm text-muted-foreground">
                   {dateFormatter(tripDetails.startDate)} to {dateFormatter(tripDetails.endDate)}
                 </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <UserAvatarStack userIds={tripDetails.users} />
                 <InviteButton tripID={tripID} />
               </div>
-              <div>
-                <Button onClick={() => handleUpdateItinerary(days)}>Save</Button>
-              </div>
+            </div>
+            <div>
+              <Button onClick={() => handleUpdateItinerary(days)}>Save</Button>
             </div>
             {days.map((day, dayIndex) => (
               <div key={day.date} className="space-y-4">

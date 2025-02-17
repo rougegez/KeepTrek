@@ -16,7 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Avatar } from "./avatar";
+import { UserAvatar } from "./avatar";
 
 export default function EditProfileModal({ 
   isOpen, 
@@ -115,7 +115,7 @@ export default function EditProfileModal({
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" className="relative h-32 w-32 mx-4 rounded-full p-0 hover:bg-slate-50">
-                    <Avatar 
+                    <UserAvatar 
                       src={imagePreview || newUser.image} 
                       alt="Profile picture"
                       className="h-full w-full cursor-pointer"

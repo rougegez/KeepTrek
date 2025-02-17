@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator"
 import { MapPin, Notebook, Pencil, Trash, ThumbsUp, ThumbsDown, User, Map } from 'lucide-react';
 import { getUserProfile } from "@/APIs/users";
+import { UserAvatar, UserAvatarStack } from '../profilePage/avatar';
 
 export default function ItemModal({ 
   item, 
@@ -20,7 +21,7 @@ export default function ItemModal({
   onDownvote, 
   onLocationClick, 
   currUser,
-  optimisticVotes // Add this prop
+  optimisticVotes
 }) {
   const [creatorName, setCreatorName] = useState("");
   const [editorNames, setEditorNames] = useState([]);
@@ -90,9 +91,9 @@ export default function ItemModal({
             </div>
             <div className="flex flex-col items-end space-y-1">
               <div className="flex gap-2 items-center">
-                <span className="text-right text-sm text-muted-foreground">
-                  {optimisticVotes[item.id]?.upvoterNames.join(", ")}
-                </span>
+                <div>
+                  <UserAvatarStack userIds={optimisticVotes[item.id]?.upvotes} size={8} />
+                </div>
                 <Button size="icon" variant="secondary" className={`flex gap-1 h-6 bg-white/80 backdrop-blur-sm`} onClick={handleUpvote}>
                   <span className="sr-only">Upvote</span>
                   <ThumbsUp className={`w-3 h-3 mt-0.5 flex-shrink-0 ${optimisticVotes[item.id]?.upvotes.includes(currUser) ? 'fill-current text-blue-500' : ''}`} />
@@ -100,9 +101,9 @@ export default function ItemModal({
                 </Button>
               </div>
               <div className="flex gap-2 items-center">
-                <span className="text-right text-sm text-muted-foreground">
-                  {optimisticVotes[item.id]?.downvoterNames.join(", ")}
-                </span>
+                <div>
+                  <UserAvatarStack userIds={optimisticVotes[item.id]?.downvotes} size={8} />
+                </div>
                 <Button size="icon" variant="secondary" className={`flex gap-1 h-6 bg-white/80 backdrop-blur-sm`} onClick={handleDownvote}>
                   <span className="sr-only">Downvote</span>
                   <ThumbsDown className={`w-3 h-3 mt-0.5 flex-shrink-0 ${optimisticVotes[item.id]?.downvotes.includes(currUser) ? 'fill-current text-red-500' : ''}`} />
