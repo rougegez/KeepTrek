@@ -14,6 +14,8 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { UserAvatar } from "@/components/profilePage/avatar"
+import { CurrentUser } from '@/APIs/auth';  
 
 export default function TopNavbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -21,18 +23,29 @@ export default function TopNavbar() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [userId, setUserId] = useState(null)
   const navigate = useNavigate()
   const location = useLocation()
 
   useEffect(() => {
-    const token = localStorage.getItem("token")
-    if (token) {
-      const storedUser = JSON.parse(localStorage.getItem("user"))
-      setUser(storedUser || { username: "Guest" })
-      setIsLoggedIn(true)
-    } else {
-      setIsLoggedIn(false)
+    const fetchUserData = async () => {
+      const token = localStorage.getItem("token")
+      if (token) {
+        try {
+          const currentUserId = await CurrentUser()
+          setUserId(currentUserId)
+          const storedUser = JSON.parse(localStorage.getItem("user"))
+          setUser(storedUser || { username: "Guest" })
+          setIsLoggedIn(true)
+        } catch (error) {
+          console.error('Error fetching user:', error)
+          handleLogout()
+        }
+      } else {
+        setIsLoggedIn(false)
+      }
     }
+    fetchUserData()
   }, [])
 
   const handleLogout = () => {
@@ -132,11 +145,10 @@ export default function TopNavbar() {
                     <Bell className="h-4 w-4" aria-hidden="true" />
                   </Button>
                   <NavLink to="/profile">
-                    <Avatar>
-                      <AvatarFallback className="bg-gray-100">
-                        <User className="h-5 w-5 text-gray-500" />
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar 
+                      userId={userId}
+                      className="h-9 w-9"
+                    />
                   </NavLink>
                   <Button
                     className="ml-4 text-sm font-semibold text-red-600 hidden sm:inline-flex"

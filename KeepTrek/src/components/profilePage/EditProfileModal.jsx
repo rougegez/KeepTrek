@@ -17,6 +17,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { UserAvatar } from "./avatar";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function EditProfileModal({ 
   isOpen, 
@@ -34,6 +35,7 @@ export default function EditProfileModal({
   const [imagePreview, setImagePreview] = useState(null);
   const [open, setOpen] = useState(false);
   const [shouldDeleteAvatar, setShouldDeleteAvatar] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const extractFileNameFromUrl = (url) => {
     if (!url) return null;
@@ -69,9 +71,11 @@ export default function EditProfileModal({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSaving(true);
 
     if (!newUser.username || !newUser.email) {
       setError("All fields are required.");
+      setIsSaving(false);
       return;
     }
 
@@ -98,6 +102,8 @@ export default function EditProfileModal({
     } catch (err) {
       console.error(`Error updating profile:`, err);
       setError(err.response?.data?.detail || `Failed to update profile`);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -177,7 +183,9 @@ export default function EditProfileModal({
 
           <DialogFooter>
             <Button onClick={onClose} variant="outline">Cancel</Button>
-            <Button type="submit">Save Changes</Button>
+            <Button type="submit" disabled={isSaving}>
+              {isSaving ? <LoadingSpinner /> : 'Save Changes'}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -1,6 +1,5 @@
 import React from 'react';
 import { UserAvatar } from './avatar';
-import { EditProfile } from './EditProfile';
 import EditProfileModal from './EditProfileModal';
 import { useState, useEffect } from 'react';
 import { getUserProfile, updateUserProfile } from '@/APIs/users';
@@ -101,7 +100,7 @@ export const ProfilePage = () => {
                         <UserAvatar 
                             src={userProfile?.image || ''} 
                             alt={`${userProfile?.username}'s profile picture`}
-                            className="w-32 h-32 rounded-full"
+                            className="w-32 h-32"
                         />
                         <div className="text-center">
                             <h1 className="text-2xl font-bold text-gray-900">{userProfile.username}</h1>

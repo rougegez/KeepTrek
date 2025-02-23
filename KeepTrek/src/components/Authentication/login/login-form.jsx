@@ -3,11 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { loginUser } from "@/APIs/auth"; // Ensure this function makes the login API call
-import { Loader2 } from "lucide-react";
-
-const LoadingSpinner = () => (
-  <Loader2 className="h-4 w-4 animate-spin" />
-);
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
   const [email, setEmail] = useState("");

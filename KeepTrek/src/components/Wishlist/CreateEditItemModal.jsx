@@ -18,6 +18,7 @@ import {
 import { fetchPlaceDetails } from "@/utils/fetchPlaceDetails.jsx";
 import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar";
 import { Textarea } from '@/components/ui/textarea';
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function CreateEditItemModal({ 
   isOpen,
@@ -44,6 +45,7 @@ export default function CreateEditItemModal({
     notes: "",
   });
   const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (isEditMode && location) {
@@ -107,9 +109,11 @@ export default function CreateEditItemModal({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSaving(true);
 
     if (!newItem.category || !newItem.title || !newItem.location) {
       setError("All fields with * are required.");
+      setIsSaving(false);
       return;
     }
 
@@ -119,6 +123,8 @@ export default function CreateEditItemModal({
     } catch (err) {
       console.error(`Error ${isEditMode ? "updating" : "creating"} wishlist item:`, err);
       setError(err.response?.data?.detail || `Failed to ${isEditMode ? "update" : "create"} wishlist item`);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -209,7 +215,9 @@ export default function CreateEditItemModal({
             </div>
             <div className="flex space-x-2">
               <Button onClick={handleCancel} variant="outline">Cancel</Button>
-              <Button type="submit">{isEditMode ? "Save Changes" : "Add Item"}</Button>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving ? <LoadingSpinner /> : isEditMode ? "Save Changes" : "Add Item"}
+              </Button>
             </div>
           </DialogFooter>
         </form>

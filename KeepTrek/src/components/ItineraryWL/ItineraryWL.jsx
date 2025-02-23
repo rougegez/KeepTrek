@@ -23,6 +23,7 @@ import MobileHeader from "../MobileHeader";
 import InviteButton from "../Invite/InviteButton.jsx";
 import { UserAvatarStack } from '../profilePage/avatar';
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 function ItineraryWL() {
   const queryClient = useQueryClient();
@@ -42,6 +43,7 @@ function ItineraryWL() {
   const contentRef = useRef(null);
   const [lastScrollPosition, setLastScrollPosition] = useState(0);
   const [lastSavedAt, setLastSavedAt] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -101,11 +103,16 @@ function ItineraryWL() {
       onSuccess: () => {
         queryClient.invalidateQueries(['itinerary', tripID]);
         setLastSavedAt(new Date());
+        setIsSaving(false);
       },
+      onError: () => {
+        setIsSaving(false);
+      }
     }
   );
 
-  const handleUpdateItinerary = (updatedDays) => {
+  const handleUpdateItinerary = async (updatedDays) => {
+    setIsSaving(true);
     updateItineraryMutation.mutate(updatedDays);
   };
 
@@ -248,7 +255,12 @@ function ItineraryWL() {
                 </div>
                 <div>
                   <div className="flex items-center gap-4">
-                    <Button onClick={() => handleUpdateItinerary(days)}>Save</Button>
+                    <Button 
+                      onClick={() => handleUpdateItinerary(days)}
+                      disabled={isSaving}
+                    >
+                      {isSaving ? <LoadingSpinner /> : 'Save'}
+                    </Button>
                     {lastSavedAt && (
                       <span className="text-sm text-muted-foreground">
                         Last saved at: {lastSavedAt.toLocaleString()}
