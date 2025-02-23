@@ -5,15 +5,30 @@ import { getUserProfile } from '@/APIs/users';
 import { cn } from "@/lib/utils";
 
 export function UserAvatar({ userId, src, alt, className }) {
-    return (
-      <Avatar className={className}>
-        <AvatarImage src={src} alt={alt} />
-        <AvatarFallback>
-          <User className="w-1/2 h-1/2 text-gray-500" />
-        </AvatarFallback>
-      </Avatar>
-    );
-  }
+  const [userProfile, setUserProfile] = useState(null);
+
+  useEffect(() => {
+    if (userId) {
+      getUserProfile(userId).then(profile => {
+        setUserProfile(profile);
+      }).catch(error => {
+        console.error('Error fetching user profile:', error);
+      });
+    }
+  }, [userId]);
+
+  return (
+    <Avatar className={className}>
+      <AvatarImage 
+        src={userProfile?.image || src} 
+        alt={userProfile?.username || alt} 
+      />
+      <AvatarFallback>
+        <User className="w-1/2 h-1/2 text-gray-500" />
+      </AvatarFallback>
+    </Avatar>
+  );
+}
 
 export function UserAvatarStack({ 
   userIds, 
@@ -42,14 +57,14 @@ export function UserAvatarStack({
 
   return (
     <div className={cn("flex items-center", className)}>
-      <div class="flex -space-x-4 rtl:space-x-reverse">
-        {displayedProfiles.reverse().map((profile, index) => (
+      <div class="flex -space-x-2 rtl:space-x-reverse">
+        {displayedProfiles.map((profile, index) => (
           <UserAvatar
             key={profile.id}
             src={profile.image}
             alt={profile.username}
             className={cn(
-              "border-2 border-background",
+              "ring-2 ring-background",
               `w-${size} h-${size}`
             )}
             style={{ 
@@ -59,7 +74,7 @@ export function UserAvatarStack({
         ))}
         {remainingCount > 0 && (
           <a 
-            className={`flex items-center justify-center w-${size} h-${size} text-sm font-medium text-foreground-muted bg-secondary rounded-full border-2 border-background`} 
+            className={`flex items-center justify-center w-${size} h-${size} text-sm font-medium text-foreground-muted bg-secondary rounded-full ring-2 ring-background`} 
             style={{zIndex: displayedProfiles.length + 1}}
           >
             +{remainingCount}

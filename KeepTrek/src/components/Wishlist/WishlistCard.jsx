@@ -75,12 +75,12 @@ export function WishlistCard({
                 onClick={(e) => {e.stopPropagation(); onLocationClick(item);}}
                 {...(item.coordinates.length > 1 ? {} : {disabled: true})}
               >
-                <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                <h3 className="font-normal truncate">{item.location}</h3>
+                <MapPin className="w-3 h-3" />
+                <h3 className="font-normal mt-0.5 truncate">{item.location}</h3>
               </Button> 
             </div>
-            <div className="flex items-start gap-2 text-sm text-muted-foreground">
-              <Notebook className="w-4 h-4 mt-0.5 flex-shrink-0" /> 
+            <div className="flex items-start mt-0.5 gap-2 text-sm text-muted-foreground">
+              <Notebook className="w-4 h-4" /> 
               <p className="text-sm text-muted-foreground truncate">{item.notes || "Add a note..."}</p>
             </div>
           </div>

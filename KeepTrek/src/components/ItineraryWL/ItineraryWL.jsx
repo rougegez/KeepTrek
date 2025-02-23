@@ -22,6 +22,7 @@ import { motion } from "framer-motion";
 import MobileHeader from "../MobileHeader";
 import InviteButton from "../Invite/InviteButton.jsx";
 import { UserAvatarStack } from '../profilePage/avatar';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 function ItineraryWL() {
   const queryClient = useQueryClient();
@@ -197,8 +198,8 @@ function ItineraryWL() {
         <AppSidebar tripID={tripID} />
         {!isMobile && <SidebarTrigger />}
         {isMobile && <MobileHeader title="Itinerary" />}
-        <div className="flex w-full">
-          {isMobile && (
+        <div className={`flex w-full ${!isMobile && 'grid grid-cols-2'}`}>
+          {isMobile ? (
             <motion.div
               className="fixed w-full z-40 bg-background"
               initial={{ height: '75vh' }}
@@ -217,93 +218,93 @@ function ItineraryWL() {
               />
               <MapToggleButton />
             </motion.div>
-          )}
+          ) : null}
 
           <motion.div 
             ref={contentRef}
-            className={`w-full space-y-6 overflow-y-auto ${
-              isMobile ? 'bg-background relative z-30' : 'p-6 max-h-100vh'
+            className={`${
+              isMobile 
+                ? 'w-full bg-background relative z-30' 
+                : 'col-span-1 h-screen'
             }`}
             animate={isMobile ? {
               marginTop: `calc(${getMapHeight()} + 3.5rem)`, // Add header height to margin
-              paddingTop: isMapExpanded ? '1.5rem' : '8rem',
-              paddingLeft: '1.5rem',
-              paddingRight: '1.5rem',
-              paddingBottom: '1.5rem',
               transition: { duration: 0.3, ease: 'easeInOut' }
             } : {}}
-            style={{
-              minHeight: isMobile ? `calc(100vh - ${getMapHeight()} - 3.5rem)` : 'auto' // Subtract header height
-            }}
           >
-            <div className="flex justify-between space-y-2">
-              <div>
-                <h1 className="text-3xl font-bold truncate">{tripDetails.tripName}</h1>
-                <p className="text-sm text-muted-foreground">
-                  {dateFormatter(tripDetails.startDate)} to {dateFormatter(tripDetails.endDate)}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <UserAvatarStack userIds={tripDetails.users} />
-                <InviteButton tripID={tripID} />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center gap-4">
-                <Button onClick={() => handleUpdateItinerary(days)}>Save</Button>
-                {lastSavedAt && (
-                  <span className="text-sm text-muted-foreground">
-                    Last saved at: {lastSavedAt.toLocaleString()}
-                  </span>
-                )}
-              </div>
-            </div>
-            {days.map((day, dayIndex) => (
-              <div key={day.date} className="space-y-4">
-                <h2 className="text-xl font-semibold">{day.date}</h2>
-                <Reorder.Group
-                  axis="y"
-                  values={day.activities}
-                  onReorder={(newActivities) => updateActivities(newActivities, dayIndex)}
-                  className="space-y-4 w-[92%] ml-8">
-                  {day.activities.map((activity) => (
-                    <ActivityCard
-                      key={activity.id}
-                      activity={activity}
-                      onNoteChange={handleNoteChange}
-                      onEditClick={() => handleEditClick(dayIndex, activity)}
-                      onDeleteClick={() => handleDeleteClick(dayIndex, activity.id)}
-                      onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
-                    />
-                  ))}
-                </Reorder.Group>
+            <ScrollArea className={`${isMobile ? 'p-6' : 'h-full px-6 pt-6'}`}>
+              <div className="space-y-6">
+                <div className="flex justify-between space-y-2">
+                  <div>
+                    <h1 className="text-3xl font-bold truncate">{tripDetails.tripName}</h1>
+                    <p className="text-sm text-muted-foreground">
+                      {dateFormatter(tripDetails.startDate)} to {dateFormatter(tripDetails.endDate)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <UserAvatarStack userIds={tripDetails.users} />
+                    <InviteButton tripID={tripID} />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-4">
+                    <Button onClick={() => handleUpdateItinerary(days)}>Save</Button>
+                    {lastSavedAt && (
+                      <span className="text-sm text-muted-foreground">
+                        Last saved at: {lastSavedAt.toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {days.map((day, dayIndex) => (
+                  <div key={day.date} className="space-y-4">
+                    <h2 className="text-xl font-semibold">{day.date}</h2>
+                    <Reorder.Group
+                      axis="y"
+                      values={day.activities}
+                      onReorder={(newActivities) => updateActivities(newActivities, dayIndex)}
+                      className="space-y-4 w-[92%] ml-8">
+                      {day.activities.map((activity) => (
+                        <ActivityCard
+                          key={activity.id}
+                          activity={activity}
+                          onNoteChange={handleNoteChange}
+                          onEditClick={() => handleEditClick(dayIndex, activity)}
+                          onDeleteClick={() => handleDeleteClick(dayIndex, activity.id)}
+                          onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                        />
+                      ))}
+                    </Reorder.Group>
+                    <Button
+                      variant="outline"
+                      className="w-[92%] ml-8"
+                      onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date })}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Activity
+                    </Button>
+                  </div>
+                ))}
                 <Button
                   variant="outline"
-                  className="w-[92%] ml-8"
-                  onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date })}
+                  className="w-full"
+                  onClick={() => setDays([...days, { date: `Day ${days.length + 1}`, activities: [] }])}
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Activity
+                  Add Day
                 </Button>
               </div>
-            ))}
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => setDays([...days, { date: `Day ${days.length + 1}`, activities: [] }])}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Day
-            </Button>
+            </ScrollArea>
           </motion.div>
 
           {!isMobile && (
-            <div className="w-5/13" style={{ position: 'sticky', top: 0, height: '100vh' }}>
+            <div className="col-span-1 h-screen sticky top-0">
               <MapboxMap
                 onSaveLocation={handleSaveLocation}
                 onMapLoad={handleMapLoad}
                 initialPlace={searchedPlace}
                 height="100%"
+                width="100%"
               />
             </div>
           )}

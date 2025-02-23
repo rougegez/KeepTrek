@@ -7,9 +7,10 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator"
-import { MapPin, Notebook, Pencil, Trash, ThumbsUp, ThumbsDown, User, Map } from 'lucide-react';
+import { MapPin, Notebook, Pencil, Trash, ThumbsUp, ThumbsDown, User } from 'lucide-react';
 import { getUserProfile } from "@/APIs/users";
 import { UserAvatar, UserAvatarStack } from '../profilePage/avatar';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function ItemModal({ 
   item, 
@@ -24,16 +25,12 @@ export default function ItemModal({
   optimisticVotes
 }) {
   const [creatorName, setCreatorName] = useState("");
-  const [editorNames, setEditorNames] = useState([]);
 
   useEffect(() => {
     const fetchUsernames = async () => {
       if (item) {
         const creatorProfile = await getUserProfile(item.creatorID);
         setCreatorName(creatorProfile.username);
-
-        const editorProfiles = await Promise.all(item.editors.map(id => getUserProfile(id)));
-        setEditorNames(editorProfiles.map(profile => profile.username));
       }
     };
 
@@ -59,7 +56,7 @@ export default function ItemModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[90vw] md:max-w-3xl max-h-[95vh] overflow-y-auto rounded-xl">
+      <DialogContent className="max-w-[90vw] md:max-w-3xl max-h-[95vh] overflow-hidden rounded-xl">
         <DialogHeader>
           <div className="flex items-center justify-between mt-4 mb-2">
             <label className="block text-l font-normal bg-secondary px-3 py-1 rounded-lg">
@@ -80,19 +77,41 @@ export default function ItemModal({
           <DialogTitle className="text-3xl pt-4">{item.title}</DialogTitle>
 
           <div className="flex items-center justify-between">
-            <div className="flex gap-4">
-              <div>
+            <div className="flex gap-4 items-end">
+              <div className="flex flex-col gap-1">
                 <div className="flex items-start gap-1 text-muted-foreground">
                   <User className="w-3 h-3 mt-0.5 flex-shrink-0" /> 
                   <label className="block text-sm font-normal text-muted-foreground">Added by</label>
                 </div>
-                {creatorName}
+                <UserAvatar 
+                  userId={item.creatorID}
+                  className="h-8 w-8"
+                />
               </div>
+              
+              {item.editors?.length > 0 && (
+                <>
+                  <Separator orientation="vertical" className="h-8 w-0.5" />
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-start gap-1 text-muted-foreground">
+                      <Pencil className="w-3 h-3 mt-0.5 flex-shrink-0" /> 
+                      <label className="block text-sm font-normal text-muted-foreground">Edited by</label>
+                    </div>
+                    <UserAvatarStack 
+                      userIds={item.editors} 
+                      size={8}
+                      maxUsers={3}
+                      className="-space-x-2"
+                    />
+                  </div>
+                </>
+              )}
             </div>
-            <div className="flex flex-col items-end space-y-1">
+
+            <div className="flex flex-col items-end space-y-2">
               <div className="flex gap-2 items-center">
                 <div>
-                  <UserAvatarStack userIds={optimisticVotes[item.id]?.upvotes} size={8} />
+                  <UserAvatarStack userIds={optimisticVotes[item.id]?.upvotes} size={6} />
                 </div>
                 <Button size="icon" variant="secondary" className={`flex gap-1 h-6 bg-white/80 backdrop-blur-sm`} onClick={handleUpvote}>
                   <span className="sr-only">Upvote</span>
@@ -102,7 +121,7 @@ export default function ItemModal({
               </div>
               <div className="flex gap-2 items-center">
                 <div>
-                  <UserAvatarStack userIds={optimisticVotes[item.id]?.downvotes} size={8} />
+                  <UserAvatarStack userIds={optimisticVotes[item.id]?.downvotes} size={6} />
                 </div>
                 <Button size="icon" variant="secondary" className={`flex gap-1 h-6 bg-white/80 backdrop-blur-sm`} onClick={handleDownvote}>
                   <span className="sr-only">Downvote</span>
@@ -113,33 +132,35 @@ export default function ItemModal({
             </div>
           </div>
         </DialogHeader>
-        <div className="grid gap-4">
-          <img
-            src={item.image || "/src/assets/dummy-image.jpg"}
-            alt={item.title}
-            className="w-full aspect-video object-cover rounded-lg"
-          />
-          
-          <div className="flex items-start gap-1 text-muted-foreground">
-            <Button
-              variant="ghost"
-              className="relative h-3 w-3 rounded-full"
-              size="icon"
-              onClick={(e) => {e.stopPropagation(); onLocationClick(item); onClose();}}
-              {...(item.coordinates.length > 1 ? {} : {disabled: true})}
-            >
-              <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-            </Button> 
-            <label className="block text-sm font-normal text-muted-foreground">Address</label>
+        <ScrollArea className="h-full max-h-[60vh]">
+          <div className="grid gap-4 pr-4">
+            <img
+              src={item.image || "/src/assets/dummy-image.jpg"}
+              alt={item.title}
+              className="w-full aspect-video object-cover rounded-lg"
+            />
+            
+            <div className="flex items-start gap-2 mt-2 text-muted-foreground">
+              <Button
+                variant="ghost"
+                className="relative h-3 w-3 rounded-full"
+                size="icon"
+                onClick={(e) => {e.stopPropagation(); onLocationClick(item); onClose();}}
+                {...(item.coordinates.length > 1 ? {} : {disabled: true})}
+              >
+                <MapPin className="w-3 h-3 mt-0.5" />
+              </Button> 
+              <label className="block text-sm font-normal text-muted-foreground">Address</label>
+            </div>
+            <p className="">{item.location}</p>
+            
+            <div className="flex items-start gap-2 mt-2 text-muted-foreground">
+              <Notebook className="w-4 h-4" /> 
+              <label className="block text-sm font-normal text-muted-foreground">Notes</label>
+            </div>
+            <p className="">{item.notes}</p>
           </div>
-          <p className="">{item.location}</p>
-          
-          <div className="flex items-start gap-1 text-muted-foreground">
-            <Notebook className="w-3 h-3 mt-0.5 flex-shrink-0" /> 
-            <label className="block text-sm font-normal text-muted-foreground">Notes</label>
-          </div>
-          <p className="">{item.notes}</p>
-        </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
