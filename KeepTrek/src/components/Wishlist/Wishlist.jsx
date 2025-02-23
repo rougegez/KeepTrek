@@ -57,6 +57,7 @@ export default function WishlistPage() {
   const [lastScrollPosition, setLastScrollPosition] = useState(0);
 
   const [optimisticVotes, setOptimisticVotes] = useState({});
+  const [initialCategory, setInitialCategory] = useState("");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -158,7 +159,8 @@ export default function WishlistPage() {
     setIsEditModalOpen(false); // Ensure the edit modal is closed
   };
 
-  const handleCreateItem = () => {
+  const handleCreateItem = (category) => {
+    setInitialCategory(category.toLowerCase());
     setIsCreateModalOpen(true);
   };
 
@@ -384,7 +386,7 @@ export default function WishlistPage() {
                 optimisticVotes={optimisticVotes}
               />
             ))}
-            <AddItemCard onClick={handleCreateItem} />
+            <AddItemCard onClick={handleCreateItem} category="accommodation" />
           </WishlistSection>
 
           <WishlistSection title="Activities">
@@ -403,7 +405,7 @@ export default function WishlistPage() {
                 optimisticVotes={optimisticVotes}
               />
             ))}
-            <AddItemCard onClick={handleCreateItem} />
+            <AddItemCard onClick={handleCreateItem} category="activities" />
           </WishlistSection>
 
           <WishlistSection title="Food">
@@ -422,7 +424,7 @@ export default function WishlistPage() {
                 optimisticVotes={optimisticVotes}
               />
             ))}
-            <AddItemCard onClick={handleCreateItem} />
+            <AddItemCard onClick={handleCreateItem} category="food" />
           </WishlistSection>
         </motion.div>
 
@@ -453,9 +455,13 @@ export default function WishlistPage() {
 
       <CreateEditItemModal // Create modal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setInitialCategory("");
+        }}
         onSubmit={handleSubmitCreateItem}
         tripId={tripID}
+        initialCategory={initialCategory}
       />
     
       <CreateEditItemModal // Edit modal

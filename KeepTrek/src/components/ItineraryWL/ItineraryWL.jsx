@@ -40,6 +40,7 @@ function ItineraryWL() {
   const [scrollPosition, setScrollPosition] = useState(0);
   const contentRef = useRef(null);
   const [lastScrollPosition, setLastScrollPosition] = useState(0);
+  const [lastSavedAt, setLastSavedAt] = useState(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -98,6 +99,7 @@ function ItineraryWL() {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['itinerary', tripID]);
+        setLastSavedAt(new Date());
       },
     }
   );
@@ -247,7 +249,14 @@ function ItineraryWL() {
               </div>
             </div>
             <div>
-              <Button onClick={() => handleUpdateItinerary(days)}>Save</Button>
+              <div className="flex items-center gap-4">
+                <Button onClick={() => handleUpdateItinerary(days)}>Save</Button>
+                {lastSavedAt && (
+                  <span className="text-sm text-muted-foreground">
+                    Last saved at: {lastSavedAt.toLocaleString()}
+                  </span>
+                )}
+              </div>
             </div>
             {days.map((day, dayIndex) => (
               <div key={day.date} className="space-y-4">
