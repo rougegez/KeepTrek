@@ -6,7 +6,7 @@ import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { getUserProfile } from "@/APIs/users";
 import { useState, useEffect } from "react";
-
+import { UserAvatar, UserAvatarStack } from '../profilePage/avatar';
 
 export default function TripCard({ trip }) {
   const getTripStatus = () => {
@@ -77,17 +77,26 @@ export default function TripCard({ trip }) {
             <span>{new Date(trip.startDate).toLocaleDateString()} - {new Date(trip.endDate).toLocaleDateString()}</span>
           </div>
           <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <Users2Icon className="w-4 h-4" />
+            <UserAvatarStack 
+              userIds={trip.users}
+              size={6}
+              maxUsers={5}
+              className="-space-x-2"
+            />
             <span>{trip.users.length} participants</span>
           </div>
         </CardContent>
         <CardFooter>
-          <div className="flex -space-x-2 overflow-hidden">
-          <span className="text-sm text-gray-500">
-                {isLoadingCreator ? 'Loading...' : `Created by ${creator?.username || 'Unknown'}`}
-              </span>
+          <div className="flex items-center gap-2 overflow-hidden">
+            <UserAvatar 
+              userId={creator?.id}
+              className="h-6 w-6"
+            />
+            <span className="text-sm text-gray-500">
+              {isLoadingCreator ? 'Loading...' : `Created by ${creator?.username || 'Unknown'}`}
+            </span>
           </div>
-          </CardFooter>
+        </CardFooter>
         
       </Card>
     </motion.div>
