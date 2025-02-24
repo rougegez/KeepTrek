@@ -7,11 +7,10 @@ import { AuthProvider } from "./contexts/authContext.jsx";
 
 import LandingPage from "./components/yourTrips/LandingPage.jsx";
 import YourTrips from "./components/yourTrips/yourTrips.jsx";
-import Dashboard from "./components/Dashboard/Dashboard.jsx";
+
 import CreateTrip from "./components/CreateTrip/CreateTrip.jsx";
 import MainExpensePage from "./components/Expenses/mainExpensePage.jsx";
 import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx";
-import TeamBudgetPage from "./components/Budget/TeamBudgetPage.jsx";
 import { TeamHistory } from "./components/OldBudget.jsx/TeamHistory.jsx";
 import { JoinTeam } from "./components/OldBudget.jsx/JoinTeam.jsx";
 import ItineraryWL from "./components/ItineraryWL/ItineraryWL.jsx";
@@ -57,8 +56,6 @@ function App() {
                     }
                   >
                     <Route path="/yourTrips" element={<YourTrips />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/expense-splitting/:tripID" element={<TeamBudgetPage />} />
                     <Route path="/expenses/:tripID" element={<MainExpensePage />} />
                     <Route path="/team-history" element={<TeamHistory />} />
                     <Route path="/trip-details" element={<TripDetailsPage />} />
