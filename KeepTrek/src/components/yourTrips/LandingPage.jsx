@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
@@ -11,7 +11,19 @@ import instagram from "../../assets/insta icon.png";
 import facebook from "../../assets/facebook icon.png";
 import appStore from "../../assets/App_Store_Icon.png";
 import tiktok from "../../assets/tiktok icon.png";
-import { Calendar, Users, PieChart, Map, Search, Share2, Calculator, FileText, Rocket, Sparkles, Bell } from 'lucide-react';
+import {
+  Calendar,
+  Users,
+  PieChart,
+  Map,
+  Search,
+  Share2,
+  Calculator,
+  FileText,
+  Rocket,
+  Sparkles,
+  Bell,
+} from "lucide-react";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -19,7 +31,7 @@ const fadeInUp = {
 };
 
 const staggerChildren = {
-  visible: { transition: { staggerChildren: 0.3} },
+  visible: { transition: { staggerChildren: 0.3 } },
 };
 
 const AnimatedSection = ({ children }) => {
@@ -29,18 +41,37 @@ const AnimatedSection = ({ children }) => {
   });
 
   return (
-    <motion.div
-      ref={ref}
-      initial="hidden"
-      animate={inView ? "visible" : "hidden"}
-      variants={staggerChildren}
-    >
+    <motion.div ref={ref} initial="hidden" animate={inView ? "visible" : "hidden"} variants={staggerChildren}>
       {children}
     </motion.div>
   );
 };
 
 export default function LandingPage() {
+  // Use a string to track which button's popup is active (or null)
+  const [activePopup, setActivePopup] = useState(null);
+  const popupRef = useRef(null);
+
+  // Handle clicks on buttons that are "unavailable"
+  const handleUnavailableClick = (id, e) => {
+    e.preventDefault();
+    setActivePopup(id);
+    setTimeout(() => {
+      setActivePopup(null);
+    }, 3000);
+  };
+
+  // Hide popup if clicking outside of it
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (popupRef.current && !popupRef.current.contains(event.target)) {
+        setActivePopup(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
@@ -73,45 +104,11 @@ export default function LandingPage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <img
-                src={LandingImage}
-                alt="App preview on laptop and mobile"
-                className="w-full"
-              />
+              <img src={LandingImage} alt="App preview on laptop and mobile" className="w-full" />
             </motion.div>
           </div>
         </AnimatedSection>
       </section>
-
-      {/* Metrics Section
-      <section className="container mx-auto px-6 py-12">
-        <AnimatedSection>
-          <div className="grid grid-cols-4 gap-8 max-w-4xl mx-auto">
-            {[
-              { value: "1000", label: "Active Users" },
-              { value: "200", label: "Trips Planned" },
-              { value: "500", label: "Groups" },
-              { value: "5", label: "Stars" },
-            ].map((metric, index) => (
-              <motion.div
-                key={index}
-                className="text-center"
-                variants={fadeInUp}
-              >
-                <motion.div
-                  className="text-2xl font-bold"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
-                  {metric.value}
-                </motion.div>
-                <div className="text-sm text-gray-500">{metric.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </AnimatedSection>
-      </section> */}
 
       {/* Features Section */}
       <section id="features" className="container mx-auto px-6 py-16">
@@ -166,9 +163,7 @@ export default function LandingPage() {
                     <feature.icon className="h-6 w-6 text-teal-500" />
                     <div>
                       <h3 className="font-semibold mb-2">{feature.title}</h3>
-                      <p className="text-sm text-gray-600">
-                        {feature.description}
-                      </p>
+                      <p className="text-sm text-gray-600">{feature.description}</p>
                     </div>
                   </div>
                 </Card>
@@ -182,10 +177,7 @@ export default function LandingPage() {
       <section id="pre-launch" className="bg-purple-50 py-16">
         <div className="container mx-auto px-6">
           <AnimatedSection>
-            <motion.h2 
-              className="text-3xl font-bold text-center mb-12"
-              variants={fadeInUp}
-            >
+            <motion.h2 className="text-3xl font-bold text-center mb-12" variants={fadeInUp}>
               Exciting Things Are Coming!
             </motion.h2>
             <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -207,7 +199,7 @@ export default function LandingPage() {
                       "Collaborative itineraries",
                       "Smart expense splitting",
                       "AI-powered travel suggestions",
-                      "And much more!"
+                      "And much more!",
                     ].map((feature, index) => (
                       <li key={index} className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-yellow-500" />
@@ -235,9 +227,25 @@ export default function LandingPage() {
                       placeholder="Enter your email"
                       className="w-full px-4 py-2 rounded-lg text-gray-900"
                     />
-                    <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 transition-colors duration-300">
-                      Join the Waitlist
-                    </Button>
+                    {/* Waitlist Button wrapped in a relative container */}
+                    <div className="relative">
+                      <Button
+                        onClick={(e) => handleUnavailableClick("waitlist", e)}
+                        className="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 transition-colors duration-300"
+                      >
+                        Join the Waitlist
+                      </Button>
+                      {activePopup === "waitlist" && (
+                        <div
+                          ref={popupRef}
+                          className="absolute top-full mt-2 bg-white shadow-lg p-3 rounded-md w-56 z-10 border border-gray-200"
+                        >
+                          <span className="text-sm text-gray-700">
+                            🚧 We are working on it! Stay tuned. 🚀
+                          </span>
+                        </div>
+                      )}
+                    </div>
                     <p className="text-xs text-center text-gray-200">
                       By signing up, you agree to our Terms of Service and Privacy Policy.
                     </p>
@@ -253,10 +261,7 @@ export default function LandingPage() {
       <section id="newsletter" className="container mx-auto px-6 py-16">
         <div className="max-w-4xl mx-auto">
           <AnimatedSection>
-            <motion.div
-              className="bg-purple-600 rounded-2xl p-8 flex justify-between items-start"
-              variants={fadeInUp}
-            >
+            <motion.div className="bg-purple-600 rounded-2xl p-8 flex justify-between items-start" variants={fadeInUp}>
               <div className="space-y-4">
                 <h2 className="text-3xl font-bold text-white max-w-md">
                   Still looking for where to head to next?
@@ -270,9 +275,25 @@ export default function LandingPage() {
                     placeholder="Enter your email"
                     className="px-4 py-2.5 rounded-lg text-gray-900 min-w-[280px]"
                   />
-                  <button className="px-6 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium transition-colors duration-300">
-                    Sign Up
-                  </button>
+                  {/* Newsletter Sign Up Button wrapped in a relative container */}
+                  <div className="relative inline-block">
+                    <button
+                      onClick={(e) => handleUnavailableClick("newsletterSignUp", e)}
+                      className="px-6 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium transition-colors duration-300"
+                    >
+                      Sign Up
+                    </button>
+                    {activePopup === "newsletterSignUp" && (
+                      <div
+                        ref={popupRef}
+                        className="absolute top-full mt-2 bg-white shadow-lg p-3 rounded-md w-56 z-10 border border-gray-200"
+                      >
+                        <span className="text-sm text-gray-700">
+                          🚧 We are working on it! Stay tuned. 🚀
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -287,29 +308,77 @@ export default function LandingPage() {
                     </span>
                   </div>
 
-                  <div className="space-y-2">
+                  {/* Social Buttons with Popup for unavailable items */}
+                  <div className="space-y-2 relative">
                     {[
-                      { icon: playStore, label: "Google Play", bg: "bg-black" },
-                      { icon: appStore, label: "App Store", bg: "bg-black" },
-                      { icon: instagram, label: "@keeptrek", bg: "bg-white" },
-                      { icon: tiktok, label: "@keeptrek", bg: "bg-white" },
-                      { icon: facebook, label: "KeepTrek", bg: "bg-white" },
+                      {
+                        icon: playStore,
+                        label: "Google Play",
+                        bg: "bg-black",
+                        href: "#",
+                        unavailable: true,
+                      },
+                      {
+                        icon: appStore,
+                        label: "App Store",
+                        bg: "bg-black",
+                        href: "#",
+                        unavailable: true,
+                      },
+                      {
+                        icon: instagram,
+                        label: "@keeptrek",
+                        bg: "bg-white",
+                        href: "https://www.instagram.com/keeptrek/",
+                      },
+                      {
+                        icon: tiktok,
+                        label: "@keeptrek",
+                        bg: "bg-white",
+                        href: "https://www.tiktok.com/@keep_trek?_t=ZS-8u4xDfEz7YY&_r=1",
+                      },
+                      {
+                        icon: facebook,
+                        label: "KeepTrek",
+                        bg: "bg-white",
+                        href: "https://www.facebook.com/profile.php?id=61573568121293",
+                      },
                     ].map((button, index) => (
-                      <motion.button
-                        key={index}
-                        className={`w-full px-4 py-2 ${button.bg} ${
-                          button.bg === "bg-black" ? "text-white" : "text-black"
-                        } rounded-lg flex items-center justify-start hover:opacity-80 transition-opacity duration-300`}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <img
-                          src={button.icon}
-                          alt={button.label}
-                          className="h-5 w-5 mr-2"
-                        />
-                        <span className="text-sm">{button.label}</span>
-                      </motion.button>
+                      <div key={index} className="relative">
+                        <a
+                          href={button.href}
+                          target={button.unavailable ? "_self" : "_blank"}
+                          rel="noopener noreferrer"
+                          onClick={
+                            button.unavailable
+                              ? (e) => handleUnavailableClick(`social-${index}`, e)
+                              : undefined
+                          }
+                          className="block"
+                        >
+                          <motion.button
+                            className={`w-full px-4 py-2 ${button.bg} ${
+                              button.bg === "bg-black" ? "text-white" : "text-black"
+                            } rounded-lg flex items-center justify-start hover:opacity-80 transition-opacity duration-300`}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <img src={button.icon} alt={button.label} className="h-5 w-5 mr-2" />
+                            <span className="text-sm">{button.label}</span>
+                          </motion.button>
+                        </a>
+
+                        {activePopup === `social-${index}` && button.unavailable && (
+                          <div
+                            ref={popupRef}
+                            className="absolute top-full mt-2 bg-white shadow-lg p-3 rounded-md w-56 z-10 border border-gray-200"
+                          >
+                            <span className="text-sm text-gray-700">
+                              🚧 We are working on it! Stay tuned. 🚀
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -321,4 +390,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
