@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext} from "react";
 import { useQuery, useQueryClient, useMutation } from "react-query";
 import { withSuspense } from "@/utils/withSuspense.jsx";
 
@@ -22,6 +22,8 @@ import { motion } from "framer-motion";
 import MobileHeader from "../MobileHeader";
 import InviteButton from "../Invite/InviteButton.jsx";
 import { UserAvatarStack } from '../profilePage/avatar';
+
+import useWebSocket, { ReadyState } from 'react-use-websocket'
 
 function ItineraryWL() {
   const queryClient = useQueryClient();
@@ -84,13 +86,23 @@ function ItineraryWL() {
     { suspense: true }
   );
 
-  const { data: itinerary} = useQuery(
-    ['itinerary', tripID],
-    () => getItinerary(tripID),
-    { suspense: true}
-  );
+  const [isDataReceived, setisDataReceived] = useState(false);
+  
+  const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(`ws://127.0.0.1:8000/itinerary/ws/${tripID}`, 
+    {
+      shouldReconnect: (closeEvent) => true,
+      onOpen: () => console.log('Connection opened'),
+    }
+  )
 
-  const [days, setDays] = useState(itinerary.days);
+  useEffect(() => {
+    if (lastJsonMessage !== null) {
+      setDays(lastJsonMessage.days);
+      setisDataReceived(true);
+    }
+  }, [lastJsonMessage]);
+
+  const [days, setDays] = useState();
 
   // Mutation to update the entire itinerary
   const updateItineraryMutation = useMutation(
@@ -103,7 +115,8 @@ function ItineraryWL() {
   );
 
   const handleUpdateItinerary = (updatedDays) => {
-    updateItineraryMutation.mutate(updatedDays);
+    // updateItineraryMutation.mutate(updatedDays);
+    sendJsonMessage({ tripID: tripID , days: updatedDays });
   };
 
   const handleMapLoad = (map) => {
@@ -188,6 +201,10 @@ function ItineraryWL() {
     clickLocation.name = clickLocation.title
     const random = new Date().getTime()
     setSearchedPlace({random, clickLocation})
+  }
+
+  if (!isDataReceived) {
+    return <div>Loading...</div>;
   }
 
   return (
