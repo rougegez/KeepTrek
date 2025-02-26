@@ -5,7 +5,7 @@ import { useInView } from "react-intersection-observer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import LandingImage from "../../assets/LandingImage.png";
-import TopNavbar from "../topnavbar/topnavbar.jsx";
+import TopNavbar from "../topNavBar/TopNavbar";
 import playStore from "../../assets/playstore.svg";
 import instagram from "../../assets/insta icon.png";
 import facebook from "../../assets/facebook icon.png";
