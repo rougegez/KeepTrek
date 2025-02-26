@@ -1,13 +1,13 @@
 import axios from "axios";
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
-
 const axiosInstance = axios.create({
-  baseURL,
+  baseURL: 'http://127.0.0.1:8000',
+
   headers: {
     'Content-Type': 'application/json'
   },
-  withCredentials: true
+  
+  withCredentials: true // Add this if you're using cookies/sessions
 });
 
 // Automatically add Authorization header if token exists
@@ -19,4 +19,4 @@ axiosInstance.interceptors.request.use((config) => {
   return config;
 });
 
-export default axiosInstance; 
+export default axiosInstance;
