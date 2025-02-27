@@ -6,7 +6,7 @@ import NoTripsMessage from "./noTripsMessage.jsx";
 import { getUserTrips } from "@/APIs/trip.js"; // API function to fetch trips
 import JoinButton from "../Invite/JoinButton.jsx";
 import { Skeleton } from "@/components/ui/skeleton"
-
+import { useQueryClient } from "react-query";
 
 const YourTripsLoadingSkeleton = () => {
   return (
@@ -52,6 +52,7 @@ export default function YourTrips() {
   const [trips, setTrips] = useState([]);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
   
 
   useEffect(() => {
@@ -80,6 +81,14 @@ export default function YourTrips() {
       isMounted = false;
     };
   }, []);
+
+  const handleTripDelete = (tripId) => {
+    // Optimistically remove the trip from UI
+    setTrips(prev => prev.filter(trip => trip.tripID !== tripId));
+    
+    // Invalidate trips query to refresh data
+    queryClient.invalidateQueries('trips');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">

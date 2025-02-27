@@ -30,20 +30,30 @@ export function UserAvatar({ userId, src, alt, className }) {
   );
 }
 
-export function UserAvatarStack({ 
-  userIds, 
-  size = 10, 
-  maxUsers = 5,
-  className 
-}) {
+export function UserAvatarStack({ userIds, size = 10, maxUsers = 5, className }) {
   const [userProfiles, setUserProfiles] = useState([]);
 
   useEffect(() => {
     const fetchUserProfiles = async () => {
       try {
-        const profilesToFetch = userIds.slice(0, maxUsers);
-        const profiles = await Promise.all(profilesToFetch.map(id => getUserProfile(id)));
-        setUserProfiles(profiles);
+        if (!userIds || !Array.isArray(userIds)) {
+          console.log('Invalid userIds:', userIds);
+          return;
+        }
+
+        // Extract userID from objects if necessary
+        const normalizedIds = userIds.map(id => 
+          typeof id === 'object' ? id.userID : id
+        );
+
+        const profilesToFetch = normalizedIds.slice(0, maxUsers);
+        console.log('Fetching profiles for:', profilesToFetch);
+        
+        const profiles = await Promise.all(
+          profilesToFetch.map(id => getUserProfile(id))
+        );
+        console.log('Fetched profiles:', profiles);
+        setUserProfiles(profiles.filter(Boolean));
       } catch (error) {
         console.error('Error fetching user profiles:', error);
       }
@@ -52,33 +62,44 @@ export function UserAvatarStack({
     fetchUserProfiles();
   }, [userIds, maxUsers]);
 
-  const remainingCount = userIds.length - maxUsers;
+  const remainingCount = (userIds?.length || 0) - maxUsers;
   const displayedProfiles = userProfiles.slice(0, maxUsers);
 
   return (
     <div className={cn("flex items-center", className)}>
-      <div class="flex -space-x-2 rtl:space-x-reverse">
+      <div className="flex -space-x-2 rtl:space-x-reverse">
         {displayedProfiles.map((profile, index) => (
           <UserAvatar
-            key={profile.id}
-            src={profile.image}
-            alt={profile.username}
+            key={profile?.id || index}
+            userId={profile?.id}
+            src={profile?.image}
+            alt={profile?.username}
             className={cn(
               "ring-2 ring-background",
               `w-${size} h-${size}`
             )}
             style={{ 
+              width: `${size * 4}px`,
+              height: `${size * 4}px`,
               zIndex: displayedProfiles.length - index
             }}
           />
         ))}
         {remainingCount > 0 && (
-          <a 
-            className={`flex items-center justify-center w-${size} h-${size} text-sm font-medium text-foreground-muted bg-secondary rounded-full ring-2 ring-background`} 
-            style={{zIndex: displayedProfiles.length + 1}}
+          <div 
+            className={cn(
+              "flex items-center justify-center text-sm font-medium",
+              "text-foreground-muted bg-secondary rounded-full",
+              "ring-2 ring-background"
+            )}
+            style={{
+              width: `${size * 4}px`,
+              height: `${size * 4}px`,
+              zIndex: displayedProfiles.length + 1
+            }}
           >
             +{remainingCount}
-          </a>
+          </div>
         )}
       </div>
     </div>

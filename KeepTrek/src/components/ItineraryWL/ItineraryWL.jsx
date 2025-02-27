@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery, useQueryClient, useMutation } from "react-query";
 import { withSuspense } from "@/utils/withSuspense.jsx";
 
 import { Button } from "@/components/ui/button";
 import { Reorder } from "framer-motion";
-import { Plus, Menu, ChevronUp, ChevronDown } from 'lucide-react'
+import { Plus, Menu, ChevronUp, ChevronDown, LogOut, Settings } from 'lucide-react'
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import ActivityCard from "./ActivityCard.jsx";
@@ -13,9 +13,9 @@ import EditActivityModal from "./EditActivityModal.jsx";
 import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx";
 import { dateFormatter } from "@/utils/dateFormat.jsx";
 
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { createItinerary, getItinerary, updateItinerary } from "@/APIs/itinerary.js";
-import { getTrip } from "@/APIs/trip.js";
+import { getTrip, removeMember } from "@/APIs/trip.js";
 import { Card, CardContent } from "../ui/card.jsx";
 import { useMediaQuery } from 'react-responsive';
 import { motion } from "framer-motion";
@@ -24,10 +24,16 @@ import InviteButton from "../Invite/InviteButton.jsx";
 import { UserAvatarStack } from '../profilePage/avatar';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { canEdit, UserRole } from "@/utils/permissions";
+import { CurrentUser } from "@/APIs/auth";
+import LeaveAlert from '@/components/ui/LeaveAlert';
+import TripSettings from '../TripSettings/TripSettings';
 
 function ItineraryWL() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { tripID } = useParams();
+  const [currentUser, setCurrentUser] = useState(null);
 
   const [addModalState, setAddModalState] = useState({ isOpen: false, selectedDay: null });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -44,6 +50,38 @@ function ItineraryWL() {
   const [lastScrollPosition, setLastScrollPosition] = useState(0);
   const [lastSavedAt, setLastSavedAt] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [showLeaveAlert, setShowLeaveAlert] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  const { data: tripDetails } = useQuery(
+    ['trip', tripID],
+    () => getTrip(tripID),
+    { suspense: true }
+  );
+
+  const { data: itinerary} = useQuery(
+    ['itinerary', tripID],
+    () => getItinerary(tripID),
+    { suspense: true}
+  );
+  const [days, setDays] = useState(itinerary.days);
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const user = await CurrentUser();
+      setCurrentUser(user);
+    };
+    fetchCurrentUser();
+  }, []);
+
+  const userRole = useMemo(() => {
+    if (!currentUser || !tripDetails?.users) return null;
+    const userInTrip = tripDetails.users.find(u => u.userID === currentUser);
+    console.log('User lookup:', { currentUser, userInTrip });
+    return userInTrip?.role;
+  }, [currentUser, tripDetails]);
+
+  const canModify = canEdit(userRole);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -81,20 +119,6 @@ function ItineraryWL() {
       {isMapExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
     </Button>
   );
-
-  const { data: tripDetails } = useQuery(
-    ['trip', tripID],
-    () => getTrip(tripID),
-    { suspense: true }
-  );
-
-  const { data: itinerary} = useQuery(
-    ['itinerary', tripID],
-    () => getItinerary(tripID),
-    { suspense: true}
-  );
-
-  const [days, setDays] = useState(itinerary.days);
 
   // Mutation to update the entire itinerary
   const updateItineraryMutation = useMutation(
@@ -200,6 +224,15 @@ function ItineraryWL() {
     setSearchedPlace({random, clickLocation})
   }
 
+  const handleLeave = async () => {
+    try {
+        await removeMember(tripID, currentUser);
+        navigate('/yourTrips', { replace: true });
+    } catch (error) {
+        console.error('Error leaving trip:', error);
+    }
+  };
+
   return (
       <SidebarProvider >
         <AppSidebar tripID={tripID} />
@@ -250,23 +283,47 @@ function ItineraryWL() {
                   </div>
                   <div className="flex items-center gap-2">
                     <UserAvatarStack userIds={tripDetails.users} />
-                    <InviteButton tripID={tripID} />
+                    {canModify && (
+                      <InviteButton tripID={tripID} userRole={userRole} />
+                    )}
+                    {userRole === UserRole.ADMIN && (
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={() => setShowSettingsModal(true)}
+                        title="Trip Settings"
+                      >
+                        <Settings className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {currentUser && currentUser !== tripDetails.creatorID && (
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={() => setShowLeaveAlert(true)}
+                        title="Leave Trip"
+                      >
+                        <LogOut className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
                 <div>
-                  <div className="flex items-center gap-4">
-                    <Button 
-                      onClick={() => handleUpdateItinerary(days)}
-                      disabled={isSaving}
-                    >
-                      {isSaving ? <LoadingSpinner /> : 'Save'}
-                    </Button>
-                    {lastSavedAt && (
-                      <span className="text-sm text-muted-foreground">
-                        Last saved at: {lastSavedAt.toLocaleString()}
-                      </span>
-                    )}
-                  </div>
+                  {canModify && (
+                    <div className="flex items-center gap-4">
+                      <Button 
+                        onClick={() => handleUpdateItinerary(days)}
+                        disabled={isSaving}
+                      >
+                        {isSaving ? <LoadingSpinner /> : 'Save'}
+                      </Button>
+                      {lastSavedAt && (
+                        <span className="text-sm text-muted-foreground">
+                          Last saved at: {lastSavedAt.toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
                 {days.map((day, dayIndex) => (
                   <div key={day.date} className="space-y-4">
@@ -287,24 +344,28 @@ function ItineraryWL() {
                         />
                       ))}
                     </Reorder.Group>
-                    <Button
-                      variant="outline"
-                      className="w-[92%] ml-8"
-                      onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date })}
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Activity
-                    </Button>
+                    {canModify && (
+                      <Button
+                        variant="outline"
+                        className="w-[92%] ml-8"
+                        onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date })}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Activity
+                      </Button>
+                    )}
                   </div>
                 ))}
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setDays([...days, { date: `Day ${days.length + 1}`, activities: [] }])}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Day
-                </Button>
+                {canModify && (
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setDays([...days, { date: `Day ${days.length + 1}`, activities: [] }])}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Day
+                  </Button>
+                )}
               </div>
             </ScrollArea>
           </motion.div>
@@ -344,6 +405,18 @@ function ItineraryWL() {
           currentActivity={currentActivity}
           onSaveEdit={handleSaveEdit}
           days={days}
+        />
+
+        <LeaveAlert 
+          isOpen={showLeaveAlert}
+          onClose={() => setShowLeaveAlert(false)}
+          onConfirm={handleLeave}
+        />
+
+        <TripSettings 
+          isOpen={showSettingsModal}
+          onClose={() => setShowSettingsModal(false)}
+          tripID={tripID}
         />
       </SidebarProvider>
   );

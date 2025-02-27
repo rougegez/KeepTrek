@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator"
-import { MapPin, Notebook, Pencil, Trash, ThumbsUp, ThumbsDown, User } from 'lucide-react';
+import { MapPin, Notebook, Pencil, Trash2, ThumbsUp, ThumbsDown, User } from 'lucide-react';
 import { getUserProfile } from "@/APIs/users";
 import { UserAvatar, UserAvatarStack } from '../profilePage/avatar';
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -69,7 +69,7 @@ export default function ItemModal({
               </Button>
               <Button size="icon" variant="secondary" className="w-6 h-6 bg-white/80 backdrop-blur-sm" onClick={handleDelete}>
                 <span className="sr-only">Delete</span>
-                <Trash className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                <Trash2 className="w-3 h-3 mt-0.5 flex-shrink-0" />
               </Button>
             </div>
           </div>

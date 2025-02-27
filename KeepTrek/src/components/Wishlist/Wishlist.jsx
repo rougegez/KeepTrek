@@ -24,6 +24,9 @@ import { motion } from "framer-motion";
 import { ChevronUp, ChevronDown, Menu } from "lucide-react";
 import MobileHeader from "../MobileHeader";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { canEdit } from "@/utils/permissions";
+import { useQuery } from 'react-query';
+import { getTrip } from '@/APIs/trip';
 
 export default function WishlistPage() {
   const { tripID } = useParams();
@@ -59,6 +62,10 @@ export default function WishlistPage() {
 
   const [optimisticVotes, setOptimisticVotes] = useState({});
   const [initialCategory, setInitialCategory] = useState("");
+
+  const { data: tripDetails } = useQuery(['trip', tripID], () => getTrip(tripID));
+  const userRole = tripDetails?.users.find(u => u.userID === user)?.role;
+  const canModify = canEdit(userRole);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -348,9 +355,11 @@ export default function WishlistPage() {
             <div className="space-y-4">
               {!isMobile && <h1 className="text-3xl font-bold">Wishlist</h1>}
               <div className="flex justify-between items-center">
-                <Button variant={addMode ? "outline" : "default"} onClick={handleAddModeToggle}>
-                  {addMode ? "Cancel" : "Add Items to Itinerary"}
-                </Button>
+                {canModify && (
+                  <Button variant={addMode ? "outline" : "default"} onClick={handleAddModeToggle}>
+                    {addMode ? "Cancel" : "Add Items to Itinerary"}
+                  </Button>
+                )}
                 {addMode && (
                   <div className="flex items-center gap-2">
                     <Select
@@ -396,7 +405,9 @@ export default function WishlistPage() {
                     optimisticVotes={optimisticVotes}
                   />
                 ))}
-                <AddItemCard onClick={handleCreateItem} category="accommodation" />
+                {canModify && (
+                  <AddItemCard onClick={handleCreateItem} category="accommodation" />
+                )}
               </WishlistSection>
 
               <WishlistSection title="Activities">
@@ -415,7 +426,9 @@ export default function WishlistPage() {
                     optimisticVotes={optimisticVotes}
                   />
                 ))}
-                <AddItemCard onClick={handleCreateItem} category="activities" />
+                {canModify && (
+                  <AddItemCard onClick={handleCreateItem} category="activities" />
+                )}
               </WishlistSection>
 
               <WishlistSection title="Food">
@@ -434,7 +447,9 @@ export default function WishlistPage() {
                     optimisticVotes={optimisticVotes}
                   />
                 ))}
-                <AddItemCard onClick={handleCreateItem} category="food" />
+                {canModify && (
+                  <AddItemCard onClick={handleCreateItem} category="food" />
+                )}
               </WishlistSection>
             </div>
           </ScrollArea>
