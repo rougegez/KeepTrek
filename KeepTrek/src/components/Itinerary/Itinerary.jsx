@@ -16,14 +16,13 @@ import { dateFormatter } from "@/utils/dateFormat.jsx";
 import { useParams } from "react-router-dom";
 import { createItinerary, getItinerary, updateItinerary } from "@/APIs/itinerary.js";
 import { getTrip } from "@/APIs/trip.js";
-import { Card, CardContent } from "../ui/card.jsx";
 import { useMediaQuery } from 'react-responsive';
 import { motion } from "framer-motion";
 import MobileHeader from "../MobileHeader.jsx";
 import InviteButton from "../Invite/InviteButton.jsx";
 import { UserAvatarStack } from '../profilePage/avatar.jsx';
 
-import useWebSocket, { ReadyState } from 'react-use-websocket'
+import { useItinerary } from './useItinerarySocket.jsx';
 
 function Itinerary() {
   const queryClient = useQueryClient();
@@ -86,23 +85,8 @@ function Itinerary() {
     { suspense: true }
   );
 
-  const [isDataReceived, setisDataReceived] = useState(false);
-  
-  const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(`ws://127.0.0.1:8000/itinerary/ws/${tripID}`, 
-    {
-      shouldReconnect: (closeEvent) => true,
-      onOpen: () => console.log('Connection opened'),
-    }
-  )
-
-  useEffect(() => {
-    if (lastJsonMessage !== null) {
-      setDays(lastJsonMessage.days);
-      setisDataReceived(true);
-    }
-  }, [lastJsonMessage]);
-
-  const [days, setDays] = useState();
+  const { setTripID, days, setDays, sendJsonMessage} = useItinerary()
+  setTripID(tripID)
 
   // Mutation to update the entire itinerary
   const updateItineraryMutation = useMutation(
@@ -115,7 +99,6 @@ function Itinerary() {
   );
 
   const handleUpdateItinerary = (updatedDays) => {
-    // updateItineraryMutation.mutate(updatedDays);
     sendJsonMessage({ tripID: tripID , days: updatedDays });
   };
 
@@ -203,7 +186,7 @@ function Itinerary() {
     setSearchedPlace({random, clickLocation})
   }
 
-  if (!isDataReceived) {
+  if (!days.length) {
     return <div>Loading...</div>;
   }
 

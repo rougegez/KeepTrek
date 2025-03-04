@@ -14,7 +14,7 @@ import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx";
 import TeamBudgetPage from "./components/Budget/TeamBudgetPage.jsx";
 import { TeamHistory } from "./components/OldBudget.jsx/TeamHistory.jsx";
 import { JoinTeam } from "./components/OldBudget.jsx/JoinTeam.jsx";
-import Itinerary from "./components/Itinerary/ItineraryWL.jsx";
+import Itinerary from "./components/Itinerary/Itinerary.jsx";
 import Wishlist from "./components/Wishlist/Wishlist.jsx";
 import { ProfilePage } from "./components/profilePage/profilePage.jsx";
 import { TripDetailsPage } from "./components/TripDetails/TripDetailsPage.jsx";
