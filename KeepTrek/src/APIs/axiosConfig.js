@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseURL = import.meta.env.VITE_API_URL || 'https://keeptrek-backend.onrender.com/';
+const baseURL = import.meta.env.VITE_API_URL || 'https://keeptrek-backend.onrender/';
 
 const axiosInstance = axios.create({
   baseURL,
