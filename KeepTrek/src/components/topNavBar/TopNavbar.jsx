@@ -123,7 +123,7 @@ export default function TopNavbar() {
               </Sheet>
               <div className="flex-shrink-0 flex items-center max-w-36">
                 <NavLink to="/" className="text-2xl font-bold text-gray-800">
-                  <img src="../../../public/assets/KeepTrekNew.png" alt="KeepTrek" className="object-scale-down" />
+                  <img src="/assets/KeepTrekNew.png" alt="KeepTrek" className="object-scale-down" />
                 </NavLink>
               </div>
             </div>
