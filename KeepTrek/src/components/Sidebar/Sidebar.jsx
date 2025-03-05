@@ -119,7 +119,7 @@ export const AppSidebar = ({ tripID }) => {
         {/* Main Navigation Items */}
         {[ 
           { title: "Itinerary", icon: Calendar, path: `/itineraryWL/${tripID}` },
-          { title: "Budget", icon: PiggyBank, path: `/expenses/${tripID}` },
+          { title: "Expenses", icon: PiggyBank, path: `/expenses/${tripID}` },
           { title: "Suggest", icon: Heart, path: `/wishlist/${tripID}` },
           { title: "Can't Find a Date?", icon: CalendarClock, path: `/schedule/${tripID}` },
         ].map((item) => (
