@@ -9,7 +9,7 @@ import TopNavbar from "../topNavBar/TopNavbar";
 import playStore from "/assets/playstore.svg";
 import instagram from "/assets/insta icon.png";
 import facebook from "/assets/facebook icon.png";
-import appStore from "./assets/App_Store_Icon.png";
+import appStore from "/assets/App_Store_Icon.png";
 import tiktok from "/assets/tiktok icon.png";
 import { Calendar, Users, PieChart, Map, Search, Share2, Calculator, FileText, Rocket, Sparkles, Bell } from 'lucide-react';
 
