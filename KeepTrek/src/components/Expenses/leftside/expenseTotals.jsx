@@ -19,7 +19,7 @@ export const ExpensesTotals = () => {
   const userBalanceMap = balances[user] || {};
   
   // Calculate totals from the balance_map
-  const userBalances = Object.entries(userBalanceMap).filter([_, amount]);
+  const userBalances = Object.values(userBalanceMap).reduce((sum, amount) => sum + amount, 0);
   const totalOwedToYou = usersOweYou.reduce((sum, [_, amount]) => sum + amount, 0);
   const totalYouOwe = youOweUsers.reduce((sum, [_, amount]) => sum + amount, 0);
 
