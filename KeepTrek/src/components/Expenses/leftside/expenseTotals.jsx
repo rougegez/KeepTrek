@@ -16,11 +16,10 @@ export const ExpensesTotals = () => {
   const isMobile = useMediaQuery({ query: '(max-width: 640px)' });
 
   // Get the balance map for the current user
-  const userBalances = balances[user] || {};
+  const userBalanceMap = balances[user] || {};
   
   // Calculate totals from the balance_map
-  const usersOweYou = Object.entries(userBalances).filter(([_, amount]) => amount > 0);
-  const youOweUsers = Object.entries(userBalances).filter(([_, amount]) => amount < 0);
+  const userBalances = Object.entries(userBalanceMap).filter([_, amount]);
   const totalOwedToYou = usersOweYou.reduce((sum, [_, amount]) => sum + amount, 0);
   const totalYouOwe = youOweUsers.reduce((sum, [_, amount]) => sum + amount, 0);
 
