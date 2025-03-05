@@ -41,7 +41,7 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
     <Card className="w-full max-w-md mx-auto p-8 border-none shadow-md space-y-6">
       <div className="text-center">
         <img
-          src="../src/assets/logo.png"
+          src="./assets/logo.png"
           alt="Logo"
           className="h-16 w-16 mx-auto mb-4"
         />
@@ -54,7 +54,7 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
         className="w-full flex items-center justify-center gap-2 border-gray-300"
         onClick={() => alert("Google login functionality is coming soon!")}
       >
-        <img src="../src/assets/google.png" alt="Google" className="h-5 w-5" />
+        <img src="/assets/google.png" alt="Google" className="h-5 w-5" />
         Sign in with Google
       </Button>
 

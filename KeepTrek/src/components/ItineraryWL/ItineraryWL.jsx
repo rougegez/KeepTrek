@@ -67,6 +67,25 @@ function ItineraryWL() {
       setScrollPosition(position);
     };
 
+    const activityCardContentStyle = {
+    display: 'flex',
+    gap: '1rem',
+    flexDirection: isMobile ? 'column' : 'row',
+  };
+
+  const activityImageStyle = {
+    maxWidth: '30rem',
+    maxHeight: '10rem',
+    borderRadius: '0.5rem',
+    objectFit: 'cover',
+    width: isMobile ? '100%' : 'auto',
+    height: isMobile ? 'auto' : 'auto',
+  };
+
+  const cardStyle = {
+    maxWidth: isMobile ? '20rem' : '100%',
+  };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isMapExpanded, lastScrollPosition]);
@@ -214,7 +233,7 @@ function ItineraryWL() {
                 height: getMapHeight(),
                 transition: { duration: 0.3, ease: 'easeInOut' }
               }}
-              style={{ top: '3.5rem' }}
+              style={{ top: '3.5rem', flexShrink: 1 }}
             >
               <MapboxMap
                 onSaveLocation={handleSaveLocation}
@@ -238,10 +257,11 @@ function ItineraryWL() {
               marginTop: `calc(${getMapHeight()} + 3.5rem)`, // Add header height to margin
               transition: { duration: 0.3, ease: 'easeInOut' }
             } : {}}
+            style={{ flexShrink: 0 }}
           >
-            <ScrollArea className={`${isMobile ? 'p-6' : 'h-full px-6 pt-6'}`}>
+            <ScrollArea className={`${isMobile ? 'p-4' : 'h-full px-2 pt-6'}`}>
               <div className="space-y-6">
-                <div className="flex justify-between space-y-2">
+                <div className="flex justify-between space-y-2 mr-5">
                   <div>
                     <h1 className="text-3xl font-bold truncate">{tripDetails.tripName}</h1>
                     <p className="text-sm text-muted-foreground">
@@ -275,7 +295,7 @@ function ItineraryWL() {
                       axis="y"
                       values={day.activities}
                       onReorder={(newActivities) => updateActivities(newActivities, dayIndex)}
-                      className="space-y-4 w-[92%] ml-8">
+                      className="space-y-4 w-[85%] ml-16">
                       {day.activities.map((activity) => (
                         <ActivityCard
                           key={activity.id}
