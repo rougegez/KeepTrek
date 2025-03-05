@@ -32,7 +32,7 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
 
   const handleGoogleLogin = () => {
     // URL of your backend endpoint that starts the Google OAuth flow
-    const googleLoginUrl = "http://localhost:8000/auth/google-login";
+    const googleLoginUrl = "https://keeptrek-backend.onrender.com/auth/google-login";
     const width = 500;
     const height = 600;
     const left = (window.innerWidth - width) / 2;
