@@ -4,13 +4,13 @@ import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import LandingImage from "../../assets/LandingImage.png";
+import LandingImage from "../../../public/assets/LandingImage.png";
 import TopNavbar from "../topNavBar/TopNavbar";
-import playStore from "../../assets/playstore.svg";
-import instagram from "../../assets/insta icon.png";
-import facebook from "../../assets/facebook icon.png";
-import appStore from "../../assets/App_Store_Icon.png";
-import tiktok from "../../assets/tiktok icon.png";
+import playStore from "../../../public/assets/playstore.svg";
+import instagram from "../../../public/assets/insta icon.png";
+import facebook from "../../../public/assets/facebook icon.png";
+import appStore from "../../../public/assets/App_Store_Icon.png";
+import tiktok from "../../../public/assets/tiktok icon.png";
 import { Calendar, Users, PieChart, Map, Search, Share2, Calculator, FileText, Rocket, Sparkles, Bell } from 'lucide-react';
 
 const fadeInUp = {
