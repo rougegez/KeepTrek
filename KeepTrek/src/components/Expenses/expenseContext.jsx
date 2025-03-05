@@ -98,7 +98,7 @@ export function ExpensesProvider ({ children }) {
           totalUser: tripData.user_expense || 0,
           userBalance: tripData.user_balance || 0
         },
-        balances: tripData.balance_map || {},
+        balances: tripData.adjusted_map || {},
         settledDebts: tripData.settled_debts || [],
         budgets: tripData.budgets || []
       };
