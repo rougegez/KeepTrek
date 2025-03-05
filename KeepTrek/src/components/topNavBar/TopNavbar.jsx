@@ -138,7 +138,7 @@ export default function TopNavbar() {
                       to="/create-trip"
                       className="border-transparent inline-flex text-sm font-semibold"
                     >
-                      Create Itinerary
+                      Create a Trip
                     </NavLink>
                   </Button>
                   <Button size="icon" variant="ghost" className="m-2 rounded-full">
