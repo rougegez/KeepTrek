@@ -53,13 +53,13 @@ export const ExpensesTotals = () => {
             </span>
           </div>
         </Card>
-        <Card className={`p-3 rounded-xl w-full h-auto sm:h-20 ${totals.userBalance >= 0 ? 'bg-[#E8F5E9]' : 'bg-[#FF9C9C]'}`}>
+        <Card className={`p-3 rounded-xl w-full h-auto sm:h-20 ${userBalances >= 0 ? 'bg-[#E8F5E9]' : 'bg-[#FF9C9C]'}`}>
           <div className="flex flex-col sm:flex-row justify-between items-center sm:items-center text-center sm:text-left">
             <span className="text-xl sm:text-2xl font-bold block mb-1 sm:mb-0">
-              {totals.userBalance >= 0 ? "You Are Owed" : "You Owe"}
+              {userBalances >= 0 ? "You Are Owed" : "You Owe"}
             </span>
             <span className="text-xl sm:text-2xl font-bold block">
-              RM {Math.abs(totals.userBalance).toFixed(2)}
+              RM {Math.abs(userBalances).toFixed(2)}
             </span>
           </div>
         </Card>
