@@ -6,6 +6,7 @@ import { addExpense,
          totalTripExpense, 
          totalUserExpense, 
          UserBalance, 
+         getTripData
         } 
          from '@/APIs/expenses';
 import {balanceMap, 
@@ -60,56 +61,14 @@ export function ExpensesProvider ({ children }) {
   const [isLoadingMain, setIsLoadingMain] = useState(false);
   const [isLoadingDependent, setIsLoadingDependent] = useState(false);
 
-  const fetchUser = useCallback(async () => {
-    setIsLoadingUser(true);
-    try {
-      const userData = await CurrentUser();
-      setUser(userData);
-    } catch (error) {
-      console.error('Error fetching user:', error);
-      setError(error.message);
-    } finally {
-      setIsLoadingUser(false);
-    }
-  }, []);
-
-  const fetchBalanceMap = useCallback(async () => {
-    try {
-      const Mapdata = await balanceMap(tripID);
-      setBalances(Mapdata);
-    } catch (error) {
-      console.error('Error fetching balance map:', error);
-      setError(error.message);
-    }
-  }, [tripID]);
-
-  const fetchSettledDebts = useCallback(async () => {
-    try {
-      const SettledData = await getSettledDebts(tripID);
-      setSettledDebts(SettledData || []); // Ensure empty array if no data
-    } catch (error) {
-      console.error('Error fetching settled debts:', error);
-      setError(error.message);
-      setSettledDebts([]); // Set empty array on error
-    }
-  }, [tripID]);
-
-  const fetchUserBudgets = useCallback(async () => {
-    try {
-      const budgets = await viewBudgets(tripID);
-      setUserBudgets(budgets || []);  
-      refreshTotals();
-    } catch (error) {
-      console.error('Error fetching user budgets:', error);
-      setError(error.message);
-    }
-  }, [tripID]);
-
+  // Enhanced cache with more data
   const cache = useRef({
     mainData: null,
+    expenses: null,
+    settledDebts: null,
+    balances: null,
     totals: null,
     lastFetch: null,
-    // Cache expires after 5 minutes
     CACHE_DURATION: 5 * 60 * 1000
   });
 
@@ -118,127 +77,127 @@ export function ExpensesProvider ({ children }) {
            (Date.now() - cache.current.lastFetch) < cache.current.CACHE_DURATION;
   }, []);
 
-  // Group related data fetches
-  const fetchEssentialData = useCallback(async () => {
+  // Batch all initial data fetching into one call
+  const fetchAllData = useCallback(async () => {
     if (!tripID) return;
-    if (isCacheValid()) {
-      return cache.current.mainData;
-    }
 
     try {
       setIsLoadingMain(true);
-      const [user, expenses, members] = await Promise.all([
+
+      const [userData, members, tripData] = await Promise.all([
         CurrentUser(),
-        getExpense(tripID),
-        getTripMembers(tripID)
+        getTripMembers(tripID),
+        getTripData(tripID)
       ]);
 
-      const data = { user, expenses, members };
-      cache.current.mainData = data;
-      cache.current.lastFetch = Date.now();
+      // Map the data according to the exact API response structure
+      const mappedData = {
+        expenses: tripData.expenses || [],
+        totals: {
+          totalTrip: tripData.total_trip_expense || 0,
+          totalUser: tripData.user_expense || 0,
+          userBalance: tripData.user_balance || 0
+        },
+        balances: tripData.adjusted_balance_map || {},
+        settledDebts: tripData.settled_debts || [],
+        budgets: tripData.budgets || []
+      };
 
-      setUser(user);
-      setExpenses(expenses);
-      setTripMembers(members);
+      // Update cache
+      cache.current = {
+        ...cache.current,
+        mainData: { user: userData, members },
+        ...mappedData,
+        lastFetch: Date.now()
+      };
 
       // Create username lookup
       const newUsernames = {};
       members.forEach(member => {
         newUsernames[member.userID] = member.username;
       });
-      setUsernames(newUsernames);
 
-      return data;
+      // Batch state updates with exact field names
+      setUser(userData);
+      setTripMembers(members);
+      setUsernames(newUsernames);
+      setExpenses(mappedData.expenses);
+      setSettledDebts(mappedData.settledDebts);
+      setBalances(mappedData.balances);
+      setTotals(mappedData.totals);
+      setUserBudgets(mappedData.budgets);
+
     } catch (error) {
-      console.error('Error fetching essential data:', error);
+      console.error("Error fetching data:", error);
       setError(error.message);
     } finally {
       setIsLoadingMain(false);
     }
-  }, [tripID, isCacheValid]);
+  }, [tripID]);
 
-  // Fetch dependent data after essential data
-  const fetchDependentData = useCallback(async (essentialData) => {
-  if (!tripID || !essentialData) return;
-
-  try {
-    setIsLoadingDependent(true);
-    
-    // Use Promise.allSettled instead of Promise.all to handle partial failures
-    const results = await Promise.allSettled([
-      Promise.all([
-        totalTripExpense(tripID),
-        totalUserExpense(tripID),
-        UserBalance(tripID)
-      ]),
-      balanceMap(tripID),
-      getSettledDebts(tripID),
-      viewBudgets(tripID)
-    ]);
-
-    // Process results, using default values if any promise fails
-    const [totalsResult, balancesResult, debtsResult, budgetsResult] = results;
-
-    if (totalsResult.status === 'fulfilled') {
-      const [totalTrip, totalUser, userBalance] = totalsResult.value;
-      setTotals({
-        totalTrip: totalTrip || 0,
-        totalUser: totalUser || 0,
-        userBalance: userBalance || 0
-      });
-    }
-
-    if (balancesResult.status === 'fulfilled') {
-      setBalances(balancesResult.value || {});
-    }
-
-    if (debtsResult.status === 'fulfilled') {
-      setSettledDebts(debtsResult.value || []);
-    }
-
-    if (budgetsResult.status === 'fulfilled') {
-      setUserBudgets(budgetsResult.value || []);
-    }
-
-  } catch (error) {
-    console.error('Error fetching dependent data:', error);
-    setError(error.message);
-  } finally {
-    setIsLoadingDependent(false);
-  }
-}, [tripID]);
+  // Use cached data or fetch fresh data
   useEffect(() => {
-    const fetchAllData = async () => {
-      const essentialData = await fetchEssentialData();
-      if (essentialData) {
-        await fetchDependentData(essentialData);
+    if (!tripID) return;
+
+    let isCancelled = false;
+
+    const loadData = async () => {
+      // Check if cache is valid
+      if (isCacheValid()) {
+        const {
+          mainData,
+          expenses,
+          settledDebts,
+          balances,
+          totals
+        } = cache.current;
+
+        // Use cached data
+        setUser(mainData.user);
+        setTripMembers(mainData.members);
+        setExpenses(expenses || []);
+        setSettledDebts(settledDebts || []);
+        setBalances(balances || {});
+        setTotals(totals);
+        return;
+      }
+
+      // Fetch fresh data if not cancelled
+      if (!isCancelled) {
+        await fetchAllData();
       }
     };
 
-    fetchAllData();
-  }, [fetchEssentialData, fetchDependentData]);
+    loadData();
 
+    return () => {
+      isCancelled = true;
+    };
+  }, [tripID, fetchAllData]);
+
+  // Optimized refresh function
+  const refreshData = useCallback(async () => {
+    // Clear cache
+    cache.current = {
+      ...cache.current,
+      lastFetch: null
+    };
+    
+    await fetchAllData();
+  }, [fetchAllData]);
+
+  // Replace individual refresh functions with the optimized one
   const createExpense = async (expenseData) => {
-    setLoading(true);
     try {
-      if (!expenseData.tripID) {
-        throw new Error("Trip ID is required");
-      }
-      if (!expenseData.splits?.length) {
-        throw new Error("Splits are required");
-      }
-      
       const newExpense = await addExpense(expenseData);
-      setExpenses(prevExpenses => [...prevExpenses, newExpense]);
-      await refreshTotals();
+      await refreshData(); // Refresh all data in one go
       return newExpense;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      setError(error.message);
+      throw error;
     }
   };
+
   const removeExpense = async (expenseId, tripID) => {
     try {
       // Optimistically update UI
@@ -250,12 +209,12 @@ export function ExpensesProvider ({ children }) {
       await deleteExpense(expenseId, tripID);
   
       // Only fetch totals, skip fetching expenses again
-      await refreshTotals();
+      await refreshData();
       
     } catch (error) {
       // Rollback on error
       console.error('Error deleting expense:', error);
-      await fetchMainData(); // Restore correct state
+      await fetchAllData(); // Restore correct state
       throw error;
     }
   };
@@ -267,7 +226,7 @@ const editExpense = async (expenseToUpdate) => {
     const updatedExpense = await updateExpense(expenseToUpdate);
     
     // Refresh the expense list and totals
-    await refreshTotals();
+    await refreshData();
     
     return updatedExpense;
   } catch (error) {
@@ -289,7 +248,7 @@ const settleUp = async (debtData) => {
     // Call the API
     const result = await settleDebt(tripID,  debtData);
     
-   await refreshTotals();
+   await refreshData();
     
     return result;
   } catch (error) {
@@ -313,8 +272,7 @@ const editDebt = async (debtID, updatedAmount) => {
       throw new Error("Invalid amount");
     }
     await editSettledDebt(tripID, debtID, amount);
-    await fetchSettledDebts();
-    await refreshTotals();
+    await refreshData();
   } catch (error) {
     console.error('Error editing debt:', error);
     setError(error.message);
@@ -329,8 +287,7 @@ const deleteDebt = async (debtID) => {
   setIsDeletingDebt(true);
   try {
     await deleteSettledDebt(tripID, debtID);
-    await fetchSettledDebts();
-    await refreshTotals();
+    await refreshData();
   } catch (error) {
     console.error('Error deleting debt:', error);
     setError(error.message);
@@ -344,7 +301,7 @@ const handleCreateBudget = async (userID, amount) => {
   setIsCreatingBudget(true);
   try {
     await createBudget(tripID, userID, amount);
-    await fetchUserBudgets();
+    await refreshData();
   } catch (error) {
     console.error('Error creating budget:', error);
     setError(error.message);
@@ -358,7 +315,7 @@ const handleEditBudget = async (userID, updatedAmount) => {
   setIsEditingBudget(true);
   try {
     await editBudget(tripID, userID, updatedAmount);
-    await fetchUserBudgets();
+    await refreshData();
   } catch (error) {
     console.error('Error editing budget:', error);
     setError(error.message);
@@ -372,7 +329,7 @@ const handleDeleteBudget = async (userID) => {
   setIsDeletingBudget(true);
   try {
     await deleteBudget(tripID, userID);
-    await fetchUserBudgets();
+    await refreshData();
   } catch (error) {
     console.error('Error deleting budget:', error);
     setError(error.message);
@@ -381,27 +338,6 @@ const handleDeleteBudget = async (userID) => {
     setIsDeletingBudget(false);
   }
 };
-
-
-
-const refreshTotals = useCallback(async () => {
-  try {
-    // Clear cache to force fresh data
-    cache.current = {
-      mainData: null,
-      totals: null,
-      lastFetch: null
-    };
-    
-    const essentialData = await fetchEssentialData();
-    if (essentialData) {
-      await fetchDependentData(essentialData);
-    }
-  } catch (error) {
-    console.error('Error refreshing data:', error);
-    setError(error.message);
-  }
-}, [fetchEssentialData, fetchDependentData]);
 
   const value = useMemo(() => ({
     user,
@@ -414,11 +350,11 @@ const refreshTotals = useCallback(async () => {
     balances,
     settledDebts,
     createExpense,
-    refreshTotals,
+    refreshData,
     removeExpense,
     editExpense,
-    fetchBalanceMap,
-    fetchSettledDebts,
+    fetchBalanceMap: balances,
+    fetchSettledDebts: settledDebts,
     settleUp,
     isSettlingUp,
     editDebt,
@@ -444,13 +380,12 @@ const refreshTotals = useCallback(async () => {
     isLoadingTotals,
     error,
     balances,
-    settledDebts,
+    JSON.stringify(settledDebts),
     createExpense,
-    refreshTotals,
+    refreshData,
     removeExpense,
     editExpense,
-    fetchBalanceMap,
-    fetchSettledDebts,
+    settledDebts,
     settleUp,
     isSettlingUp,
     editDebt,

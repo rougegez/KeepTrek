@@ -55,7 +55,7 @@ export const AppSidebar = ({ tripID }) => {
         >
           <a href="/" className="">
             <img
-              src="../src/assets/KeepTrekNew.png"
+              src="/assets/KeepTrekNew.png"
               alt="KeepTrek Logo"
               className="h-12"
             />
@@ -66,7 +66,7 @@ export const AppSidebar = ({ tripID }) => {
 
       <SidebarContent className="p-2">
         {/* Overview Section */}
-        <Collapsible defaultClosed className="group/collapsible">
+        {/* <Collapsible defaultClosed className="group/collapsible">
           <SidebarGroup>
             <motion.div
               whileHover={{ scale: 1.01 }}
@@ -114,13 +114,13 @@ export const AppSidebar = ({ tripID }) => {
               </SidebarGroupContent>
             </CollapsibleContent>
           </SidebarGroup>
-        </Collapsible>
+        </Collapsible> */}
 
         {/* Main Navigation Items */}
         {[ 
           { title: "Itinerary", icon: Calendar, path: `/itineraryWL/${tripID}` },
-          { title: "Budget", icon: PiggyBank, path: `/expenses/${tripID}` },
-          { title: "Wishlist", icon: Heart, path: `/wishlist/${tripID}` },
+          { title: "Expenses", icon: PiggyBank, path: `/expenses/${tripID}` },
+          { title: "Suggest", icon: Heart, path: `/wishlist/${tripID}` },
           { title: "Can't Find a Date?", icon: CalendarClock, path: `/schedule/${tripID}` },
         ].map((item) => (
           <motion.div

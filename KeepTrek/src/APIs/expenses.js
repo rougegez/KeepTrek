@@ -91,4 +91,10 @@ export const UserBalance = async (tripID) => {
   return response.data;
 };
 
+// Add new combined data fetch function
+export const getTripData = async (tripID) => {
+  const response = await axios.get(`/expenses/trip-data/${tripID}`);
+  return response.data;
+};
+
 

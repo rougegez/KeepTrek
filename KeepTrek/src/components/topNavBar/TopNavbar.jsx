@@ -123,7 +123,7 @@ export default function TopNavbar() {
               </Sheet>
               <div className="flex-shrink-0 flex items-center max-w-36">
                 <NavLink to="/" className="text-2xl font-bold text-gray-800">
-                  <img src="../src/assets/KeepTrekNew.png" alt="KeepTrek" className="object-scale-down" />
+                  <img src="/assets/KeepTrekNew.png" alt="KeepTrek" className="object-scale-down" />
                 </NavLink>
               </div>
             </div>
@@ -138,7 +138,7 @@ export default function TopNavbar() {
                       to="/create-trip"
                       className="border-transparent inline-flex text-sm font-semibold"
                     >
-                      Create Itinerary
+                      Create a Trip
                     </NavLink>
                   </Button>
                   <Button size="icon" variant="ghost" className="m-2 rounded-full">

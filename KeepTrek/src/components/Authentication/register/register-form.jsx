@@ -59,7 +59,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
       {/* Logo and Header */}
       <div className="text-center">
         <img
-          src="../src/assets/logo.png"
+          src="/assets/logo.png"
           alt="Logo"
           className="h-16 w-16 mx-auto mb-4"
         />
@@ -74,7 +74,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
         className="w-full flex items-center justify-center gap-2 border-gray-300"
         onClick={handleGoogleRegister}
       >
-        <img src="../src/assets/google.png" alt="Google" className="h-5 w-5" />
+        <img src="/assets/google.png" alt="Google" className="h-5 w-5" />
         Sign up with Google
       </Button>
 
