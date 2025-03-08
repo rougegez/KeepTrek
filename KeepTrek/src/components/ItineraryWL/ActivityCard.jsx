@@ -30,7 +30,7 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
           </div>}
       </div>
 
-      <Card className="bg-white rounded-xl shadow-sm w-full max-w-4xl">
+      <Card className="bg-white rounded-xl shadow-sm w-full">
         <CardContent className="p-4">
           <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-4`}>
             {/* Image for mobile - moved to top with overlapping menu */}
@@ -123,8 +123,8 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={onEditClick}>Edit</DropdownMenuItem>
-                      <DropdownMenuItem onClick={onDeleteClick} className="text-red-500">Delete</DropdownMenuItem>
+                    <DropdownMenuItem onClick={onEditClick} className="text-[#439f96]"><Pencil className="w-4 h-4 text-[#439f96]" />Edit</DropdownMenuItem>
+                    <DropdownMenuItem onClick={onDeleteClick} className="text-red-500"><Trash className="w-4 h-4 text-red-500" />Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
