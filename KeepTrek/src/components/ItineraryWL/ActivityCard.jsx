@@ -40,7 +40,7 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
                   <img
                     src={activity.image}
                     alt=""
-                    className="w-full h-30 rounded-lg object-cover"
+                    className="w-full h-16 rounded-lg object-cover"
                   />
                 </a>
                 {/* Menu positioned over the image */}
@@ -111,7 +111,7 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
                   <img
                     src={activity.image}
                     alt=""
-                    className="w-48 h-28 rounded-lg object-cover"
+                    className="w-52 h-32 rounded-lg object-cover"
                   />
                 </a>
                 {/* Menu positioned over the image */}
