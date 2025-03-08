@@ -65,7 +65,7 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
               <div className="flex items-start justify-between">
                 <h3 className="text-lg font-semibold">{activity.title}</h3>
                 
-                {/* Menu for desktop view */}
+                {/* Menu for desktop view
                 {!isMobile && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -78,7 +78,7 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
                       <DropdownMenuItem onClick={onDeleteClick} className="text-red-500"><Trash className="w-4 h-4 text-red-500" />Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                )}
+                )} */}
               </div>
 
               {/* Address */}
@@ -114,6 +114,20 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
                     className="w-48 h-28 rounded-lg object-cover"
                   />
                 </a>
+                {/* Menu positioned over the image */}
+                <div className="absolute top-2 right-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0 bg-white/80 hover:bg-white rounded-full">
+                        <MoreHorizontal className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={onEditClick}>Edit</DropdownMenuItem>
+                      <DropdownMenuItem onClick={onDeleteClick} className="text-red-500">Delete</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
                 
               </div>
             )}
