@@ -295,7 +295,7 @@ function ItineraryWL() {
                       axis="y"
                       values={day.activities}
                       onReorder={(newActivities) => updateActivities(newActivities, dayIndex)}
-                      className="space-y-4 w-[95%] ml-30">
+                      className="space-y-4 w-[85%] ml-28">
                       {day.activities.map((activity) => (
                         <ActivityCard
                           key={activity.id}
