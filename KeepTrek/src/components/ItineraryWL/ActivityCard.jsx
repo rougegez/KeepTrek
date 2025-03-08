@@ -123,8 +123,8 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={onEditClick} className="text-[#439f96]"><Pencil className="w-4 h-4 text-[#439f96]" />Edit</DropdownMenuItem>
-                    <DropdownMenuItem onClick={onDeleteClick} className="text-red-500"><Trash className="w-4 h-4 text-red-500" />Delete</DropdownMenuItem>
+                    <DropdownMenuItem onClick={onEditClick} className="text-[#439f96] cursor-pointer"><Pencil className="w-4 h-4 text-[#439f96]" />Edit</DropdownMenuItem>
+                    <DropdownMenuItem onClick={onDeleteClick} className="text-red-500 cursor-pointer"><Trash className="w-4 h-4 text-red-500" />Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
