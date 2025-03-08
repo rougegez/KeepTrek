@@ -12,7 +12,6 @@ const LoadingSpinner = () => (
   <Loader2 className="h-4 w-4 animate-spin" />
 );
 
-
 export default function DebtsSummary() {
   const {
     expenses,
@@ -39,14 +38,7 @@ export default function DebtsSummary() {
   const [editAmount, setEditAmount] = useState("");
   const [editError, setEditError] = useState("");
 
-  const memoizedSettledDebts = useMemo(() => settledDebts || [], [JSON.stringify(settledDebts)]);
 
-  // Prevent redundant console logs
-  const previousSettledDebts = useRef(null);
-  if (JSON.stringify(previousSettledDebts.current) !== JSON.stringify(memoizedSettledDebts)) {
-    console.log(memoizedSettledDebts);
-    previousSettledDebts.current = memoizedSettledDebts;
-  }
 
   const handleSettleUp = async (paidBy, paidTo, amount) => {
     try {
@@ -84,42 +76,42 @@ export default function DebtsSummary() {
   };
 
   // Add handlers
-const handleDebtClick = (debt) => {
-  setSelectedDebt(debt);
-  setEditAmount(debt.amount.toString());
-  setShowEditModal(true);
-};
+  const handleDebtClick = (debt) => {
+    setSelectedDebt(debt);
+    setEditAmount(debt.amount.toString());
+    setShowEditModal(true);
+  };
 
-const handleEditDebt = async () => {
-  try {
-    const amount = Number(editAmount);
-    if (isNaN(amount) || amount <= 0) {
-      setEditError("Please enter a valid amount");
-      return;
+  const handleEditDebt = async () => {
+    try {
+      const amount = Number(editAmount);
+      if (isNaN(amount) || amount <= 0) {
+        setEditError("Please enter a valid amount");
+        return;
+      }
+
+      console.log('Sending edit request:', {
+        debtId: selectedDebt.id,
+        amount: amount
+      });
+      
+      await editDebt(selectedDebt.id, amount);
+      setShowEditModal(false);
+      setEditError("");
+    } catch (error) {
+      console.error('Error in handleEditDebt:', error);
+      setEditError(error.message);
     }
+  };
 
-    console.log('Sending edit request:', {
-      debtId: selectedDebt.id,
-      amount: amount
-    });
-    
-    await editDebt(selectedDebt.id, amount);
-    setShowEditModal(false);
-    setEditError("");
-  } catch (error) {
-    console.error('Error in handleEditDebt:', error);
-    setEditError(error.message);
-  }
-};
-
-const handleDeleteDebt = async () => {
-  try {
-    await deleteDebt(selectedDebt.id);
-    setShowEditModal(false);
-  } catch (error) {
-    setEditError(error.message);
-  }
-};
+  const handleDeleteDebt = async () => {
+    try {
+      await deleteDebt(selectedDebt.id);
+      setShowEditModal(false);
+    } catch (error) {
+      setEditError(error.message);
+    }
+  };
 
   const [error, setError] = useState(null);
 
@@ -170,7 +162,7 @@ const handleDeleteDebt = async () => {
     });
   };
 
-  console.log(settledDebts);
+  console.log('Balances:', balances); // Debugging log
 
   return (
     <div className="space-y-6 p-1">

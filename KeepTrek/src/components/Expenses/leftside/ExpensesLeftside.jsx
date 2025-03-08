@@ -24,13 +24,8 @@ export const ExpensesLeftside = () => {
             <ExpenseList tripID={tripID} />
 
             </div>
-        </div>
-
-
-        
+        </div>   
         </ExpensesProvider>
-
-
     );
 }
 export default ExpensesLeftside;
