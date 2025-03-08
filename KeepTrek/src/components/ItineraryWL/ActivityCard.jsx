@@ -18,7 +18,7 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
 
   return (
     <Reorder.Item key={activity.id} value={activity} className="relative">
-      <div className={`${isMobile ? 'static mb-2' : 'absolute left-0 -ml-24 top-12'} flex flex-col space-y-1 text-sm text-muted-foreground px-2 md:px-10`}>
+      <div className="absolute left-0 -ml-24 top-12 flex flex-col space-y-1 text-sm text-muted-foreground px-10">
         {/* Time */}
         {activity.time && <div className="font-medium">{formatTime(activity.time)}</div>}
 
@@ -28,7 +28,7 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
             <Clock className="w-4 h-4" />
             {activity.duration} h
           </div>}
-      </div>
+          </div>
 
       <Card className="bg-white rounded-xl shadow-sm w-full">
         <CardContent className="p-4">
