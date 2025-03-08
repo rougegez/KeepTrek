@@ -152,11 +152,11 @@ export default function TopNavbar() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-48 mt-2">
-                      <DropdownMenuItem onClick={() => navigate("/profile")}>
+                      <DropdownMenuItem onClick={() => navigate("/profile")} className="cursor-pointer">
                         <UserIcon className="mr-2 h-4 w-4" />
                         Profile
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleLogout}>
+                      <DropdownMenuItem onClick={handleLogout}  className="cursor-pointer text-red-500">
                         <LogOut className="mr-2 h-4 w-4" />
                         Logout
                       </DropdownMenuItem>
