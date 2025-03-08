@@ -30,7 +30,7 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
           </div>}
           </div>
 
-      <Card className="bg-white rounded-xl shadow-sm w-full">
+      <Card className="bg-white rounded-xl shadow-sm w-full max-w-4xl">
         <CardContent className="p-4">
           <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-4`}>
             {/* Image for mobile - moved to top with overlapping menu */}
