@@ -7,29 +7,19 @@ import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar.jsx";
 import { Textarea } from '@/components/ui/textarea';
 import { fetchPlaceDetails } from '@/utils/fetchPlaceDetails.jsx';
 
-const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days }) => {
-  const [editedActivity, setEditedActivity] = useState(null);
+import { useItinerary } from './useItinerarySocket.jsx';
 
-  useEffect(() => {
-    if (isOpen && currentActivity) {
-      setEditedActivity(currentActivity);
-    }
-  }, [isOpen, currentActivity]);
+const EditActivityModal = ({ isOpen, onClose, activityId, onSaveEdit}) => {
+  const {days, getActivity , updateActivity, changeActivityDay} = useItinerary();
+  const { date: foundDate, day: foundDay, activity: activity} = getActivity(activityId) || {};
 
-  if (!editedActivity) return null;
-
-  const handleDayChange = (newDay) => {
-    setEditedActivity(prev => ({
-      ...prev,
-      day: newDay
-    }));
-  };
+  if (!activity) return null;
 
   const handleLocationChange = async (newLocation) => {
     if (newLocation?.placePrediction?.structuredFormat?.mainText?.text) {
       const suggestion = await fetchPlaceDetails(newLocation.placePrediction.placeId)
-      setEditedActivity(prev => ({
-        ...prev,
+      updateActivity({
+        ...activity,
         location: suggestion?.address ?? newLocation,
         coordinates: suggestion?.coordinates ?? [],
         rating: suggestion?.rating ?? "",
@@ -37,10 +27,10 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days 
         website: suggestion?.website ?? "",
         link: suggestion?.link ?? "",
         image: suggestion?.image ?? "../src/assets/dummy-image.jpg"
-      }));
+      });
     } else {
-      setEditedActivity(prev => ({
-        ...prev,
+      updateActivity({
+        ...activity,
         location: newLocation,
         coordinates: [],
         rating: "",
@@ -48,7 +38,7 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days 
         website: "",
         link: "",
         image: "../src/assets/dummy-image.jpg"
-      }));
+      });
     }
   }
 
@@ -57,7 +47,7 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days 
 
     // Allow empty input
     if (inputValue === '') {
-      setEditedActivity({ ...editedActivity, duration: '' })
+      updateActivity({ ...activity, duration: '' })
       return;
     }
 
@@ -71,14 +61,13 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days 
       numberValue <= 99.5 &&
       numberValue * 2 === Math.round(numberValue * 2) // Check for increments of 0.5
     ) {
-      setEditedActivity({ ...editedActivity, duration: inputValue });
+      updateActivity({ ...activity, duration: inputValue });
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
       if (!open) {
-        setEditedActivity(null);
         onClose();
       }
     }}>
@@ -93,8 +82,8 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days 
           <div>
             <label htmlFor="day-select" className="block text-sm font-medium text-muted-foreground mb-1">Day</label>
             <Select
-              value={editedActivity.day}
-              onValueChange={handleDayChange}
+              value={foundDate}
+              onValueChange={(newDay) => changeActivityDay(activity, newDay)}
             >
               <SelectTrigger id="day-select" className="w-full">
                 <SelectValue placeholder="Select a day" />
@@ -113,9 +102,10 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days 
           <div>
             <label htmlFor="activity-type" className="block text-sm font-medium text-muted-foreground mb-1">Activity Type</label>
             <Select
-              value={editedActivity.type}
-              onValueChange={(value) =>
-                setEditedActivity({ ...editedActivity, type: value })
+              value={activity.type}
+              onValueChange={(value) => {
+                updateActivity({ ...activity, type: value });
+              }
               }
             >
               <SelectTrigger id="activity-type" className="w-full">
@@ -136,9 +126,9 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days 
             <Input
               id="activity-time"
               type="time"
-              value={editedActivity.time}
+              value={activity.time}
               onChange={(e) =>
-                setEditedActivity({ ...editedActivity, time: e.target.value })
+                updateActivity({ ...activity, time: e.target.value })
               }
             />
           </div>
@@ -150,7 +140,7 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days 
               id="activity-duration"
               type="text"
               placeholder="e.g. 0.5, 1, 1.5"
-              value={editedActivity.duration}
+              value={activity.duration}
               onChange={handleDurationChange}
             />
           </div>
@@ -161,9 +151,9 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days 
             <Input
               id="activity-name"
               type="text"
-              value={editedActivity.title}
+              value={activity.title}
               onChange={(e) =>
-                setEditedActivity({ ...editedActivity, title: e.target.value })
+                updateActivity({ ...activity, title: e.target.value })
               }
             />
           </div>
@@ -175,7 +165,7 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days 
               id="address"
               searchButton={false}
               onChange={handleLocationChange}
-              initialPlace={editedActivity.location}
+              initialPlace={activity.location}
             />
           </div>
 
@@ -185,29 +175,21 @@ const EditActivityModal = ({ isOpen, onClose, currentActivity, onSaveEdit, days 
             <Textarea
               id="activity-notes"
               className="w-full min-h-[80px] p-2 text-sm bg-white rounded-lg resize-none placeholder:text-muted-foreground/50"
-              value={editedActivity.notes}
+              value={activity.notes}
               onChange={(e) =>
-                setEditedActivity({ ...editedActivity, notes: e.target.value })
+                updateActivity({ ...activity, notes: e.target.value })
               }
             />
           </div>
 
-          {/* Cancel Button */}
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => {
-              setEditedActivity(null);
-              onClose();
-            }}>
-              Cancel
-            </Button>
 
-            {/* Save Button */}
+            {/* Close Button */}
             <Button onClick={() => {
-              onSaveEdit(editedActivity);
-              setEditedActivity(null);
               onClose();
-            }}>Save Changes</Button>
+            }}>Close</Button>
           </div>
+
         </div>
       </DialogContent>
     </Dialog>
