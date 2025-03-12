@@ -26,7 +26,7 @@ const fetchPlaceDetails = async (placeId) => {
         const newPlace = {
             name: data.displayName.text ?? "",
             address: data.formattedAddress ?? "",
-            coordinates: [data.location.longitude, data.location.latitude] ?? [],
+            coordinates: [data.location.longitude, data.location.latitude],
             rating: {rating : data.rating ?? 0, count : data.userRatingCount ?? 0},
             website: data.websiteUri ?? "",
             openingHours: data.currentOpeningHours?.weekdayDescriptions ?? [],

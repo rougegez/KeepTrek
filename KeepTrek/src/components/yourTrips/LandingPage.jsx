@@ -348,7 +348,7 @@ export default function LandingPage() {
                           <motion.button
                             className={`w-full px-4 py-2 ${button.bg} ${
                               button.bg === "bg-black" ? "text-white" : "text-black"
-                            } rounded-lg flex items-center justify-start hover:opacity-80 transition-opacity duration-300`}
+                            } rounded-lg flex items-center justify-start hover:opacity-85 transition-opacity duration-300`}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                           >
