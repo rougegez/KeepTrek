@@ -19,15 +19,15 @@ import { getTrip, removeMember } from "@/APIs/trip.js";
 import { Card, CardContent } from "../ui/card.jsx";
 import { useMediaQuery } from 'react-responsive';
 import { motion } from "framer-motion";
-import MobileHeader from "../MobileHeader";
+import MobileHeader from "../MobileHeader.jsx";
 import InviteButton from "../Invite/InviteButton.jsx";
-import { UserAvatarStack } from '../profilePage/avatar';
+import { UserAvatarStack } from '../profilePage/avatar.jsx';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { canEdit, UserRole } from "@/utils/permissions";
 import { CurrentUser } from "@/APIs/auth";
 import LeaveAlert from '@/components/ui/LeaveAlert';
-import TripSettings from '../TripSettings/TripSettings';
+import TripSettings from '../TripSettings/TripSettings.jsx';
 
 function ItineraryWL() {
   const navigate = useNavigate();
