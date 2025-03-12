@@ -63,7 +63,7 @@ function App() {
                     <Route path="/team-history" element={<TeamHistory />} />
                     <Route path="/trip-details" element={<TripDetailsPage />} />
                     <Route path="/join-team/:teamId" element={<JoinTeam />} />
-                    <Route path="/itineraryWL/:tripID" element={<Itinerary />} />
+                    <Route path="/itinerary/:tripID" element={<Itinerary />} />
                     <Route path="/schedule/:tripID" element={<GrpSchedule />} />
                     <Route path="/wishlist/:tripID" element={<Wishlist />} />
                     <Route path="/create-trip" element={<CreateTrip />} />

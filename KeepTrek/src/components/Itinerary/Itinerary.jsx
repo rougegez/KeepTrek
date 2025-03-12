@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
-import { useQuery, useQueryClient, useMutation } from "react-query";
+import React, { useState, useEffect, useRef } from "react";
+import { useQuery, useQueryClient } from "react-query";
 import { withSuspense } from "@/utils/withSuspense.jsx";
 
 import { Button } from "@/components/ui/button";
 import { Reorder } from "framer-motion";
-import { Plus, Menu, ChevronUp, ChevronDown } from 'lucide-react'
+import { Plus, ChevronUp, ChevronDown } from 'lucide-react'
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import ActivityCard from "./ActivityCard.jsx";
@@ -14,7 +14,6 @@ import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx";
 import { dateFormatter } from "@/utils/dateFormat.jsx";
 
 import { useParams } from "react-router-dom";
-import { createItinerary, getItinerary, updateItinerary } from "@/APIs/itinerary.js";
 import { getTrip } from "@/APIs/trip.js";
 import { useMediaQuery } from 'react-responsive';
 import { motion } from "framer-motion";
@@ -23,9 +22,11 @@ import InviteButton from "../Invite/InviteButton.jsx";
 import { UserAvatarStack } from '../profilePage/avatar.jsx';
 
 import { useItinerary } from './useItinerarySocket.jsx';
+import { Skeleton } from "@/components/ui/skeleton.jsx";
+import { ReadyState } from "react-use-websocket";
 
 function Itinerary() {
-  const queryClient = useQueryClient();
+
   const { tripID } = useParams();
 
   const [addModalState, setAddModalState] = useState({ isOpen: false, selectedDay: null });
@@ -41,6 +42,21 @@ function Itinerary() {
   const [scrollPosition, setScrollPosition] = useState(0);
   const contentRef = useRef(null);
   const [lastScrollPosition, setLastScrollPosition] = useState(0);
+
+  const { data: tripDetails } = useQuery(
+    ['trip', tripID],
+    () => getTrip(tripID),
+    {
+      suspense: true,
+      staleTime: 1000 * 60 * 15, //  15 minutes
+    }
+  );
+
+  const { setTripID, days, setDays , readyState} = useItinerary()
+
+  useEffect(() => {
+    setTripID(tripID);
+  }, [tripID]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -79,29 +95,6 @@ function Itinerary() {
     </Button>
   );
 
-  const { data: tripDetails } = useQuery(
-    ['trip', tripID],
-    () => getTrip(tripID),
-    { suspense: true }
-  );
-
-  const { setTripID, days, setDays, sendJsonMessage } = useItinerary()
-  setTripID(tripID)
-
-  // Mutation to update the entire itinerary
-  const updateItineraryMutation = useMutation(
-    (updatedDays) => updateItinerary(tripID, { days: updatedDays }),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['itinerary', tripID]);
-      },
-    }
-  );
-
-  const handleUpdateItinerary = (updatedDays) => {
-    sendJsonMessage({ tripID: tripID, days: updatedDays });
-  };
-
   const handleMapLoad = (map) => {
     setMapInstance(map);
   };
@@ -132,33 +125,6 @@ function Itinerary() {
     setIsEditModalOpen(true);
   };
 
-  const handleSaveEdit = (editedActivity) => {
-    const updatedDays = days.map(day => {
-      if (day.date === editedActivity.day) {
-        const activityIndex = day.activities.findIndex(a => a.id === editedActivity.id);
-        if (activityIndex !== -1) {
-          // If the activity is found, update it in place
-          const updatedActivities = [...day.activities];
-          updatedActivities[activityIndex] = editedActivity;
-          return { ...day, activities: updatedActivities };
-        } else {
-          // If the activity is not found (day changed), add it to the end
-          return { ...day, activities: [...day.activities, editedActivity] };
-        }
-      } else {
-        // Remove the activity if it was moved to a different day
-        return {
-          ...day,
-          activities: day.activities.filter(a => a.id !== editedActivity.id)
-        };
-      }
-    });
-    setDays(updatedDays);
-    setIsEditModalOpen(false);
-    setCurrentActivity(null);
-  };
-
-
   const handleDeleteClick = (dayIndex, activityId) => {
     const updatedDays = [...days];
     updatedDays[dayIndex].activities = updatedDays[dayIndex].activities.filter(
@@ -184,10 +150,6 @@ function Itinerary() {
     clickLocation.name = clickLocation.title
     const random = new Date().getTime()
     setSearchedPlace({ random, clickLocation })
-  }
-
-  if (!days.length) {
-    return <div>Loading...</div>;
   }
 
   return (
@@ -245,10 +207,7 @@ function Itinerary() {
               <InviteButton tripID={tripID} />
             </div>
           </div>
-          <div>
-            <Button onClick={() => handleUpdateItinerary(days)}>Save</Button>
-          </div>
-          {days.map((day, dayIndex) => (
+          {readyState === ReadyState.OPEN && (days && days.length > 0)  ? (days.map((day, dayIndex) => (
             <div key={day.date} className="space-y-4">
               <h2 className="text-xl font-semibold">{day.date}</h2>
               <Reorder.Group
@@ -276,7 +235,9 @@ function Itinerary() {
                 Add Activity
               </Button>
             </div>
-          ))}
+          ))) : (
+            <ItinerarySkeleton />
+          )}
           <Button
             variant="outline"
             className="w-full"
@@ -319,11 +280,37 @@ function Itinerary() {
           setCurrentActivity(null);
         }}
         activityId={currentActivity?.id}
-        onSaveEdit={handleSaveEdit}
       />
     </SidebarProvider>
   );
 }
 
+function ItinerarySkeleton() {
+  return (
+    <div className="animate-pulse space-y-4">
+      {/* Day heading skeleton */}
+      <Skeleton className="h-6 w-1/3" />
+      
+      {/* Activity card skeletons */ }
+      {[1, 2, 3].map((index) => (
+        <div key={index} className="bg-white rounded-xl shadow-sm w-full max-w-4xl p-4" >
+          <div className="flex gap-4">
+            {/* Left side skeleton */}
+            <div className="flex-grow space-y-4">
+              <Skeleton className="h-4 w-1/2" />
+              <div className="flex items-center gap-1">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <Skeleton className="h-4 w-1/4" />
+              </div>
+              <Skeleton className="h-16" />
+            </div>
+            {/* Right side skeleton image */}
+            <Skeleton className="w-48 h-28 rounded-lg" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 export default withSuspense(Itinerary);
 

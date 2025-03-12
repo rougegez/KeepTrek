@@ -9,8 +9,8 @@ import { fetchPlaceDetails } from '@/utils/fetchPlaceDetails.jsx';
 
 import { useItinerary } from './useItinerarySocket.jsx';
 
-const EditActivityModal = ({ isOpen, onClose, activityId, onSaveEdit}) => {
-  const {days, getActivity , updateActivity, changeActivityDay} = useItinerary();
+const EditActivityModal = ({ isOpen, onClose, activityId}) => {
+  const {days, getDayAndActivity: getActivity , updateActivity, changeActivityDay} = useItinerary();
   const { date: foundDate, day: foundDay, activity: activity} = getActivity(activityId) || {};
 
   if (!activity) return null;
