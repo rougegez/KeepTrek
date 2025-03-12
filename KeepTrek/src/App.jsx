@@ -7,17 +7,14 @@ import { AuthProvider } from "./contexts/authContext.jsx";
 
 import LandingPage from "./components/yourTrips/LandingPage.jsx";
 import YourTrips from "./components/yourTrips/yourTrips.jsx";
-import Dashboard from "./components/Dashboard/Dashboard.jsx";
+
 import CreateTrip from "./components/CreateTrip/CreateTrip.jsx";
 import MainExpensePage from "./components/Expenses/mainExpensePage.jsx";
 import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx";
-import TeamBudgetPage from "./components/Budget/TeamBudgetPage.jsx";
-import { TeamHistory } from "./components/OldBudget.jsx/TeamHistory.jsx";
-import { JoinTeam } from "./components/OldBudget.jsx/JoinTeam.jsx";
 import Itinerary from "./components/Itinerary/Itinerary.jsx";
 import Wishlist from "./components/Wishlist/Wishlist.jsx";
 import { ProfilePage } from "./components/profilePage/profilePage.jsx";
-import { TripDetailsPage } from "./components/TripDetails/TripDetailsPage.jsx";
+// import { TripDetailsPage } from "./components/TripDetails/TripDetailsPage.jsx";
 import { GrpSchedule } from "./components/GrpSchedule/GrpSchedule.jsx";
 import Modal from "./components/Authentication/Modal";
 import LoginForm from "./components/Authentication/login/login-form";
@@ -57,13 +54,9 @@ function App() {
                     }
                   >
                     <Route path="/yourTrips" element={<YourTrips />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/expense-splitting/:tripID" element={<TeamBudgetPage />} />
                     <Route path="/expenses/:tripID" element={<MainExpensePage />} />
-                    <Route path="/team-history" element={<TeamHistory />} />
-                    <Route path="/trip-details" element={<TripDetailsPage />} />
-                    <Route path="/join-team/:teamId" element={<JoinTeam />} />
                     <Route path="/itinerary/:tripID" element={<Itinerary />} />
+                    {/* <Route path="/trip-details" element={<TripDetailsPage />} /> */}
                     <Route path="/schedule/:tripID" element={<GrpSchedule />} />
                     <Route path="/wishlist/:tripID" element={<Wishlist />} />
                     <Route path="/create-trip" element={<CreateTrip />} />

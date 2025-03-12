@@ -20,6 +20,8 @@ import { motion } from "framer-motion";
 import MobileHeader from "../MobileHeader.jsx";
 import InviteButton from "../Invite/InviteButton.jsx";
 import { UserAvatarStack } from '../profilePage/avatar.jsx';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 import { useItinerary } from './useItinerarySocket.jsx';
 import { Skeleton } from "@/components/ui/skeleton.jsx";
@@ -52,7 +54,7 @@ function Itinerary() {
     }
   );
 
-  const { setTripID, days, setDays , readyState} = useItinerary()
+  const { setTripID, days, setDays, readyState } = useItinerary()
 
   useEffect(() => {
     setTripID(tripID);
@@ -78,6 +80,25 @@ function Itinerary() {
 
       setLastScrollPosition(position);
       setScrollPosition(position);
+    };
+
+    const activityCardContentStyle = {
+      display: 'flex',
+      gap: '1rem',
+      flexDirection: isMobile ? 'column' : 'row',
+    };
+
+    const activityImageStyle = {
+      maxWidth: '30rem',
+      maxHeight: '10rem',
+      borderRadius: '0.5rem',
+      objectFit: 'cover',
+      width: isMobile ? '100%' : 'auto',
+      height: isMobile ? 'auto' : 'auto',
+    };
+
+    const cardStyle = {
+      maxWidth: isMobile ? '20rem' : '100%',
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -157,8 +178,8 @@ function Itinerary() {
       <AppSidebar tripID={tripID} />
       {!isMobile && <SidebarTrigger />}
       {isMobile && <MobileHeader title="Itinerary" />}
-      <div className="flex w-full">
-        {isMobile && (
+      <div className={`flex w-full ${!isMobile && 'grid grid-cols-2'}`}>
+        {isMobile ? (
           <motion.div
             className="fixed w-full z-40 bg-background"
             initial={{ height: '75vh' }}
@@ -166,7 +187,7 @@ function Itinerary() {
               height: getMapHeight(),
               transition: { duration: 0.3, ease: 'easeInOut' }
             }}
-            style={{ top: '3.5rem' }}
+            style={{ top: '3.5rem', flexShrink: 1 }}
           >
             <MapboxMap
               onSaveLocation={handleSaveLocation}
@@ -177,84 +198,85 @@ function Itinerary() {
             />
             <MapToggleButton />
           </motion.div>
-        )}
+        ) : null}
 
         <motion.div
           ref={contentRef}
-          className={`w-full space-y-6 overflow-y-auto ${isMobile ? 'bg-background relative z-30' : 'p-6 max-h-100vh'
+          className={`${isMobile
+              ? 'w-full bg-background relative z-30'
+              : 'col-span-1 h-screen'
             }`}
           animate={isMobile ? {
             marginTop: `calc(${getMapHeight()} + 3.5rem)`, // Add header height to margin
-            paddingTop: isMapExpanded ? '1.5rem' : '8rem',
-            paddingLeft: '1.5rem',
-            paddingRight: '1.5rem',
-            paddingBottom: '1.5rem',
             transition: { duration: 0.3, ease: 'easeInOut' }
           } : {}}
-          style={{
-            minHeight: isMobile ? `calc(100vh - ${getMapHeight()} - 3.5rem)` : 'auto' // Subtract header height
-          }}
+          style={{ flexShrink: 0 }}
         >
-          <div className="flex justify-between space-y-2">
-            <div>
-              <h1 className="text-3xl font-bold truncate">{tripDetails.tripName}</h1>
-              <p className="text-sm text-muted-foreground">
-                {dateFormatter(tripDetails.startDate)} to {dateFormatter(tripDetails.endDate)}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <UserAvatarStack userIds={tripDetails.users} />
-              <InviteButton tripID={tripID} />
-            </div>
-          </div>
-          {readyState === ReadyState.OPEN && (days && days.length > 0)  ? (days.map((day, dayIndex) => (
-            <div key={day.date} className="space-y-4">
-              <h2 className="text-xl font-semibold">{day.date}</h2>
-              <Reorder.Group
-                axis="y"
-                values={day.activities}
-                onReorder={(newActivities) => updateActivities(newActivities, dayIndex)}
-                className="space-y-4 w-[92%] ml-8">
-                {day.activities.map((activity) => (
-                  <ActivityCard
-                    key={activity.id}
-                    activity={activity}
-                    onNoteChange={handleNoteChange}
-                    onEditClick={() => handleEditClick(dayIndex, activity)}
-                    onDeleteClick={() => handleDeleteClick(dayIndex, activity.id)}
-                    onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
-                  />
-                ))}
-              </Reorder.Group>
+          <ScrollArea className={`${isMobile ? 'p-4' : 'h-full px-2 pt-6'}`}>
+            <div className="space-y-6">
+              <div className="flex justify-between space-y-2 mr-5">
+                <div>
+                  <h1 className="text-3xl font-bold truncate">{tripDetails.tripName}</h1>
+                  <p className="text-sm text-muted-foreground">
+                    {dateFormatter(tripDetails.startDate)} to {dateFormatter(tripDetails.endDate)}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <UserAvatarStack userIds={tripDetails.users} />
+                  <InviteButton tripID={tripID} />
+                </div>
+              </div>
+              {readyState === ReadyState.OPEN && (days && days.length > 0) ? (days.map((day, dayIndex) => (
+                <div key={day.date} className="space-y-4">
+                  <h2 className="text-xl font-semibold">{day.date}</h2>
+                  <Reorder.Group
+                    axis="y"
+                    values={day.activities}
+                    onReorder={(newActivities) => updateActivities(newActivities, dayIndex)}
+                    className="space-y-4 w-[90%] ml-14">
+                    {day.activities.map((activity) => (
+                      <ActivityCard
+                        key={activity.id}
+                        activity={activity}
+                        onNoteChange={handleNoteChange}
+                        onEditClick={() => handleEditClick(dayIndex, activity)}
+                        onDeleteClick={() => handleDeleteClick(dayIndex, activity.id)}
+                        onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                      />
+                    ))}
+                  </Reorder.Group>
+                  <Button
+                    variant="outline"
+                    className="w-[92%] ml-8"
+                    onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date })}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Activity
+                  </Button>
+                </div>
+              ))) : (
+                <ItinerarySkeleton />
+              )}
               <Button
                 variant="outline"
-                className="w-[92%] ml-8"
-                onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date })}
+                className="w-full"
+                onClick={() => setDays([...days, { date: `Day ${days.length + 1}`, activities: [] }])}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Activity
+                Add Day
               </Button>
             </div>
-          ))) : (
-            <ItinerarySkeleton />
-          )}
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => setDays([...days, { date: `Day ${days.length + 1}`, activities: [] }])}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Day
-          </Button>
+          </ScrollArea>
         </motion.div>
 
         {!isMobile && (
-          <div className="w-5/13" style={{ position: 'sticky', top: 0, height: '100vh' }}>
+          <div className="col-span-1 h-screen sticky top-0">
             <MapboxMap
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
               initialPlace={searchedPlace}
               height="100%"
+              width="100%"
             />
           </div>
         )}
@@ -286,31 +308,48 @@ function Itinerary() {
 }
 
 function ItinerarySkeleton() {
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
+
   return (
     <div className="animate-pulse space-y-4">
       {/* Day heading skeleton */}
       <Skeleton className="h-6 w-1/3" />
-      
-      {/* Activity card skeletons */ }
+
+      {/* Activity card skeletons */}
       {[1, 2, 3].map((index) => (
-        <div key={index} className="bg-white rounded-xl shadow-sm w-full max-w-4xl p-4" >
-          <div className="flex gap-4">
-            {/* Left side skeleton */}
-            <div className="flex-grow space-y-4">
-              <Skeleton className="h-4 w-1/2" />
-              <div className="flex items-center gap-1">
-                <Skeleton className="h-8 w-8 rounded-full" />
-                <Skeleton className="h-4 w-1/4" />
+        <div key={index} className="bg-white rounded-xl shadow-sm w-full max-w-4xl p-4">
+          {isMobile ? (
+            /* Mobile layout: image on top, then text */
+            <div className="w-full relative space-y-2">
+              <Skeleton className="w-full h-32 rounded-lg" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-1/2" />
+                <div className="flex items-center gap-1">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <Skeleton className="h-4 w-1/4" />
+                </div>
+                <Skeleton className="h-16" />
               </div>
-              <Skeleton className="h-16" />
             </div>
-            {/* Right side skeleton image */}
-            <Skeleton className="w-48 h-28 rounded-lg" />
-          </div>
+          ) : (
+            /* Desktop layout: text on left, image on right */
+            <div className="flex gap-4">
+              <div className="flex-grow space-y-4">
+                <Skeleton className="h-4 w-1/2" />
+                <div className="flex items-center gap-1">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <Skeleton className="h-4 w-1/4" />
+                </div>
+                <Skeleton className="h-16" />
+              </div>
+              <Skeleton className="w-48 h-28 rounded-lg" />
+            </div>
+          )}
         </div>
       ))}
     </div>
   );
 }
+
 export default withSuspense(Itinerary);
 

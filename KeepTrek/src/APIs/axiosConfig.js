@@ -1,13 +1,13 @@
 import axios from "axios";
 
-const axiosInstance = axios.create({
-  baseURL: 'http://127.0.0.1:8000',
+const baseURL = 'https://keeptrek-backend.onrender.com/';
 
+const axiosInstance = axios.create({
+  baseURL,
   headers: {
     'Content-Type': 'application/json'
   },
-  
-  withCredentials: true // Add this if you're using cookies/sessions
+  withCredentials: true
 });
 
 // Automatically add Authorization header if token exists

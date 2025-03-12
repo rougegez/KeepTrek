@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from "react"
-import { Bell, User, Menu } from 'lucide-react'
+import { Bell, User, Menu, LogOut, User as UserIcon } from 'lucide-react'
 import { NavLink, useNavigate, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -14,6 +14,9 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { UserAvatar } from "@/components/profilePage/avatar"
+import { CurrentUser } from '@/APIs/auth';  
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 
 export default function TopNavbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -21,18 +24,29 @@ export default function TopNavbar() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [userId, setUserId] = useState(null)
   const navigate = useNavigate()
   const location = useLocation()
 
   useEffect(() => {
-    const token = localStorage.getItem("token")
-    if (token) {
-      const storedUser = JSON.parse(localStorage.getItem("user"))
-      setUser(storedUser || { username: "Guest" })
-      setIsLoggedIn(true)
-    } else {
-      setIsLoggedIn(false)
+    const fetchUserData = async () => {
+      const token = localStorage.getItem("token")
+      if (token) {
+        try {
+          const currentUserId = await CurrentUser()
+          setUserId(currentUserId)
+          const storedUser = JSON.parse(localStorage.getItem("user"))
+          setUser(storedUser || { username: "Guest" })
+          setIsLoggedIn(true)
+        } catch (error) {
+          console.error('Error fetching user:', error)
+          handleLogout()
+        }
+      } else {
+        setIsLoggedIn(false)
+      }
     }
+    fetchUserData()
   }, [])
 
   const handleLogout = () => {
@@ -110,7 +124,7 @@ export default function TopNavbar() {
               </Sheet>
               <div className="flex-shrink-0 flex items-center max-w-36">
                 <NavLink to="/" className="text-2xl font-bold text-gray-800">
-                  <img src="../src/assets/KeepTrekNew.png" alt="KeepTrek" className="object-scale-down" />
+                  <img src="/assets/KeepTrekNew.png" alt="KeepTrek" className="object-scale-down" />
                 </NavLink>
               </div>
             </div>
@@ -120,31 +134,34 @@ export default function TopNavbar() {
             <div className="flex items-center">
               {isLoggedIn ? (
                 <>
-                  <Button asChild className="mr-4 hidden sm:inline-flex">
+                  <Button asChild className="mr-4 sm:inline-flex">
                     <NavLink
                       to="/create-trip"
                       className="border-transparent inline-flex text-sm font-semibold"
                     >
-                      Create Itinerary
+                      Create a Trip
                     </NavLink>
                   </Button>
-                  <Button size="icon" variant="ghost" className="m-2 rounded-full">
-                    <Bell className="h-4 w-4" aria-hidden="true" />
-                  </Button>
-                  <NavLink to="/profile">
-                    <Avatar>
-                      <AvatarFallback className="bg-gray-100">
-                        <User className="h-5 w-5 text-gray-500" />
-                      </AvatarFallback>
-                    </Avatar>
-                  </NavLink>
-                  <Button
-                    className="ml-4 text-sm font-semibold text-red-600 hidden sm:inline-flex"
-                    variant="ghost"
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="icon" variant="ghost" className="m-2 rounded-full">
+                        <UserAvatar 
+                          userId={userId}
+                          className="h-12 w-12"
+                        />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-48 mt-2">
+                      <DropdownMenuItem onClick={() => navigate("/profile")} className="cursor-pointer">
+                        <UserIcon className="mr-2 h-4 w-4" />
+                        Profile
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleLogout}  className="cursor-pointer text-red-500">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Logout
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </>
               ) : (
                 <>
@@ -183,4 +200,3 @@ export default function TopNavbar() {
     </>
   )
 }
-

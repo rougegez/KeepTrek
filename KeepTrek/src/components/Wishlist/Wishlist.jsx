@@ -23,6 +23,7 @@ import { useMediaQuery } from 'react-responsive';
 import { motion } from "framer-motion";
 import { ChevronUp, ChevronDown, Menu } from "lucide-react";
 import MobileHeader from "../MobileHeader";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function WishlistPage() {
   const { tripID } = useParams();
@@ -57,6 +58,7 @@ export default function WishlistPage() {
   const [lastScrollPosition, setLastScrollPosition] = useState(0);
 
   const [optimisticVotes, setOptimisticVotes] = useState({});
+  const [initialCategory, setInitialCategory] = useState("");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -86,9 +88,20 @@ export default function WishlistPage() {
 
   const fetchWishlistData = async () => {
     const allItems = await getAllItems(tripID);
-    const accommodation = allItems.filter(item => item.category === "accommodation");
-    const activities = allItems.filter(item => item.category === "activities");
-    const food = allItems.filter(item => item.category === "food");
+    
+    // Sort function to calculate rank
+    const sortByRank = (items) => {
+      return [...items].sort((a, b) => {
+        const rankA = (a.upvotes?.length || 0) - (a.downvotes?.length || 0);
+        const rankB = (b.upvotes?.length || 0) - (b.downvotes?.length || 0);
+        return rankB - rankA; // Sort items in descending order
+      });
+    };
+
+    const accommodation = sortByRank(allItems.filter(item => item.category === "accommodation"));
+    const activities = sortByRank(allItems.filter(item => item.category === "activities"));
+    const food = sortByRank(allItems.filter(item => item.category === "food"));
+    
     setWishlistData({ accommodation, activities, food });
   };
 
@@ -155,10 +168,11 @@ export default function WishlistPage() {
 
   const handleItemClick = (item) => {
     setSelectedItem(item);
-    setIsEditModalOpen(false); // Ensure the edit modal is closed
+    setIsEditModalOpen(false);
   };
 
-  const handleCreateItem = () => {
+  const handleCreateItem = (category) => {
+    setInitialCategory(category.toLowerCase());
     setIsCreateModalOpen(true);
   };
 
@@ -207,7 +221,7 @@ export default function WishlistPage() {
     await fetchWishlistData();
     const allItems = await getAllItems(selectedItem.tripID);
     const newSelectedItem = allItems.find(i => i.id === selectedItem.id);
-    setSelectedItem(newSelectedItem); // Update selected item state
+    setSelectedItem(newSelectedItem);
     setIsEditModalOpen(false);
   };
 
@@ -295,9 +309,9 @@ export default function WishlistPage() {
     <SidebarProvider>
       <AppSidebar tripID={tripID}/>
       {!isMobile && <SidebarTrigger />}
-      {isMobile && <MobileHeader title="Wishlist" />}
-      <div className="flex w-full">
-        {isMobile && (
+      {isMobile && <MobileHeader title="Suggest a place to Go!" />}
+      <div className={`flex w-full ${!isMobile && 'grid grid-cols-2'}`}>
+        {isMobile ? (
           <motion.div
             className="fixed w-full z-40 bg-background"
             initial={{ height: '75vh' }}
@@ -316,123 +330,124 @@ export default function WishlistPage() {
             />
             <MapToggleButton />
           </motion.div>
-        )}
+        ) : null}
 
         <motion.div 
           ref={contentRef}
-          className={`w-full space-y-6 overflow-y-auto ${
-            isMobile ? 'bg-background relative z-30' : 'p-6 max-h-100vh'
+          className={`${
+            isMobile 
+              ? 'w-full bg-background relative z-30' 
+              : 'col-span-1 h-screen'
           }`}
           animate={isMobile ? {
-            marginTop: `calc(${getMapHeight()} + 3.5rem)`, // Add header height to margin
-            paddingTop: isMapExpanded ? '1.5rem' : '8rem',
-            paddingLeft: '1.5rem',
-            paddingRight: '1.5rem',
+            marginTop: `calc(${getMapHeight()} + 3.5rem)`,
             transition: { duration: 0.3, ease: 'easeInOut' }
           } : {}}
-          style={{
-            minHeight: isMobile ? `calc(100vh - ${getMapHeight()} - 3.5rem)` : 'auto' // Subtract header height
-          }}
         >
-          {!isMobile && <h1 className="text-3xl font-bold">Wishlist</h1>}
-          <div className="flex justify-between items-center">
-            <Button variant={addMode ? "outline" : "default"} onClick={handleAddModeToggle}>
-              {addMode ? "Cancel" : "Add Items to Itinerary"}
-            </Button>
-            {addMode && (
-              <div className="flex items-center gap-2">
-                <Select
-                  value={selectedDay}
-                  onValueChange={(value) => setSelectedDay(value)}
-                >
-                  <SelectTrigger className="w-full text-white bg-primary">
-                    <SelectValue placeholder="Select a day" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {itineraryDays.map((day, index) => (
-                      <SelectItem key={index} value={day.date}>
-                        {day.date}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button onClick={handleAddToItinerary} disabled={!selectedDay || selectedItems.length === 0}>
-                  Add to Itinerary
+          <ScrollArea className={`${isMobile ? 'p-6' : 'h-full px-6 pt-6'}`}>
+            <div className="space-y-4">
+              {!isMobile && <h1 className="text-3xl font-bold">Suggest a place to Go!</h1>}
+              <div className="flex justify-between items-center">
+                <Button variant={addMode ? "outline" : "default"} onClick={handleAddModeToggle}>
+                  {addMode ? "Cancel" : "Add Items to Itinerary"}
                 </Button>
+                {addMode && (
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={selectedDay}
+                      onValueChange={(value) => setSelectedDay(value)}
+                    >
+                      <SelectTrigger className="w-full text-white bg-primary">
+                        <SelectValue placeholder="Select a day" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {itineraryDays.map((day, index) => (
+                          <SelectItem key={index} value={day.date}>
+                            {day.date}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button onClick={handleAddToItinerary} disabled={!selectedDay || selectedItems.length === 0}>
+                      Add to Itinerary
+                    </Button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          {addMode && (
-            <p className="text-sm font-normal text-muted-foreground">
-              {selectedItems.length > 0 ? `${selectedItems.length} items selected.` : "Select at least 1 wishlist item to add to your itinerary."}
-            </p>
-          )}
+              {addMode && (
+                <p className="text-sm font-normal text-muted-foreground">
+                  {selectedItems.length > 0 ? `${selectedItems.length} items selected.` : "Select at least 1 wishlist item to add to your itinerary."}
+                </p>
+              )}
 
-          <WishlistSection title="Accommodation">
-            {wishlistData.accommodation.map((item) => (
-              <WishlistCard
-                key={item.id}
-                item={item}
-                onClick={() => handleItemClick(item)}
-                onUpvote={(item) => handleVote(item, true)}
-                onDownvote={(item) => handleVote(item, false)}
-                onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
-                currUser={user}
-                addMode={addMode}
-                onSelect={handleSelectItem}
-                isSelected={selectedItems.includes(item)}
-                optimisticVotes={optimisticVotes}
-              />
-            ))}
-            <AddItemCard onClick={handleCreateItem} />
-          </WishlistSection>
+              <WishlistSection title="Accommodation">
+                {wishlistData.accommodation.map((item) => (
+                  <WishlistCard
+                    key={item.id}
+                    item={item}
+                    onClick={() => handleItemClick(item)}
+                    onUpvote={(item) => handleVote(item, true)}
+                    onDownvote={(item) => handleVote(item, false)}
+                    onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                    currUser={user}
+                    addMode={addMode}
+                    onSelect={handleSelectItem}
+                    isSelected={selectedItems.includes(item)}
+                    optimisticVotes={optimisticVotes}
+                  />
+                ))}
+                <AddItemCard onClick={handleCreateItem} category="accommodation" />
+              </WishlistSection>
 
-          <WishlistSection title="Activities">
-            {wishlistData.activities.map((item) => (
-              <WishlistCard
-                key={item.id}
-                item={item}
-                onClick={() => handleItemClick(item)}
-                onUpvote={(item) => handleVote(item, true)}
-                onDownvote={(item) => handleVote(item, false)}
-                onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
-                currUser={user}
-                addMode={addMode}
-                onSelect={handleSelectItem}
-                isSelected={selectedItems.includes(item)}
-                optimisticVotes={optimisticVotes}
-              />
-            ))}
-            <AddItemCard onClick={handleCreateItem} />
-          </WishlistSection>
+              <WishlistSection title="Activities">
+                {wishlistData.activities.map((item) => (
+                  <WishlistCard
+                    key={item.id}
+                    item={item}
+                    onClick={() => handleItemClick(item)}
+                    onUpvote={(item) => handleVote(item, true)}
+                    onDownvote={(item) => handleVote(item, false)}
+                    onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                    currUser={user}
+                    addMode={addMode}
+                    onSelect={handleSelectItem}
+                    isSelected={selectedItems.includes(item)}
+                    optimisticVotes={optimisticVotes}
+                  />
+                ))}
+                <AddItemCard onClick={handleCreateItem} category="activities" />
+              </WishlistSection>
 
-          <WishlistSection title="Food">
-            {wishlistData.food.map((item) => (
-              <WishlistCard
-                key={item.id}
-                item={item}
-                onClick={() => handleItemClick(item)}
-                onUpvote={(item) => handleVote(item, true)}
-                onDownvote={(item) => handleVote(item, false)}
-                onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
-                currUser={user}
-                addMode={addMode}
-                onSelect={handleSelectItem}
-                isSelected={selectedItems.includes(item)}
-                optimisticVotes={optimisticVotes}
-              />
-            ))}
-            <AddItemCard onClick={handleCreateItem} />
-          </WishlistSection>
+              <WishlistSection title="Food">
+                {wishlistData.food.map((item) => (
+                  <WishlistCard
+                    key={item.id}
+                    item={item}
+                    onClick={() => handleItemClick(item)}
+                    onUpvote={(item) => handleVote(item, true)}
+                    onDownvote={(item) => handleVote(item, false)}
+                    onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                    currUser={user}
+                    addMode={addMode}
+                    onSelect={handleSelectItem}
+                    isSelected={selectedItems.includes(item)}
+                    optimisticVotes={optimisticVotes}
+                  />
+                ))}
+                <AddItemCard onClick={handleCreateItem} category="food" />
+              </WishlistSection>
+            </div>
+          </ScrollArea>
         </motion.div>
 
         {!isMobile && (
-          <div className="w-5/13" style={{ position: 'sticky', top: 0, height: '100vh' }}>
+          <div className="col-span-1 h-screen sticky top-0">
             <MapboxMap
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
               initialPlace={searchedPlace}
               height="100%"
+              width="100%"
             />
           </div>
         )}
@@ -453,9 +468,13 @@ export default function WishlistPage() {
 
       <CreateEditItemModal // Create modal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setInitialCategory("");
+        }}
         onSubmit={handleSubmitCreateItem}
         tripId={tripID}
+        initialCategory={initialCategory}
       />
     
       <CreateEditItemModal // Edit modal

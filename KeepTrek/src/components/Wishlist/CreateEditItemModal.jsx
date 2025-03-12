@@ -15,11 +15,10 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { FileUploader } from "@/components/ui/file-uploader"
-import { uploadFile } from "@/APIs/wishlist";
-import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar";
 import { fetchPlaceDetails } from "@/utils/fetchPlaceDetails.jsx";
+import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar";
 import { Textarea } from '@/components/ui/textarea';
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function CreateEditItemModal({ 
   isOpen,
@@ -28,12 +27,13 @@ export default function CreateEditItemModal({
   isEditMode = false,
   itemId,
   tripId,
-  location
+  location,
+  initialCategory = ""
 }) {
   const [newItem, setNewItem] = useState({
     id: itemId,
     tripID: tripId,
-    category: "",
+    category: initialCategory,
     title: "",
     location: "",
     coordinates: [],
@@ -45,7 +45,7 @@ export default function CreateEditItemModal({
     notes: "",
   });
   const [error, setError] = useState("");
-  const [file, setFile] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (isEditMode && location) {
@@ -65,6 +65,7 @@ export default function CreateEditItemModal({
     } else {
       setNewItem(prev => ({
         ...prev,
+        category: initialCategory,
         title: location ? location.name : "",
         location: location ? location.address : "",
         coordinates: location ? location.coordinates : [],
@@ -75,7 +76,7 @@ export default function CreateEditItemModal({
         link: location ? location.link : "",
       }));
     }
-  }, [isOpen, location, isEditMode, itemId, tripId]);
+  }, [isOpen, location, isEditMode, itemId, tripId, initialCategory]);
 
   const handleLocationChange = async (newLocation) => {
     if (newLocation?.placePrediction?.structuredFormat?.mainText?.text) {
@@ -89,7 +90,7 @@ export default function CreateEditItemModal({
           openingHours: suggestion?.openingHours ?? "",
           website: suggestion?.website ?? "",
           link: suggestion?.link ?? "",
-          image: suggestion?.image ?? "../src/assets/dummy-image.jpg"
+          image: suggestion?.image ?? ""
       }));
     } else {
       setNewItem(prev => ({
@@ -101,36 +102,20 @@ export default function CreateEditItemModal({
           openingHours: "",
           website: "",
           link: "",
-          image: "../src/assets/dummy-image.jpg"
+          image: ""
       }));
     }
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSaving(true);
 
     if (!newItem.category || !newItem.title || !newItem.location) {
       setError("All fields with * are required.");
+      setIsSaving(false);
       return;
     }
-
-    // not actually being used with location search implementation
-    /*
-    let imageUrl = newItem.image;
-
-    if (file) {
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
-        imageUrl = await uploadFile(tripId, formData);
-        setNewItem((prev) => ({ ...prev, image: imageUrl }))
-      } catch (err) {
-        console.error("Error uploading file:", err);
-        setError("Failed to upload file.");
-        return;
-      }
-    }
-    */
 
     try {
       await onSubmit(newItem);
@@ -138,6 +123,8 @@ export default function CreateEditItemModal({
     } catch (err) {
       console.error(`Error ${isEditMode ? "updating" : "creating"} wishlist item:`, err);
       setError(err.response?.data?.detail || `Failed to ${isEditMode ? "update" : "create"} wishlist item`);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -195,17 +182,16 @@ export default function CreateEditItemModal({
             />
           </div>
 
-          {/* Upload Image */}
-          <div className="grid gap-2">
-            <label className="block text-sm font-medium text-muted-foreground mb-1">
-              Image
-            </label>
-            <FileUploader 
-              className="w-full h-full" 
-              tripId={tripId} 
-              onValueChange={(files) => setFile(files[0])}
-              initialImage={newItem.image} />
-          </div>
+          {/* Only show image if we have both coordinates and image URL */}
+          {newItem?.coordinates?.length > 0 && newItem?.image && (
+            <div className="grid gap-2">
+              <img 
+                src={newItem.image} 
+                alt={newItem.title}
+                className="w-full aspect-video object-cover rounded-lg"
+              />
+            </div>
+          )}
           
           {/* Input Notes */}
           <div className="grid gap-2">
@@ -229,7 +215,9 @@ export default function CreateEditItemModal({
             </div>
             <div className="flex space-x-2">
               <Button onClick={handleCancel} variant="outline">Cancel</Button>
-              <Button type="submit">{isEditMode ? "Save Changes" : "Add Item"}</Button>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving ? <LoadingSpinner /> : isEditMode ? "Save Changes" : "Add Item"}
+              </Button>
             </div>
           </DialogFooter>
         </form>

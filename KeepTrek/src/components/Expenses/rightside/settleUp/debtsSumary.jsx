@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useExpenses } from "@/components/Expenses/expenseContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -12,7 +12,6 @@ const LoadingSpinner = () => (
   <Loader2 className="h-4 w-4 animate-spin" />
 );
 
-
 export default function DebtsSummary() {
   const {
     expenses,
@@ -20,12 +19,13 @@ export default function DebtsSummary() {
     totalUser,
     tripMembers,
     balances,
-    isLoading,
+    isLoadingMain,
     settledDebts,
     settleUp,
     editDebt,
     deleteDebt,
-    isSettlingUp
+    isSettlingUp,
+    usernames
   } = useExpenses();
 
   const { tripID } = useParams();
@@ -76,49 +76,58 @@ export default function DebtsSummary() {
   };
 
   // Add handlers
-const handleDebtClick = (debt) => {
-  setSelectedDebt(debt);
-  setEditAmount(debt.amount.toString());
-  setShowEditModal(true);
-};
+  const handleDebtClick = (debt) => {
+    setSelectedDebt(debt);
+    setEditAmount(debt.amount.toString());
+    setShowEditModal(true);
+  };
 
-const handleEditDebt = async () => {
-  try {
-    const amount = Number(editAmount);
-    if (isNaN(amount) || amount <= 0) {
-      setEditError("Please enter a valid amount");
-      return;
+  const handleEditDebt = async () => {
+    try {
+      const amount = Number(editAmount);
+      if (isNaN(amount) || amount <= 0) {
+        setEditError("Please enter a valid amount");
+        return;
+      }
+
+      console.log('Sending edit request:', {
+        debtId: selectedDebt.id,
+        amount: amount
+      });
+      
+      await editDebt(selectedDebt.id, amount);
+      setShowEditModal(false);
+      setEditError("");
+    } catch (error) {
+      console.error('Error in handleEditDebt:', error);
+      setEditError(error.message);
     }
+  };
 
-    console.log('Sending edit request:', {
-      debtId: selectedDebt.id,
-      amount: amount
-    });
-    
-    await editDebt(selectedDebt.id, amount);
-    setShowEditModal(false);
-    setEditError("");
-  } catch (error) {
-    console.error('Error in handleEditDebt:', error);
-    setEditError(error.message);
-  }
-};
-
-const handleDeleteDebt = async () => {
-  try {
-    await deleteDebt(selectedDebt.id);
-    setShowEditModal(false);
-  } catch (error) {
-    setEditError(error.message);
-  }
-};
+  const handleDeleteDebt = async () => {
+    try {
+      await deleteDebt(selectedDebt.id);
+      setShowEditModal(false);
+    } catch (error) {
+      setEditError(error.message);
+    }
+  };
 
   const [error, setError] = useState(null);
 
-  // Check for loading state
-  if (isLoading) {
-    return <LoadingSkeleton />;
+  // Show skeleton loader during initial load
+  if (isLoadingMain) {
+    return (
+      <div className="space-y-6 p-1">
+        <LoadingSkeleton />
+        <LoadingSkeleton />
+        <LoadingSkeleton />
+      </div>
+    );
   }
+
+  // Ensure settledDebts is always an array
+  const debts = settledDebts || [];
 
   // Check for required data
   if (!user || !balances) {
@@ -153,7 +162,7 @@ const handleDeleteDebt = async () => {
     });
   };
 
-  console.log(settledDebts);
+  console.log('Balances:', balances); // Debugging log
 
   return (
     <div className="space-y-6 p-1">
@@ -231,42 +240,37 @@ const handleDeleteDebt = async () => {
       {/* Settled Debts Card */}
     
       <h2 className="text-xl font-bold mb-4 text-gray-800">Settled Debts</h2>
-      {!settledDebts || settledDebts.length === 0 ? (
+      {debts.length === 0 ? (
         <p className="text-gray-600">No settled debts yet.</p>
       ) : (
         <ul className="space-y-4">
-          {settledDebts.map((debt) => (
-          <li
-            key={debt.id}
-            className={`flex justify-between items-center p-3 ${
-              debt.paidBy === user 
-                ? 'hover:bg-gray-300 cursor-pointer'
-                : ''
-            } transition-colors duration-200 rounded-lg`}
-            onClick={() => debt.paidBy === user ? handleDebtClick(debt) : null}
-          >
-            <div className="flex items-center gap-4">
-              <div className="bg-gray-300 w-12 h-12 rounded-full flex flex-col items-center justify-center">
-                <span className="text-base text-[20px] font-bold text-gray-700 leading-none">
-                  {String(new Date(debt.timestamp).getDate()).padStart(2, '0')}
-                </span>
-                <span className="text-[14px] font-medium text-gray-600">
-                  {new Date(debt.timestamp).toLocaleDateString('en-GB', { month: 'short' })}
+          {debts.map((debt) => (
+            <li
+              key={debt.id}
+              className={`flex justify-between items-center p-3 ${
+                debt.paidBy === user ? 'hover:bg-gray-300 cursor-pointer' : ''
+              } transition-colors duration-200 rounded-lg`}
+            >
+              <div className="flex items-center gap-4">
+                <div className="bg-gray-300 w-12 h-12 rounded-full flex flex-col items-center justify-center">
+                  <span className="text-base text-[20px] font-bold text-gray-700 leading-none">
+                    {String(new Date(debt.timestamp).getDate()).padStart(2, '0')}
+                  </span>
+                  <span className="text-[14px] font-medium text-gray-600">
+                    {new Date(debt.timestamp).toLocaleDateString('en-GB', { month: 'short' })}
+                  </span>
+                </div>
+                <span className="text-gray-800">
+                  <span className="font-medium">{usernames[debt.paidBy]}</span>
+                  {" paid "}
+                  <span className="font-medium">{usernames[debt.paidTo]}</span>
                 </span>
               </div>
-              <span className="text-gray-800">
-                <span className="font-medium">{getUserName(debt.paidBy)}</span>
-                {" paid "}
-                <span className="font-medium">{getUserName(debt.paidTo)}</span>
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
               <span className="text-gray-700 font-medium">
                 RM {debt.amount.toFixed(2)}
               </span>
-            </div>
-          </li>
-        ))}
+            </li>
+          ))}
         </ul>
       )}
     
