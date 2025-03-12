@@ -48,7 +48,7 @@ export default function TripCard({ trip }) {
     fetchCreator();
   }, [trip.creatorID]);
   return (
-    <NavLink to={`/itineraryWL/${trip.tripID}`} className="no-underline">
+    <NavLink to={`/itinerary/${trip.tripID}`} className="no-underline">
       <motion.div
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}

@@ -27,6 +27,16 @@ export const CurrentUser = async () => {
   }
 };
 
+export const getShortToken = async (type) => {
+  try {
+    const response = await axios.get(`/auth/shortToken?type=${type}`);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch short token:", error);
+    throw error;
+  }
+}
+
 // // Function to get the current user
 // export const getCurrentUser = async () => {
 //   try {

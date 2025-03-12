@@ -11,7 +11,7 @@ import YourTrips from "./components/yourTrips/yourTrips.jsx";
 import CreateTrip from "./components/CreateTrip/CreateTrip.jsx";
 import MainExpensePage from "./components/Expenses/mainExpensePage.jsx";
 import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx";
-import ItineraryWL from "./components/ItineraryWL/ItineraryWL.jsx";
+import Itinerary from "./components/Itinerary/Itinerary.jsx";
 import Wishlist from "./components/Wishlist/Wishlist.jsx";
 import { ProfilePage } from "./components/profilePage/profilePage.jsx";
 // import { TripDetailsPage } from "./components/TripDetails/TripDetailsPage.jsx";
@@ -55,8 +55,8 @@ function App() {
                   >
                     <Route path="/yourTrips" element={<YourTrips />} />
                     <Route path="/expenses/:tripID" element={<MainExpensePage />} />
+                    <Route path="/itinerary/:tripID" element={<Itinerary />} />
                     {/* <Route path="/trip-details" element={<TripDetailsPage />} /> */}
-                    <Route path="/itineraryWL/:tripID" element={<ItineraryWL />} />
                     <Route path="/schedule/:tripID" element={<GrpSchedule />} />
                     <Route path="/wishlist/:tripID" element={<Wishlist />} />
                     <Route path="/create-trip" element={<CreateTrip />} />
