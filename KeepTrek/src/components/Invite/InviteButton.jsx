@@ -150,9 +150,9 @@ const InviteButton = ({ tripID, userRole }) => {
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select a role" />
                                         </SelectTrigger>
-                                        <SelectContent className="hover:bg-slate-100 cursor-pointer">
-                                            <SelectItem value={UserRole.VIEWER}>Viewer</SelectItem>
-                                            <SelectItem value={UserRole.COLLABORATOR}>Collaborator</SelectItem>
+                                        <SelectContent className="cursor-pointer">
+                                            <SelectItem className="hover:bg-slate-300 cursor-pointer" value={UserRole.VIEWER}>Viewer</SelectItem>
+                                            <SelectItem className="hover:bg-slate-300 cursor-pointer" value={UserRole.COLLABORATOR}>Collaborator</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -207,9 +207,9 @@ const InviteButton = ({ tripID, userRole }) => {
                                                                 <SelectTrigger className="w-[120px]">
                                                                     <SelectValue />
                                                                 </SelectTrigger>
-                                                                <SelectContent className="hover:bg-slate-100 cursor-pointer">
-                                                                    <SelectItem value={UserRole.VIEWER}>Viewer</SelectItem>
-                                                                    <SelectItem value={UserRole.COLLABORATOR}>Collaborator</SelectItem>
+                                                                <SelectContent className="cursor-pointer">
+                                                                    <SelectItem className="hover:bg-slate-300 cursor-pointer" value={UserRole.VIEWER}>Viewer</SelectItem>
+                                                                    <SelectItem className="hover:bg-slate-300 cursor-pointer" value={UserRole.COLLABORATOR}>Collaborator</SelectItem>
                                                                 </SelectContent>
                                                             </Select>
                                                         )}
