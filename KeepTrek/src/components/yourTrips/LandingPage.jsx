@@ -247,132 +247,70 @@ export default function LandingPage() {
       </section>
 
       {/* Newsletter Section */}
-      <section id="newsletter" className="container mx-auto px-6 py-16">
+      <section id="newsletter" className="container mx-auto px-4 sm:px-6 py-8 sm:py-16">
         <div className="max-w-4xl mx-auto">
           <AnimatedSection>
-            <motion.div className="bg-purple-600 rounded-2xl p-8 flex justify-between items-start" variants={fadeInUp}>
-              <div className="space-y-4">
-                <h2 className="text-3xl font-bold text-white max-w-md">
-                  Still looking for where to head to next?
-                </h2>
-                <p className="text-xl text-white font-medium">
-                  Join our newsletter now!
-                </p>
-                <div className="flex gap-3 items-center">
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    className="px-4 py-2.5 rounded-lg text-gray-900 min-w-[280px]"
-                  />
-                  {/* Newsletter Sign Up Button wrapped in a relative container */}
-                  <div className="relative inline-block">
-                    <button
-                      onClick={(e) => handleUnavailableClick("newsletterSignUp", e)}
-                      className="px-6 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium transition-colors duration-300"
-                    >
-                      Sign Up
-                    </button>
-                    {activePopup === "newsletterSignUp" && (
-                      <div
-                        ref={popupRef}
-                        className="absolute top-full mt-2 bg-white shadow-lg p-3 rounded-md w-56 z-10 border border-gray-200"
-                      >
-                        <span className="text-sm text-gray-700">
-                          🚧 We are working on it! Stay tuned. 🚀
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-8">
-                <div className="flex items-start gap-8">
-                  <div className="relative" style={{ marginTop: "5rem" }}>
-                    <span
-                      className="block text-center text-white text-5xl font-bold"
-                      style={{ position: "absolute", left: "-3cm" }}
-                    >
-                      or
+          <motion.div className="bg-purple-600 rounded-2xl p-4 sm:p-8 flex flex-col lg:flex-row justify-center lg:justify-between items-center lg:items-start gap-8" variants={fadeInUp}>
+          {/* Left side - Newsletter signup */}
+          <div className="space-y-4 w-full lg:w-2/3">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white max-w-md text-center lg:text-left">
+              Still looking for where to head to next?
+            </h2>
+            <p className="text-lg sm:text-xl text-white font-medium text-center lg:text-left">
+              Join our newsletter now!
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 items-center w-full sm:w-auto">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="px-4 py-2.5 rounded-lg text-gray-900 w-[81%] sm:min-w-[280px]"
+              />
+              {/* Newsletter Sign Up Button */}
+              <div className="relative inline-block w-[83%] sm:w-auto">
+                <button
+                  onClick={(e) => handleUnavailableClick("newsletterSignUp", e)}
+                  className="w-full sm:w-auto px-4 py-2.5 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium transition-colors duration-300"
+                >
+                  Sign Up
+                </button>
+                {activePopup === "newsletterSignUp" && (
+                  <div
+                    ref={popupRef}
+                    className="absolute top-full mt-2 bg-white shadow-lg p-3 rounded-md w-56 z-10 border border-gray-200"
+                  >
+                    <span className="text-sm text-gray-700">
+                      🚧 We are working on it! Stay tuned. 🚀
                     </span>
                   </div>
-
-                  {/* Social Buttons with Popup for unavailable items */}
-                  <div className="space-y-2 relative">
-                    {[
-                      {
-                        icon: playStore,
-                        label: "Google Play",
-                        bg: "bg-black",
-                        href: "#",
-                        unavailable: true,
-                      },
-                      {
-                        icon: appStore,
-                        label: "App Store",
-                        bg: "bg-black",
-                        href: "#",
-                        unavailable: true,
-                      },
-                      {
-                        icon: instagram,
-                        label: "@keeptrek",
-                        bg: "bg-white",
-                        href: "https://www.instagram.com/keeptrek/",
-                      },
-                      {
-                        icon: tiktok,
-                        label: "@keeptrek",
-                        bg: "bg-white",
-                        href: "https://www.tiktok.com/@keep_trek?_t=ZS-8u4xDfEz7YY&_r=1",
-                      },
-                      {
-                        icon: facebook,
-                        label: "KeepTrek",
-                        bg: "bg-white",
-                        href: "https://www.facebook.com/profile.php?id=61573568121293",
-                      },
-                    ].map((button, index) => (
-                      <div key={index} className="relative">
-                        <a
-                          href={button.href}
-                          target={button.unavailable ? "_self" : "_blank"}
-                          rel="noopener noreferrer"
-                          onClick={
-                            button.unavailable
-                              ? (e) => handleUnavailableClick(`social-${index}`, e)
-                              : undefined
-                          }
-                          className="block"
-                        >
-                          <motion.button
-                            className={`w-full px-4 py-2 ${button.bg} ${
-                              button.bg === "bg-black" ? "text-white" : "text-black"
-                            } rounded-lg flex items-center justify-start hover:opacity-85 transition-opacity duration-300`}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <img src={button.icon} alt={button.label} className="h-5 w-5 mr-2" />
-                            <span className="text-sm">{button.label}</span>
-                          </motion.button>
-                        </a>
-
-                        {activePopup === `social-${index}` && button.unavailable && (
-                          <div
-                            ref={popupRef}
-                            className="absolute top-full mt-2 bg-white shadow-lg p-3 rounded-md w-56 z-10 border border-gray-200"
-                          >
-                            <span className="text-sm text-gray-700">
-                              🚧 We are working on it! Stay tuned. 🚀
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                )}
               </div>
-            </motion.div>
+            </div>
+          </div>
+
+          {/* Right side - Social links */}
+          <div className="flex flex-col items-center lg:w-1/3 space-y-4">
+            <div className="space-y-2 relative w-full sm:w-auto max-w-[280px]">
+              {[
+                { icon: instagram, label: "@keeptrek", bg: "bg-white", href: "https://www.instagram.com/keeptrek/" },
+                { icon: tiktok, label: "@keeptrek", bg: "bg-white", href: "https://www.tiktok.com/@keep_trek?_t=ZS-8u4xDfEz7YY&_r=1" },
+                { icon: facebook, label: "KeepTrek", bg: "bg-white", href: "https://www.facebook.com/profile.php?id=61573568121293" },
+              ].map((button, index) => (
+                <div key={index} className="relative w-full">
+                  <a href={button.href} target="_blank" rel="noopener noreferrer" className="block w-full">
+                    <motion.button
+                      className="w-[280px] lg:w-[250px] h-16 px-4 py-2 bg-white text-black rounded-lg flex flex-col items-center justify-center hover:opacity-85 transition-opacity duration-300 text-center"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <img src={button.icon} alt={button.label} className="h-6 w-6 mb-1" />
+                      <span className="text-center font-semibold">{button.label}</span>
+                    </motion.button>
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
           </AnimatedSection>
         </div>
       </section>
