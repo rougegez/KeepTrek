@@ -18,6 +18,7 @@ import { ProfilePage } from "./components/profilePage/profilePage.jsx";
 import { GrpSchedule } from "./components/GrpSchedule/GrpSchedule.jsx";
 import Modal from "./components/Authentication/Modal";
 import LoginForm from "./components/Authentication/login/login-form";
+import InvitePage from './components/Invite/InvitePage';
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ function App() {
                 <Routes>
                   {/* Public Routes */}
                   <Route path="/" element={<LandingPage />} />
+                  <Route path="/join/:inviteCode" element={<InvitePage />} />
 
                   {/* Protected Routes */}
                   <Route
