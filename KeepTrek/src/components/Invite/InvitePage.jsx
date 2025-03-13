@@ -207,7 +207,7 @@ const InvitePage = () => {
             <div className="relative z-10 mb-6">
                 {/* Replace with KeepTrekNew logo */}
                 <img
-                    src="../src/assets/logo.png"
+                    src="/assets/logo.png"
                     alt="Logo"
                     className="h-16 w-16 mx-auto mb-4"
                 />
