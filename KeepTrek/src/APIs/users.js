@@ -8,8 +8,6 @@ export const getUserProfile = async (userId) => {
   if (userProfileCache.has(userId)) {
     return userProfileCache.get(userId);
   }
-
-  try {
     const response = await axios.get(`/users/profile/${userId}`, {
       timeout: 5000, // 5 second timeout
       retry: 2, // Retry twice
@@ -19,14 +17,6 @@ export const getUserProfile = async (userId) => {
     // Cache the response
     userProfileCache.set(userId, response.data);
     return response.data;
-  } catch (error) {
-    if (error.code === 'ECONNABORTED') {
-      console.error("Request timeout:", error);
-    } else {
-      console.error("Error fetching user profile:", error);
-    }
-    throw error;
-  }
 };
 
 export const updateUserProfile = async (updateData) => {

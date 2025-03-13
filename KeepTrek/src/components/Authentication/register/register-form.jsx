@@ -20,8 +20,38 @@ export default function RegisterForm({ onSwitchToLogin }) {
       onSwitchToLogin(); // Switch to the login modal
     } catch (err) {
       console.error("Registration Error:", err.response?.data || err.message);
-      setError(err.response?.data?.detail || "Registration failed. Please try again.");
+      setError(
+        err.response?.data?.detail ||
+          "Registration failed. Please try again."
+      );
     }
+  };
+
+  const handleGoogleRegister = () => {
+    // URL of your backend endpoint that starts the Google OAuth flow
+    const googleLoginUrl = "https://keeptrek-backend.onrender.com/auth/google-login";
+    const width = 500;
+    const height = 600;
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
+    const authWindow = window.open(
+      googleLoginUrl,
+      "Google Register",
+      `width=${width},height=${height},top=${top},left=${left}`
+    );
+
+    // Listen for the token message from the popup window
+    const handleMessage = (event) => {
+      // Optionally verify event.origin for security (ensure it comes from your backend)
+      if (event.data && event.data.token) {
+        localStorage.setItem("token", event.data.token);
+        window.removeEventListener("message", handleMessage);
+        if (authWindow) authWindow.close();
+        window.location.reload();
+      }
+    };
+
+    window.addEventListener("message", handleMessage, false);
   };
 
   return (
@@ -29,20 +59,22 @@ export default function RegisterForm({ onSwitchToLogin }) {
       {/* Logo and Header */}
       <div className="text-center">
         <img
-          src="../src/assets/logo.png"
+          src="/assets/logo.png"
           alt="Logo"
           className="h-16 w-16 mx-auto mb-4"
         />
-        <h2 className="text-lg font-semibold text-gray-800">Create an Account</h2>
+        <h2 className="text-lg font-semibold text-gray-800">
+          Create an Account
+        </h2>
       </div>
 
       {/* Social Login (Google) */}
       <Button
         variant="outline"
         className="w-full flex items-center justify-center gap-2 border-gray-300"
-        onClick={() => alert("Sorry, this feature is under development 🥺")}
+        onClick={handleGoogleRegister}
       >
-        <img src="../src/assets/google.png" alt="Google" className="h-5 w-5" />
+        <img src="/assets/google.png" alt="Google" className="h-5 w-5" />
         Sign up with Google
       </Button>
 
@@ -52,7 +84,9 @@ export default function RegisterForm({ onSwitchToLogin }) {
           <div className="w-full border-t border-gray-300"></div>
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-gray-500">or register with email</span>
+          <span className="px-2 bg-white text-gray-500">
+            or register with email
+          </span>
         </div>
       </div>
 

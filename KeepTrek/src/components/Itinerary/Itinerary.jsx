@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { useQuery, useQueryClient, useMutation } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { withSuspense } from "@/utils/withSuspense.jsx";
 
 import { Button } from "@/components/ui/button";
@@ -14,9 +15,9 @@ import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx";
 import { dateFormatter } from "@/utils/dateFormat.jsx";
 
 import { useParams, useNavigate } from "react-router-dom";
-import { createItinerary, getItinerary, updateItinerary } from "@/APIs/itinerary.js";
+import { getItinerary, updateItinerary } from "@/APIs/itinerary.js";
 import { getTrip, removeMember } from "@/APIs/trip.js";
-import { Card, CardContent } from "../ui/card.jsx";
+
 import { useMediaQuery } from 'react-responsive';
 import { motion } from "framer-motion";
 import MobileHeader from "../MobileHeader.jsx";
@@ -24,16 +25,20 @@ import InviteButton from "../Invite/InviteButton.jsx";
 import { UserAvatarStack } from '../profilePage/avatar.jsx';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+
 import { canEdit, UserRole } from "@/utils/permissions";
 import { CurrentUser } from "@/APIs/auth";
 import LeaveAlert from '@/components/ui/LeaveAlert';
 import TripSettings from '../TripSettings/TripSettings.jsx';
 
-function ItineraryWL() {
+import { useItinerary } from './useItinerarySocket.jsx';
+import { Skeleton } from "@/components/ui/skeleton.jsx";
+import { ReadyState } from "react-use-websocket";
+
+function Itinerary() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { tripID } = useParams();
   const [currentUser, setCurrentUser] = useState(null);
+  const { tripID } = useParams();
 
   const [addModalState, setAddModalState] = useState({ isOpen: false, selectedDay: null });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -48,23 +53,24 @@ function ItineraryWL() {
   const [scrollPosition, setScrollPosition] = useState(0);
   const contentRef = useRef(null);
   const [lastScrollPosition, setLastScrollPosition] = useState(0);
-  const [lastSavedAt, setLastSavedAt] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
+
   const [showLeaveAlert, setShowLeaveAlert] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   const { data: tripDetails } = useQuery(
     ['trip', tripID],
     () => getTrip(tripID),
-    { suspense: true }
+    {
+      suspense: true,
+      staleTime: 1000 * 60 * 15, //  15 minutes
+    }
   );
 
-  const { data: itinerary} = useQuery(
-    ['itinerary', tripID],
-    () => getItinerary(tripID),
-    { suspense: true}
-  );
-  const [days, setDays] = useState(itinerary.days);
+  const { setTripID, days, setDays, readyState } = useItinerary()
+
+  useEffect(() => {
+    setTripID(tripID);
+  }, [tripID]);
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -87,7 +93,7 @@ function ItineraryWL() {
     const handleScroll = () => {
       const position = window.scrollY;
       const scrollDelta = position - lastScrollPosition;
-      
+
       // Auto-expand map when scrolling to top
       if (position < 50) {
         setIsMapExpanded(true);
@@ -100,9 +106,28 @@ function ItineraryWL() {
       //else if (scrollDelta < -50 && !isMapExpanded) {
       //  setIsMapExpanded(true);
       //}
-      
+
       setLastScrollPosition(position);
       setScrollPosition(position);
+    };
+
+    const activityCardContentStyle = {
+      display: 'flex',
+      gap: '1rem',
+      flexDirection: isMobile ? 'column' : 'row',
+    };
+
+    const activityImageStyle = {
+      maxWidth: '30rem',
+      maxHeight: '10rem',
+      borderRadius: '0.5rem',
+      objectFit: 'cover',
+      width: isMobile ? '100%' : 'auto',
+      height: isMobile ? 'auto' : 'auto',
+    };
+
+    const cardStyle = {
+      maxWidth: isMobile ? '20rem' : '100%',
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -119,26 +144,6 @@ function ItineraryWL() {
       {isMapExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
     </Button>
   );
-
-  // Mutation to update the entire itinerary
-  const updateItineraryMutation = useMutation(
-    (updatedDays) => updateItinerary(tripID, { days: updatedDays }),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['itinerary', tripID]);
-        setLastSavedAt(new Date());
-        setIsSaving(false);
-      },
-      onError: () => {
-        setIsSaving(false);
-      }
-    }
-  );
-
-  const handleUpdateItinerary = async (updatedDays) => {
-    setIsSaving(true);
-    updateItineraryMutation.mutate(updatedDays);
-  };
 
   const handleMapLoad = (map) => {
     setMapInstance(map);
@@ -170,33 +175,6 @@ function ItineraryWL() {
     setIsEditModalOpen(true);
   };
 
-  const handleSaveEdit = (editedActivity) => {
-    const updatedDays = days.map(day => {
-      if (day.date === editedActivity.day) {
-        const activityIndex = day.activities.findIndex(a => a.id === editedActivity.id);
-        if (activityIndex !== -1) {
-          // If the activity is found, update it in place
-          const updatedActivities = [...day.activities];
-          updatedActivities[activityIndex] = editedActivity;
-          return { ...day, activities: updatedActivities };
-        } else {
-          // If the activity is not found (day changed), add it to the end
-          return { ...day, activities: [...day.activities, editedActivity] };
-        }
-      } else {
-        // Remove the activity if it was moved to a different day
-        return {
-          ...day,
-          activities: day.activities.filter(a => a.id !== editedActivity.id)
-        };
-      }
-    });
-    setDays(updatedDays);
-    setIsEditModalOpen(false);
-    setCurrentActivity(null);
-  };
-
-
   const handleDeleteClick = (dayIndex, activityId) => {
     const updatedDays = [...days];
     updatedDays[dayIndex].activities = updatedDays[dayIndex].activities.filter(
@@ -221,206 +199,233 @@ function ItineraryWL() {
     clickLocation.address = clickLocation.location
     clickLocation.name = clickLocation.title
     const random = new Date().getTime()
-    setSearchedPlace({random, clickLocation})
+    setSearchedPlace({ random, clickLocation })
   }
 
   const handleLeave = async () => {
     try {
-        await removeMember(tripID, currentUser);
-        navigate('/yourTrips', { replace: true });
+      await removeMember(tripID, currentUser);
+      navigate('/yourTrips', { replace: true });
     } catch (error) {
-        console.error('Error leaving trip:', error);
+      console.error('Error leaving trip:', error);
     }
   };
 
   return (
-      <SidebarProvider >
-        <AppSidebar tripID={tripID} />
-        {!isMobile && <SidebarTrigger />}
-        {isMobile && <MobileHeader title="Itinerary" />}
-        <div className={`flex w-full ${!isMobile && 'grid grid-cols-2'}`}>
-          {isMobile ? (
-            <motion.div
-              className="fixed w-full z-40 bg-background"
-              initial={{ height: '75vh' }}
-              animate={{ 
-                height: getMapHeight(),
-                transition: { duration: 0.3, ease: 'easeInOut' }
-              }}
-              style={{ top: '3.5rem' }}
-            >
-              <MapboxMap
-                onSaveLocation={handleSaveLocation}
-                onMapLoad={handleMapLoad}
-                initialPlace={searchedPlace}
-                height="100%"
-                width="100%"
-              />
-              <MapToggleButton />
-            </motion.div>
-          ) : null}
-
-          <motion.div 
-            ref={contentRef}
-            className={`${
-              isMobile 
-                ? 'w-full bg-background relative z-30' 
-                : 'col-span-1 h-screen'
-            }`}
-            animate={isMobile ? {
-              marginTop: `calc(${getMapHeight()} + 3.5rem)`, // Add header height to margin
+    <SidebarProvider >
+      <AppSidebar tripID={tripID} />
+      {!isMobile && <SidebarTrigger />}
+      {isMobile && <MobileHeader title="Itinerary" />}
+      <div className={`flex w-full ${!isMobile && 'grid grid-cols-2'}`}>
+        {isMobile ? (
+          <motion.div
+            className="fixed w-full z-40 bg-background"
+            initial={{ height: '75vh' }}
+            animate={{
+              height: getMapHeight(),
               transition: { duration: 0.3, ease: 'easeInOut' }
-            } : {}}
+            }}
+            style={{ top: '3.5rem', flexShrink: 1 }}
           >
-            <ScrollArea className={`${isMobile ? 'p-6' : 'h-full px-6 pt-6'}`}>
-              <div className="space-y-6">
-                <div className="flex justify-between space-y-2">
-                  <div>
-                    <h1 className="text-3xl font-bold truncate">{tripDetails.tripName}</h1>
-                    <p className="text-sm text-muted-foreground">
-                      {dateFormatter(tripDetails.startDate)} to {dateFormatter(tripDetails.endDate)}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <UserAvatarStack userIds={tripDetails.users} />
-                    {canModify && (
-                      <InviteButton tripID={tripID} userRole={userRole} />
-                    )}
-                    {userRole === UserRole.ADMIN && (
-                      <Button 
-                        variant="outline" 
-                        size="icon"
-                        onClick={() => setShowSettingsModal(true)}
-                        title="Trip Settings"
-                      >
-                        <Settings className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {currentUser && currentUser !== tripDetails.creatorID && (
-                      <Button 
-                        variant="outline" 
-                        size="icon"
-                        onClick={() => setShowLeaveAlert(true)}
-                        title="Leave Trip"
-                      >
-                        <LogOut className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
+            <MapboxMap
+              onSaveLocation={handleSaveLocation}
+              onMapLoad={handleMapLoad}
+              initialPlace={searchedPlace}
+              height="100%"
+              width="100%"
+            />
+            <MapToggleButton />
+          </motion.div>
+        ) : null}
+
+        <motion.div
+          ref={contentRef}
+          className={`${isMobile
+            ? 'w-full bg-background relative z-30'
+            : 'col-span-1 h-screen'
+            }`}
+          animate={isMobile ? {
+            marginTop: `calc(${getMapHeight()} + 3.5rem)`, // Add header height to margin
+            transition: { duration: 0.3, ease: 'easeInOut' }
+          } : {}}
+          style={{ flexShrink: 0 }}
+        >
+          <ScrollArea className={`${isMobile ? 'p-4' : 'h-full px-2 pt-6'}`}>
+            <div className="space-y-6">
+              <div className="flex justify-between space-y-2 mr-5">
                 <div>
+                  <h1 className="text-3xl font-bold truncate">{tripDetails.tripName}</h1>
+                  <p className="text-sm text-muted-foreground">
+                    {dateFormatter(tripDetails.startDate)} to {dateFormatter(tripDetails.endDate)}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <UserAvatarStack userIds={tripDetails.users} />
                   {canModify && (
-                    <div className="flex items-center gap-4">
-                      <Button 
-                        onClick={() => handleUpdateItinerary(days)}
-                        disabled={isSaving}
-                      >
-                        {isSaving ? <LoadingSpinner /> : 'Save'}
-                      </Button>
-                      {lastSavedAt && (
-                        <span className="text-sm text-muted-foreground">
-                          Last saved at: {lastSavedAt.toLocaleString()}
-                        </span>
-                      )}
-                    </div>
+                    <InviteButton tripID={tripID} userRole={userRole} />
+                  )}
+                  {userRole === UserRole.ADMIN && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setShowSettingsModal(true)}
+                      title="Trip Settings"
+                    >
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {currentUser && currentUser !== tripDetails.creatorID && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setShowLeaveAlert(true)}
+                      title="Leave Trip"
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </Button>
                   )}
                 </div>
-                {days.map((day, dayIndex) => (
-                  <div key={day.date} className="space-y-4">
-                    <h2 className="text-xl font-semibold">{day.date}</h2>
-                    <Reorder.Group
-                      axis="y"
-                      values={day.activities}
-                      onReorder={(newActivities) => updateActivities(newActivities, dayIndex)}
-                      className="space-y-4 w-[92%] ml-8">
-                      {day.activities.map((activity) => (
-                        <ActivityCard
-                          key={activity.id}
-                          activity={activity}
-                          onNoteChange={handleNoteChange}
-                          onEditClick={() => handleEditClick(dayIndex, activity)}
-                          onDeleteClick={() => handleDeleteClick(dayIndex, activity.id)}
-                          onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
-                        />
-                      ))}
-                    </Reorder.Group>
-                    {canModify && (
-                      <Button
-                        variant="outline"
-                        className="w-[92%] ml-8"
-                        onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date })}
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Activity
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                {canModify && (
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => setDays([...days, { date: `Day ${days.length + 1}`, activities: [] }])}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Day
-                  </Button>
-                )}
               </div>
-            </ScrollArea>
-          </motion.div>
-
-          {!isMobile && (
-            <div className="col-span-1 h-screen sticky top-0">
-              <MapboxMap
-                onSaveLocation={handleSaveLocation}
-                onMapLoad={handleMapLoad}
-                initialPlace={searchedPlace}
-                height="100%"
-                width="100%"
-              />
+              {readyState === ReadyState.OPEN && (days && days.length > 0) ? (days.map((day, dayIndex) => (
+                <div key={day.date} className="space-y-4">
+                  <h2 className="text-xl font-semibold">{day.date}</h2>
+                  <Reorder.Group
+                    axis="y"
+                    values={day.activities}
+                    onReorder={(newActivities) => updateActivities(newActivities, dayIndex)}
+                    className="space-y-4 w-[90%] ml-14">
+                    {day.activities.map((activity) => (
+                      <ActivityCard
+                        key={activity.id}
+                        activity={activity}
+                        onNoteChange={handleNoteChange}
+                        onEditClick={() => handleEditClick(dayIndex, activity)}
+                        onDeleteClick={() => handleDeleteClick(dayIndex, activity.id)}
+                        onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                      />
+                    ))}
+                  </Reorder.Group>
+                  {canModify && (
+                    <Button
+                      variant="outline"
+                      className="w-[92%] ml-8"
+                      onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date })}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Activity
+                    </Button>
+                  )}
+                </div>
+              ))) : (
+                <ItinerarySkeleton />
+              )}
+              {canModify && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setDays([...days, { date: `Day ${days.length + 1}`, activities: [] }])}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Day
+                </Button>
+              )}
             </div>
-          )}
-        </div>
+          </ScrollArea>
+        </motion.div>
 
-        <AddActivityModal
-          isOpen={addModalState.isOpen}
-          onClose={() => {
-            setAddModalState({ isOpen: false, selectedDay: null });
-            setSavedLocation(null);
-          }}
-          onAddActivity={handleAddActivity}
-          mapInstance={mapInstance}
-          location={savedLocation}
-          days={days}
-          selectedDay={addModalState.selectedDay}
-        />
+        {!isMobile && (
+          <div className="col-span-1 h-screen sticky top-0">
+            <MapboxMap
+              onSaveLocation={handleSaveLocation}
+              onMapLoad={handleMapLoad}
+              initialPlace={searchedPlace}
+              height="100%"
+              width="100%"
+            />
+          </div>
+        )}
+      </div>
 
-        <EditActivityModal
-          isOpen={isEditModalOpen}
-          onClose={() => {
-            setIsEditModalOpen(false);
-            setCurrentActivity(null);
-          }}
-          currentActivity={currentActivity}
-          onSaveEdit={handleSaveEdit}
-          days={days}
-        />
+      <AddActivityModal
+        isOpen={addModalState.isOpen}
+        onClose={() => {
+          setAddModalState({ isOpen: false, selectedDay: null });
+          setSavedLocation(null);
+        }}
+        onAddActivity={handleAddActivity}
+        mapInstance={mapInstance}
+        location={savedLocation}
+        days={days}
+        selectedDay={addModalState.selectedDay}
+      />
 
-        <LeaveAlert 
-          isOpen={showLeaveAlert}
-          onClose={() => setShowLeaveAlert(false)}
-          onConfirm={handleLeave}
-        />
+      <EditActivityModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setCurrentActivity(null);
+        }}
+        activityId={currentActivity?.id}
+      />
 
-        <TripSettings 
-          isOpen={showSettingsModal}
-          onClose={() => setShowSettingsModal(false)}
-          tripID={tripID}
-        />
-      </SidebarProvider>
+      <LeaveAlert
+        isOpen={showLeaveAlert}
+        onClose={() => setShowLeaveAlert(false)}
+        onConfirm={handleLeave}
+      />
+
+      <TripSettings
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        tripID={tripID}
+      />
+    </SidebarProvider>
   );
 }
 
-export default withSuspense(ItineraryWL);
+function ItinerarySkeleton() {
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
+
+  return (
+    <div className="animate-pulse space-y-4">
+      {/* Day heading skeleton */}
+      <Skeleton className="h-6 w-1/3" />
+
+      {/* Activity card skeletons */}
+      {[1, 2, 3].map((index) => (
+        <div key={index} className="bg-white rounded-xl shadow-sm w-full max-w-4xl p-4">
+          {isMobile ? (
+            /* Mobile layout: image on top, then text */
+            <div className="w-full relative space-y-2">
+              <Skeleton className="w-full h-32 rounded-lg" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-1/2" />
+                <div className="flex items-center gap-1">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <Skeleton className="h-4 w-1/4" />
+                </div>
+                <Skeleton className="h-16" />
+              </div>
+            </div>
+          ) : (
+            /* Desktop layout: text on left, image on right */
+            <div className="flex gap-4">
+              <div className="flex-grow space-y-4">
+                <Skeleton className="h-4 w-1/2" />
+                <div className="flex items-center gap-1">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <Skeleton className="h-4 w-1/4" />
+                </div>
+                <Skeleton className="h-16" />
+              </div>
+              <Skeleton className="w-48 h-28 rounded-lg" />
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default withSuspense(Itinerary);
 

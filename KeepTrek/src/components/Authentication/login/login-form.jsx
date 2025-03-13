@@ -1,47 +1,68 @@
+// login-form.jsx
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { loginUser } from "@/APIs/auth"; // Ensure this function makes the login API call
+import { loginUser } from "@/APIs/auth"; // existing email/password login API
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
-  const [islogingIn, setIslogingIn]= useState(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const handleLogin = async (e) => {
-    setIslogingIn(true);
     e.preventDefault();
-    setError(null); // Clear previous errors
+    setIsLoggingIn(true);
+    setError(null);
     try {
-      const response = await loginUser({ email, password }); // Call the login API
+      const response = await loginUser({ email, password });
       const { access_token } = response;
-
-      // Save the token in localStorage
       localStorage.setItem("token", access_token);
-
-
-      // Refresh the page after successful login
-      window.location.reload(); 
-
-      // Trigger the parent callback to indicate successful login
       if (onLoginSuccess) onLoginSuccess();
+      window.location.reload();
     } catch (err) {
       console.error("Login Error:", err.response?.data || err.message);
       setError(err.response?.data?.detail || "Login failed. Please try again.");
-      throw error;
-    }finally{
-      setIslogingIn(false);
+    } finally {
+      setIsLoggingIn(false);
     }
+  };
+
+  const handleGoogleLogin = () => {
+    // URL of your backend endpoint that starts the Google OAuth flow
+    const googleLoginUrl = "https://keeptrek-backend.onrender.com/auth/google-login";
+    const width = 500;
+    const height = 600;
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
+    const authWindow = window.open(
+      googleLoginUrl,
+      "Google Login",
+      `width=${width},height=${height},top=${top},left=${left}`
+    );
+
+    // Listen for the token message from the popup window
+    const handleMessage = (event) => {
+      // Optionally verify event.origin for security (ensure it comes from your backend)
+      if (event.data && event.data.token) {
+        localStorage.setItem("token", event.data.token);
+        if (onLoginSuccess) onLoginSuccess();
+        window.removeEventListener("message", handleMessage);
+        if (authWindow) authWindow.close();
+        window.location.reload();
+      }
+    };
+
+    window.addEventListener("message", handleMessage, false);
   };
 
   return (
     <Card className="w-full max-w-md mx-auto p-8 border-none shadow-md space-y-6">
       <div className="text-center">
         <img
-          src="../src/assets/logo.png"
+          src="./assets/logo.png"
           alt="Logo"
           className="h-16 w-16 mx-auto mb-4"
         />
@@ -52,9 +73,9 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
       <Button
         variant="outline"
         className="w-full flex items-center justify-center gap-2 border-gray-300"
-        onClick={() => alert("Google login functionality is coming soon!")}
+        onClick={handleGoogleLogin}
       >
-        <img src="../src/assets/google.png" alt="Google" className="h-5 w-5" />
+        <img src="/assets/google.png" alt="Google" className="h-5 w-5" />
         Sign in with Google
       </Button>
 
@@ -64,7 +85,9 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
           <div className="w-full border-t border-gray-300"></div>
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-gray-500">or sign in with email</span>
+          <span className="px-2 bg-white text-gray-500">
+            or sign in with email
+          </span>
         </div>
       </div>
 
@@ -100,10 +123,9 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
         <Button
           type="submit"
           className="w-full bg-teal-500 hover:bg-teal-600 text-white"
-          disabled={islogingIn}
+          disabled={isLoggingIn}
         >
-      
-          {islogingIn ? <LoadingSpinner /> : 'Login'}
+          {isLoggingIn ? <LoadingSpinner /> : "Login"}
         </Button>
       </form>
 

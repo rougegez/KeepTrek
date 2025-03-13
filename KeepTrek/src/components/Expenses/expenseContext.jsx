@@ -1,21 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef  } from 'react';
-import { addExpense,
-         getExpense, 
-         deleteExpense, 
-         updateExpense,
-         totalTripExpense, 
-         totalUserExpense, 
-         UserBalance, 
-         getTripData
-        } 
-         from '@/APIs/expenses';
-import {balanceMap, 
-  settleDebt,
-  getSettledDebts, 
-  editSettledDebt,
-  deleteSettledDebt} 
-  from '@/APIs/settledDebts';
-import{ viewBudgets, editBudget, createBudget, deleteBudget } from '@/APIs/userBudgets';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { addExpense, getExpense, deleteExpense, updateExpense, totalTripExpense, totalUserExpense, UserBalance, getTripData } from '@/APIs/expenses';
+import { balanceMap, settleDebt, getSettledDebts, editSettledDebt, deleteSettledDebt } from '@/APIs/settledDebts';
+import { viewBudgets, editBudget, createBudget, deleteBudget } from '@/APIs/userBudgets';
 import { useParams } from 'react-router-dom';
 import { CurrentUser } from '@/APIs/auth';
 import { getTripMembers } from '@/APIs/trip';
@@ -30,9 +16,9 @@ export function useExpenses() {
   }
   return context;
 }
-export function ExpensesProvider ({ children }) {
+
+export function ExpensesProvider({ children }) {
   const { tripID } = useParams();
-  
 
   const [user, setUser] = useState(null);
   const [expenses, setExpenses] = useState([]);
@@ -69,12 +55,11 @@ export function ExpensesProvider ({ children }) {
     balances: null,
     totals: null,
     lastFetch: null,
-    CACHE_DURATION: 5 * 60 * 1000
+    CACHE_DURATION: 5 * 60 * 1000,
   });
 
   const isCacheValid = useCallback(() => {
-    return cache.current.lastFetch && 
-           (Date.now() - cache.current.lastFetch) < cache.current.CACHE_DURATION;
+    return cache.current.lastFetch && (Date.now() - cache.current.lastFetch) < cache.current.CACHE_DURATION;
   }, []);
 
   // Batch all initial data fetching into one call
@@ -87,7 +72,7 @@ export function ExpensesProvider ({ children }) {
       const [userData, members, tripData] = await Promise.all([
         CurrentUser(),
         getTripMembers(tripID),
-        getTripData(tripID)
+        getTripData(tripID),
       ]);
 
       // Map the data according to the exact API response structure
@@ -96,11 +81,11 @@ export function ExpensesProvider ({ children }) {
         totals: {
           totalTrip: tripData.total_trip_expense || 0,
           totalUser: tripData.user_expense || 0,
-          userBalance: tripData.user_balance || 0
+          userBalance: tripData.user_balance || 0,
         },
-        balances: tripData.balance_map || {},
+        balances: tripData.adjusted_balance_map || {},
         settledDebts: tripData.settled_debts || [],
-        budgets: tripData.budgets || []
+        budgets: tripData.budgets || [],
       };
 
       // Update cache
@@ -108,12 +93,12 @@ export function ExpensesProvider ({ children }) {
         ...cache.current,
         mainData: { user: userData, members },
         ...mappedData,
-        lastFetch: Date.now()
+        lastFetch: Date.now(),
       };
 
       // Create username lookup
       const newUsernames = {};
-      members.forEach(member => {
+      members.forEach((member) => {
         newUsernames[member.userID] = member.username;
       });
 
@@ -123,12 +108,13 @@ export function ExpensesProvider ({ children }) {
       setUsernames(newUsernames);
       setExpenses(mappedData.expenses);
       setSettledDebts(mappedData.settledDebts);
-      setBalances(mappedData.balances);
+      setBalances({ ...mappedData.balances }); // Ensure new object reference
       setTotals(mappedData.totals);
       setUserBudgets(mappedData.budgets);
 
+      console.log('Fetched balances:', mappedData.balances); // Debugging log
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error('Error fetching data:', error);
       setError(error.message);
     } finally {
       setIsLoadingMain(false);
@@ -144,20 +130,14 @@ export function ExpensesProvider ({ children }) {
     const loadData = async () => {
       // Check if cache is valid
       if (isCacheValid()) {
-        const {
-          mainData,
-          expenses,
-          settledDebts,
-          balances,
-          totals
-        } = cache.current;
+        const { mainData, expenses, settledDebts, balances, totals } = cache.current;
 
         // Use cached data
         setUser(mainData.user);
         setTripMembers(mainData.members);
         setExpenses(expenses || []);
         setSettledDebts(settledDebts || []);
-        setBalances(balances || {});
+        setBalances(balances || {}); // Ensure new object reference
         setTotals(totals);
         return;
       }
@@ -180,9 +160,9 @@ export function ExpensesProvider ({ children }) {
     // Clear cache
     cache.current = {
       ...cache.current,
-      lastFetch: null
+      lastFetch: null,
     };
-    
+
     await fetchAllData();
   }, [fetchAllData]);
 
@@ -201,16 +181,13 @@ export function ExpensesProvider ({ children }) {
   const removeExpense = async (expenseId, tripID) => {
     try {
       // Optimistically update UI
-      setExpenses(prevExpenses => 
-        prevExpenses.filter(expense => expense.id !== expenseId)
-      );
-  
+      setExpenses((prevExpenses) => prevExpenses.filter((expense) => expense.id !== expenseId));
+
       // Make API call
       await deleteExpense(expenseId, tripID);
-  
+
       // Only fetch totals, skip fetching expenses again
       await refreshData();
-      
     } catch (error) {
       // Rollback on error
       console.error('Error deleting expense:', error);
@@ -219,192 +196,191 @@ export function ExpensesProvider ({ children }) {
     }
   };
 
-const editExpense = async (expenseToUpdate) => {
-  setLoading(true);
-  try {
-    // Update the expense
-    const updatedExpense = await updateExpense(expenseToUpdate);
-    
-    // Refresh the expense list and totals
-    await refreshData();
-    
-    return updatedExpense;
-  } catch (error) {
-    console.error('Error updating expense:', error);
-    setError(error.message);
-    throw error;
-  } finally {
-    setLoading(false);
-  }
-};
+  const editExpense = async (expenseToUpdate) => {
+    setLoading(true);
+    try {
+      // Update the expense
+      const updatedExpense = await updateExpense(expenseToUpdate);
 
-const settleUp = async (debtData) => {
-  setIsSettlingUp(true);
-  try {
-    if (!tripID) {
-      throw new Error("Trip ID is required");
+      // Refresh the expense list and totals
+      await refreshData();
+
+      return updatedExpense;
+    } catch (error) {
+      console.error('Error updating expense:', error);
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
     }
+  };
 
-    // Call the API
-    const result = await settleDebt(tripID,  debtData);
-    
-   await refreshData();
-    
-    return result;
-  } catch (error) {
-    console.error('Error settling up:', error);
-    setError(error.message);
-    throw error;
-  } finally {
-    setIsSettlingUp(false);
-  }
-};
+  const settleUp = async (debtData) => {
+    setIsSettlingUp(true);
+    try {
+      if (!tripID) {
+        throw new Error('Trip ID is required');
+      }
 
-// Edit settled debt function
-const editDebt = async (debtID, updatedAmount) => {
-  setIsEditingDebt(true);
-  try {
-    if (!tripID || !debtID) {
-      throw new Error("Missing required IDs");
+      // Call the API
+      const result = await settleDebt(tripID, debtData);
+
+      await refreshData();
+
+      return result;
+    } catch (error) {
+      console.error('Error settling up:', error);
+      setError(error.message);
+      throw error;
+    } finally {
+      setIsSettlingUp(false);
     }
-    const amount = Number(updatedAmount);
-    if (isNaN(amount) || amount <= 0) {
-      throw new Error("Invalid amount");
+  };
+
+  // Edit settled debt function
+  const editDebt = async (debtID, updatedAmount) => {
+    setIsEditingDebt(true);
+    try {
+      if (!tripID || !debtID) {
+        throw new Error('Missing required IDs');
+      }
+      const amount = Number(updatedAmount);
+      if (isNaN(amount) || amount <= 0) {
+        throw new Error('Invalid amount');
+      }
+      await editSettledDebt(tripID, debtID, amount);
+      await refreshData();
+    } catch (error) {
+      console.error('Error editing debt:', error);
+      setError(error.message);
+      throw error;
+    } finally {
+      setIsEditingDebt(false);
     }
-    await editSettledDebt(tripID, debtID, amount);
-    await refreshData();
-  } catch (error) {
-    console.error('Error editing debt:', error);
-    setError(error.message);
-    throw error;
-  } finally {
-    setIsEditingDebt(false);
-  }
-};
+  };
 
-// Delete settled debt function
-const deleteDebt = async (debtID) => {
-  setIsDeletingDebt(true);
-  try {
-    await deleteSettledDebt(tripID, debtID);
-    await refreshData();
-  } catch (error) {
-    console.error('Error deleting debt:', error);
-    setError(error.message);
-    throw error;
-  } finally {
-    setIsDeletingDebt(false);
-  }
-};
+  // Delete settled debt function
+  const deleteDebt = async (debtID) => {
+    setIsDeletingDebt(true);
+    try {
+      await deleteSettledDebt(tripID, debtID);
+      await refreshData();
+    } catch (error) {
+      console.error('Error deleting debt:', error);
+      setError(error.message);
+      throw error;
+    } finally {
+      setIsDeletingDebt(false);
+    }
+  };
 
-const handleCreateBudget = async (userID, amount) => {
-  setIsCreatingBudget(true);
-  try {
-    await createBudget(tripID, userID, amount);
-    await refreshData();
-  } catch (error) {
-    console.error('Error creating budget:', error);
-    setError(error.message);
-    throw error;
-  } finally {
-    setIsCreatingBudget(false);
-  }
-};
+  const handleCreateBudget = async (userID, amount) => {
+    setIsCreatingBudget(true);
+    try {
+      await createBudget(tripID, userID, amount);
+      await refreshData();
+    } catch (error) {
+      console.error('Error creating budget:', error);
+      setError(error.message);
+      throw error;
+    } finally {
+      setIsCreatingBudget(false);
+    }
+  };
 
-const handleEditBudget = async (userID, updatedAmount) => {
-  setIsEditingBudget(true);
-  try {
-    await editBudget(tripID, userID, updatedAmount);
-    await refreshData();
-  } catch (error) {
-    console.error('Error editing budget:', error);
-    setError(error.message);
-    throw error;
-  } finally {
-    setIsEditingBudget(false);
-  }
-};
+  const handleEditBudget = async (userID, updatedAmount) => {
+    setIsEditingBudget(true);
+    try {
+      await editBudget(tripID, userID, updatedAmount);
+      await refreshData();
+    } catch (error) {
+      console.error('Error editing budget:', error);
+      setError(error.message);
+      throw error;
+    } finally {
+      setIsEditingBudget(false);
+    }
+  };
 
-const handleDeleteBudget = async (userID) => {
-  setIsDeletingBudget(true);
-  try {
-    await deleteBudget(tripID, userID);
-    await refreshData();
-  } catch (error) {
-    console.error('Error deleting budget:', error);
-    setError(error.message);
-    throw error;
-  } finally {
-    setIsDeletingBudget(false);
-  }
-};
+  const handleDeleteBudget = async (userID) => {
+    setIsDeletingBudget(true);
+    try {
+      await deleteBudget(tripID, userID);
+      await refreshData();
+    } catch (error) {
+      console.error('Error deleting budget:', error);
+      setError(error.message);
+      throw error;
+    } finally {
+      setIsDeletingBudget(false);
+    }
+  };
 
-  const value = useMemo(() => ({
-    user,
-    expenses,
-    tripMembers,
-    totals,
-    usernames,
-    isLoading: loading || isLoadingUser || isLoadingExpenses || isLoadingTotals,
-    error,
-    balances,
-    settledDebts,
-    createExpense,
-    refreshData,
-    removeExpense,
-    editExpense,
-    fetchBalanceMap: balances,
-    fetchSettledDebts: settledDebts,
-    settleUp,
-    isSettlingUp,
-    editDebt,
-    deleteDebt,
-    isEditingDebt,
-    isDeletingDebt,
-    userBudgets,
-    isCreatingBudget,
-    isEditingBudget,
-    isDeletingBudget,
-    handleCreateBudget,
-    handleEditBudget,
-    handleDeleteBudget,
-    isLoadingDependent
-  }), [
-    user,
-    expenses,
-    tripMembers,
-    totals,
-    usernames,
-    isLoadingUser,
-    isLoadingExpenses,
-    isLoadingTotals,
-    error,
-    balances,
-    JSON.stringify(settledDebts),
-    createExpense,
-    refreshData,
-    removeExpense,
-    editExpense,
-    settledDebts,
-    settleUp,
-    isSettlingUp,
-    editDebt,
-    deleteDebt,
-    isEditingDebt,
-    isDeletingDebt,
-    userBudgets,
-    isCreatingBudget,
-    isEditingBudget,
-    isDeletingBudget,
-    handleCreateBudget,
-    handleEditBudget,
-    handleDeleteBudget,
-    isLoadingDependent
-  ]);
-
-  return (
-    <ExpensesContext.Provider value={value}>
-      {children}
-    </ExpensesContext.Provider>
+  const value = useMemo(
+    () => ({
+      user,
+      expenses,
+      tripMembers,
+      totals,
+      usernames,
+      isLoading: loading || isLoadingUser || isLoadingExpenses || isLoadingTotals,
+      error,
+      balances,
+      settledDebts,
+      createExpense,
+      refreshData,
+      removeExpense,
+      editExpense,
+      fetchBalanceMap: balances,
+      fetchSettledDebts: settledDebts,
+      settleUp,
+      isSettlingUp,
+      editDebt,
+      deleteDebt,
+      isEditingDebt,
+      isDeletingDebt,
+      userBudgets,
+      isCreatingBudget,
+      isEditingBudget,
+      isDeletingBudget,
+      handleCreateBudget,
+      handleEditBudget,
+      handleDeleteBudget,
+      isLoadingDependent,
+    }),
+    [
+      user,
+      expenses,
+      tripMembers,
+      totals,
+      usernames,
+      isLoadingUser,
+      isLoadingExpenses,
+      isLoadingTotals,
+      error,
+      balances,
+      JSON.stringify(settledDebts),
+      createExpense,
+      refreshData,
+      removeExpense,
+      editExpense,
+      settledDebts,
+      settleUp,
+      isSettlingUp,
+      editDebt,
+      deleteDebt,
+      isEditingDebt,
+      isDeletingDebt,
+      userBudgets,
+      isCreatingBudget,
+      isEditingBudget,
+      isDeletingBudget,
+      handleCreateBudget,
+      handleEditBudget,
+      handleDeleteBudget,
+      isLoadingDependent,
+    ]
   );
-};
+
+  return <ExpensesContext.Provider value={value}>{children}</ExpensesContext.Provider>;
+}

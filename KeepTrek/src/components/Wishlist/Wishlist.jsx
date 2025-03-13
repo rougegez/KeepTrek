@@ -316,7 +316,7 @@ export default function WishlistPage() {
     <SidebarProvider>
       <AppSidebar tripID={tripID}/>
       {!isMobile && <SidebarTrigger />}
-      {isMobile && <MobileHeader title="Wishlist" />}
+      {isMobile && <MobileHeader title="Suggest a place to Go!" />}
       <div className={`flex w-full ${!isMobile && 'grid grid-cols-2'}`}>
         {isMobile ? (
           <motion.div
@@ -353,7 +353,7 @@ export default function WishlistPage() {
         >
           <ScrollArea className={`${isMobile ? 'p-6' : 'h-full px-6 pt-6'}`}>
             <div className="space-y-4">
-              {!isMobile && <h1 className="text-3xl font-bold">Wishlist</h1>}
+              {!isMobile && <h1 className="text-3xl font-bold">Suggest a place to Go!</h1>}
               <div className="flex justify-between items-center">
                 {canModify && (
                   <Button variant={addMode ? "outline" : "default"} onClick={handleAddModeToggle}>

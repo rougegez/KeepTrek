@@ -53,12 +53,12 @@ export default function TripCard({ trip, onDelete }) {
       try {
         const userId = await CurrentUser();
         setCurrentUser(userId);
-        
+
         const role = trip.users.find(u => u.userID === userId)?.role;
         setUserRole(role);
-        
+
         setIsAdmin(role === UserRole.ADMIN);
-        
+
         const creatorId = typeof trip.creatorID === 'object' ? trip.creatorID.userID : trip.creatorID;
         setIsCreator(userId === creatorId);
 
@@ -169,10 +169,10 @@ export default function TripCard({ trip, onDelete }) {
         endDate: new Date(trip.endDate),
         image: trip.image
       };
-      
+
       await editTrip(trip.tripID, updateData);
       setShowRenameDialog(false);
-      
+
       window.location.reload();
     } catch (error) {
       console.error('Error renaming trip:', error);
@@ -184,131 +184,138 @@ export default function TripCard({ trip, onDelete }) {
 
   return (
     <>
-      <NavLink 
-        to={`/itineraryWL/${trip.tripID}`} 
+      <NavLink
+        to={`/itinerary/${trip.tripID}`}
         className="no-underline"
         onContextMenu={handleContextMenu}
       >
-        <Card className="overflow-hidden hover:bg-[#f8fffd] relative group">
-          <div className="relative h-48">
-            <img
-              src={trip.image}
-              alt={trip.tripName}
-              className="w-full h-full object-cover"
-            />
-            <Badge 
-              className={`absolute top-2 right-2 ${statusColors[status]}`}
-              
-            >
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </Badge>
-          </div>
-          <CardHeader>
-            <h3 className="text-2xl font-semibold">{trip.tripName}</h3>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-2 text-md text-gray-500 mb-2">
-              <MapPin className="w-4 h-4" />
-              <span>{trip.location}</span>
-            </div>
-            <div className="flex items-center space-x-2 text-md text-gray-500 mb-2">
-              <CalendarIcon className="w-4 h-4" />
-              <span>{new Date(trip.startDate).toLocaleDateString()} - {new Date(trip.endDate).toLocaleDateString()}</span>
-            </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <UserAvatarStack 
-                userIds={trip.users}
-                size={6}
-                maxUsers={5}
-                className="-space-x-2"
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+        >
+          <Card className="overflow-hidden hover:bg-[#f8fffd] relative group">
+            <div className="relative h-48">
+              <img
+                src={trip.image}
+                alt={trip.tripName}
+                className="w-full h-full object-cover"
               />
-              <span>{trip.users.length} participants</span>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <div className="flex w-full items-center justify-between">
-              <div className="flex items-center gap-2 overflow-hidden">
-                <UserAvatar 
-                  userId={creator?.id}
-                  className="h-6 w-6"
-                />
-                <span className="text-sm text-gray-500">
-                  {isLoadingCreator ? 'Loading...' : `Created by ${creator?.username || 'Unknown'}`}
-                </span>
-              </div>
-              {currentUser && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      id={`trip-menu-${trip.tripID}`}
-                      variant="ghost" 
-                      size="icon"
-                      onClick={(e) => e.preventDefault()}
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={(e) => {
-                      e.preventDefault();
-                      openInNewTab();
-                    }}>
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Open in new tab
-                    </DropdownMenuItem>
-                    
-                    {isAdmin && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={(e) => {
-                          e.preventDefault();
-                          openRenameDialog();
-                        }}>
-                          <Pencil className="h-4 w-4 mr-2" />
-                          Rename
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-red-600 font-medium"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setShowDeleteAlert(true);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      </>
-                    )}
+              <Badge
+                className={`absolute top-2 right-2 ${statusColors[status]}`}
 
-                    {!isCreator && currentUser && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-red-600 font-medium"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setShowLeaveAlert(true);
-                          }}
-                        >
-                          <LogOut className="h-4 w-4 mr-2" />
-                          Leave trip
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+              >
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </Badge>
             </div>
-          </CardFooter>
-        </Card>
+            <CardHeader>
+              <h3 className="text-2xl font-semibold">{trip.tripName}</h3>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-2 text-md text-gray-500 mb-2">
+                <MapPin className="w-4 h-4" />
+                <span>{trip.location}</span>
+              </div>
+              <div className="flex items-center space-x-2 text-md text-gray-500 mb-2">
+                <CalendarIcon className="w-4 h-4" />
+                <span>{new Date(trip.startDate).toLocaleDateString()} - {new Date(trip.endDate).toLocaleDateString()}</span>
+              </div>
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <UserAvatarStack
+                  userIds={trip.users}
+                  size={6}
+                  maxUsers={5}
+                  className="-space-x-2"
+                />
+                <span>{trip.users.length} participants</span>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <div className="flex w-full items-center justify-between">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <UserAvatar
+                    userId={creator?.id}
+                    className="h-6 w-6"
+                  />
+                  <span className="text-sm text-gray-500">
+                    {isLoadingCreator ? 'Loading...' : `Created by ${creator?.username || 'Unknown'}`}
+                  </span>
+                </div>
+                {currentUser && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        id={`trip-menu-${trip.tripID}`}
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => e.preventDefault()}
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={(e) => {
+                        e.preventDefault();
+                        openInNewTab();
+                      }}>
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Open in new tab
+                      </DropdownMenuItem>
+
+                      {isAdmin && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={(e) => {
+                            e.preventDefault();
+                            openRenameDialog();
+                          }}>
+                            <Pencil className="h-4 w-4 mr-2" />
+                            Rename
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-red-600 font-medium"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setShowDeleteAlert(true);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </>
+                      )}
+
+                      {!isCreator && currentUser && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-red-600 font-medium"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setShowLeaveAlert(true);
+                            }}
+                          >
+                            <LogOut className="h-4 w-4 mr-2" />
+                            Leave trip
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+            </CardFooter>
+          </Card>
+        </motion.div>
       </NavLink>
 
-      <LeaveAlert 
+
+      <LeaveAlert
         isOpen={showLeaveAlert}
         onClose={() => setShowLeaveAlert(false)}
         onConfirm={handleLeave}
       />
-      <DeleteAlert 
+      <DeleteAlert
         isOpen={showDeleteAlert}
         onClose={() => {
           if (!isDeleting) setShowDeleteAlert(false);
@@ -319,8 +326,8 @@ export default function TripCard({ trip, onDelete }) {
       />
 
       {/* Rename Dialog */}
-      <Dialog 
-        open={showRenameDialog} 
+      <Dialog
+        open={showRenameDialog}
         onOpenChange={(open) => {
           if (!isRenaming) setShowRenameDialog(open);
         }}

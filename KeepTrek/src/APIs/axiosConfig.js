@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+const baseURL = 'https://keeptrek-backend.onrender.com/';
 
 const axiosInstance = axios.create({
   baseURL,
@@ -19,4 +19,4 @@ axiosInstance.interceptors.request.use((config) => {
   return config;
 });
 
-export default axiosInstance; 
+export default axiosInstance;

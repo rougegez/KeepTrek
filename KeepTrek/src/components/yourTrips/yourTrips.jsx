@@ -96,7 +96,7 @@ export default function YourTrips() {
       <div className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="flex justify-between">
-          <h1 className="text-5xl font-bold text-center mb-6">Your Trips</h1>
+          <h1 className="text-3xl font-bold text-center mb-6">Your Trips</h1>
           <JoinButton />
           </div>
           {error ? (
