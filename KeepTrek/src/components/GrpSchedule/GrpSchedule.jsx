@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,10 @@ import {
 import AvailableTrips from "@/components/GrpSchedule/AvailableTrips";
 import MobileHeader from "../MobileHeader";
 import { useMediaQuery } from "react-responsive";
+import { canEdit } from "@/utils/permissions";
+import { useQuery } from "react-query";
+import { getTrip } from "@/APIs/trip";
+import { CurrentUser } from "@/APIs/auth";
 
 export const GrpSchedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -21,6 +25,28 @@ export const GrpSchedule = () => {
   const isDragging = useRef(false);
   const { tripID } = useParams();
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
+  const [currentUser, setCurrentUser] = useState(null);
+  const { data: tripDetails } = useQuery(['trip', tripID], () => getTrip(tripID));
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const user = await CurrentUser();
+      setCurrentUser(user);
+    };
+    fetchCurrentUser();
+  }, []);
+
+  // Only compute userRole when both currentUser and tripDetails are available
+  const userRole = useMemo(() => {
+    if (!currentUser || !tripDetails?.users) return null;
+    const userInTrip = tripDetails.users.find(u => u.userID === currentUser);
+    console.log('User lookup:', { currentUser, userInTrip });
+    return userInTrip?.role;
+  }, [currentUser, tripDetails]);
+
+  const canModify = useMemo(() => {
+    return canEdit(userRole);
+  }, [userRole]);
 
   // Load existing availability for the current user
   const loadUserAvailability = async () => {
@@ -177,72 +203,86 @@ export const GrpSchedule = () => {
           <main className="flex-1 overflow-y-auto">
             <div className="max-w-md mx-auto p-4">
               <div className="mb-8">
-                <h2 className="text-2xl font-bold mb-6">
-                  Select your available dates!
-                </h2>
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <button onClick={handlePrevious} className="p-2">
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-                    <span className="font-medium">
-                      {currentDate.toLocaleString("default", {
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </span>
-                    <button onClick={handleNext} className="p-2">
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-7 gap-2">
-                    {generateCalendar().map((date, index) => {
-                      const formattedDate = date ? formatDate(date) : "";
-                      const isSelected = selectedDates.has(formattedDate);
-
-                      return (
-                        <button
-                          key={index}
-                          onMouseDown={handleDragStart(date)}
-                          onMouseEnter={handleDragEnter(date)}
-                          onMouseUp={handleDragEnd}
-                          disabled={date === null}
-                          className={`p-2 rounded-md text-sm ${
-                            date
-                              ? "hover:bg-primary/10 cursor-pointer"
-                              : "text-muted-foreground cursor-not-allowed"
-                          } ${
-                            isSelected
-                              ? "bg-primary text-primary-foreground"
-                              : ""
-                          }`}
-                        >
-                          {date || ""}
+                {/* Only show the calendar if user role is loaded and has permissions */}
+                {userRole && canModify ? (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-6">
+                      Select your available dates!
+                    </h2>
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <button onClick={handlePrevious} className="p-2">
+                          <ChevronLeft className="h-4 w-4" />
                         </button>
-                      );
-                    })}
+                        <span className="font-medium">
+                          {currentDate.toLocaleString("default", {
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </span>
+                        <button onClick={handleNext} className="p-2">
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-7 gap-2">
+                        {generateCalendar().map((date, index) => {
+                          const formattedDate = date ? formatDate(date) : "";
+                          const isSelected = selectedDates.has(formattedDate);
+
+                          return (
+                            <button
+                              key={index}
+                              onMouseDown={handleDragStart(date)}
+                              onMouseEnter={handleDragEnter(date)}
+                              onMouseUp={handleDragEnd}
+                              disabled={date === null}
+                              className={`p-2 rounded-md text-sm ${
+                                date
+                                  ? "hover:bg-primary/10 cursor-pointer"
+                                  : "text-muted-foreground cursor-not-allowed"
+                              } ${
+                                isSelected
+                                  ? "bg-primary text-primary-foreground"
+                                  : ""
+                              }`}
+                            >
+                              {date || ""}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center mt-4">
+                      <button
+                        className="px-4 py-2 border rounded text-white hover:opacity-80"
+                        style={{ backgroundColor: "#4DB6AC" }}
+                        onClick={handleToday}
+                      >
+                        Today
+                      </button>
+                        
+                      <button
+                        className="px-4 py-2 border rounded text-white hover:opacity-80"
+                        style={{ backgroundColor: "#4DB6AC" }}
+                        onClick={handleSubmit}
+                      >
+                        Submit
+                      </button>
+                    </div>
                   </div>
-                </div>
+                ) : userRole && !canModify ? (
+                  <p className="text-muted-foreground">
+                    You don't have permission to modify the schedule.
+                  </p>
+                ) : (
+                  <p className="text-muted-foreground">
+                    Loading calendar...
+                  </p>
+                )}
 
-                <div className="flex justify-between items-center mt-4">
-                  <button
-                    className="px-4 py-2 border rounded text-white hover:opacity-80"
-                    style={{ backgroundColor: "#4DB6AC" }}
-                    onClick={handleToday}
-                  >
-                    Today
-                  </button>
-                  <button
-                    className="px-4 py-2 border rounded text-white hover:opacity-80"
-                    style={{ backgroundColor: "#4DB6AC" }}
-                    onClick={handleSubmit}
-                  >
-                    Submit
-                  </button>
-                </div>
-
-                {/* Display AvailableTrips component */}
+                {/* Always show available trips section */}
                 <div className="space-y-4 mt-8">
                   <h3 className="text-xl font-bold">Available trip dates</h3>
                   <AvailableTrips tripID={tripID} />
