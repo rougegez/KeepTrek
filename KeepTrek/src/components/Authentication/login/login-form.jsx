@@ -62,7 +62,7 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
     <Card className="w-full max-w-md mx-auto p-8 border-none shadow-md space-y-6">
       <div className="text-center">
         <img
-          src="./assets/logo.png"
+          src="/assets/logo.png"
           alt="Logo"
           className="h-16 w-16 mx-auto mb-4"
         />
