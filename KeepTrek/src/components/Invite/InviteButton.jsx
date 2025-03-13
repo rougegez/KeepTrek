@@ -150,7 +150,7 @@ const InviteButton = ({ tripID, userRole }) => {
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select a role" />
                                         </SelectTrigger>
-                                        <SelectContent>
+                                        <SelectContent className="hover:bg-slate-100 cursor-pointer">
                                             <SelectItem value={UserRole.VIEWER}>Viewer</SelectItem>
                                             <SelectItem value={UserRole.COLLABORATOR}>Collaborator</SelectItem>
                                         </SelectContent>
@@ -207,7 +207,7 @@ const InviteButton = ({ tripID, userRole }) => {
                                                                 <SelectTrigger className="w-[120px]">
                                                                     <SelectValue />
                                                                 </SelectTrigger>
-                                                                <SelectContent>
+                                                                <SelectContent className="hover:bg-slate-100 cursor-pointer">
                                                                     <SelectItem value={UserRole.VIEWER}>Viewer</SelectItem>
                                                                     <SelectItem value={UserRole.COLLABORATOR}>Collaborator</SelectItem>
                                                                 </SelectContent>
