@@ -93,7 +93,7 @@ const InvitePage = () => {
         setJoining(true);
         try {
             const result = await joinTrip(inviteCode);
-            navigate(`/itineraryWL/${result.tripID}`);
+            navigate(`/itinerary/${result.tripID}`);
         } catch (err) {
             setError(err.response?.data?.detail || 'Failed to join trip');
             setJoining(false);
@@ -142,7 +142,7 @@ const InvitePage = () => {
             <div className="flex flex-col justify-center items-center min-h-screen bg-gray-50">
                 <div className="mb-8">
                     <img
-                        src="../src/assets/logo.png"
+                        src="/assets/logo.png"
                         alt="Logo"
                         className="h-16 w-16"
                     />
