@@ -151,8 +151,8 @@ const InviteButton = ({ tripID, userRole }) => {
                                             <SelectValue placeholder="Select a role" />
                                         </SelectTrigger>
                                         <SelectContent className="cursor-pointer">
-                                            <SelectItem className="hover:bg-slate-300 cursor-pointer" value={UserRole.VIEWER}>Viewer</SelectItem>
-                                            <SelectItem className="hover:bg-slate-300 cursor-pointer" value={UserRole.COLLABORATOR}>Collaborator</SelectItem>
+                                            <SelectItem className="hover:bg-slate-200 cursor-pointer" value={UserRole.VIEWER}>Viewer</SelectItem>
+                                            <SelectItem className="hover:bg-slate-200 cursor-pointer" value={UserRole.COLLABORATOR}>Collaborator</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -208,8 +208,8 @@ const InviteButton = ({ tripID, userRole }) => {
                                                                     <SelectValue />
                                                                 </SelectTrigger>
                                                                 <SelectContent className="cursor-pointer">
-                                                                    <SelectItem className="hover:bg-slate-300 cursor-pointer" value={UserRole.VIEWER}>Viewer</SelectItem>
-                                                                    <SelectItem className="hover:bg-slate-300 cursor-pointer" value={UserRole.COLLABORATOR}>Collaborator</SelectItem>
+                                                                    <SelectItem className="hover:bg-slate-200 cursor-pointer" value={UserRole.VIEWER}>Viewer</SelectItem>
+                                                                    <SelectItem className="hover:bg-slate-200 cursor-pointer" value={UserRole.COLLABORATOR}>Collaborator</SelectItem>
                                                                 </SelectContent>
                                                             </Select>
                                                         )}
