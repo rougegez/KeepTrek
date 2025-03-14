@@ -189,7 +189,7 @@ const MapboxMap = ({
                             </Button>
                             {/* Image Container - Mobile */}
                             {place.image && !imageError && (
-                                <div className="md:hidden absolute top-1 right-7 w-16 h-16 overflow-hidden rounded-md flex-shrink-0">
+                                <div className="md:hidden absolute bottom-16 right-4 w-28 h-20 overflow-hidden rounded-md flex-shrink-0">
                                     <a href={place.link} target="_blank" rel="noopener noreferrer">
                                         <img
                                             src={place.image}
@@ -207,9 +207,9 @@ const MapboxMap = ({
                             <div className="flex flex-col md:flex-row gap-2 md:gap-4">
                                 <div className="flex-1 space-y-1.5 md:space-y-3">
                                     {/* Address */}
-                                    <div className="flex items-start gap-1 md:gap-2 pr-16 md:pr-0">
+                                    <div className="flex items-start gap-1 md:gap-2 pr-24 md:pr-0">
                                         <MapPin size={12} className="flex-shrink-0 mt-0.5" />
-                                        <p className="text-gray-500 text-[10px] md:text-sm line-clamp-2 md:line-clamp-none">{place.address}</p>
+                                        <p className="text-gray-500 text-[10px] md:text-sm line-clamp-3 md:line-clamp-none">{place.address}</p>
                                     </div>
 
                                     {/* Rating */}
