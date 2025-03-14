@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, MoreHorizontal, Pencil, Trash, GripVertical, MapPin } from 'lucide-react';
+import { Clock, MoreHorizontal, Pencil, Trash, GripVertical, MapPin, ArrowBigUp, ArrowBigDown } from 'lucide-react';
 import { Reorder, useDragControls } from "framer-motion";
 import { formatTime } from '../../utils/timeFormat.jsx';
 import { Textarea } from '@/components/ui/textarea.jsx';
@@ -13,7 +13,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import { useItinerary } from './useItinerarySocket.jsx';
+
 const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLocationClick }) => {
+
+  const {days, updateDay, getDayAndActivity, changeActivityDay} = useItinerary();
+  const { day: currentDay } = getDayAndActivity(activity.id);
+  const activityIndex = currentDay.activities.findIndex((a) => a.id === activity.id);
 
   const controls = useDragControls();
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
@@ -32,12 +38,39 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
     onLocationClick(activity);
   };
 
+  const handleUpButtonClick = () => {
+    if (activityIndex !== 0) {
+    currentDay.activities[activityIndex] = currentDay.activities[activityIndex - 1];
+    currentDay.activities[activityIndex - 1] = activity;
+    updateDay(currentDay);
+    }
+    if (activityIndex === 0) {
+      const newDayDate = "Day " + (parseInt(currentDay.date.replace(/[A-z]+/g, "")) - 1);
+      changeActivityDay(activity, newDayDate);
+    }
+  } 
+
+  const handleDownButtonClick = () => {
+    if (activityIndex !== currentDay.activities.length - 1) {
+      currentDay.activities[activityIndex] = currentDay.activities[activityIndex + 1];
+      currentDay.activities[activityIndex + 1] = activity;
+      updateDay(currentDay);
+    }
+    if (activityIndex === currentDay.activities.length - 1) {
+      const newDayDate = "Day " + (parseInt(currentDay.date.replace(/[A-z]+/g, "")) + 1);
+      changeActivityDay(activity, newDayDate, true);
+    }
+  }
+
   return (
-    <Reorder.Item 
+    <Reorder.Item
     key={activity.id}
     dragListener={false}
     dragControls={controls}
-    value={activity} 
+    value={activity}
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }} 
     className="relative"
     >
       {/* Time and Duration - Outside both card views*/}
@@ -71,24 +104,47 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
 
       <Card 
         className="bg-white rounded-xl shadow-sm w-full max-w-4xl"
-        // onClick={handleCardClick}
       >
         <CardContent className="py-4 pr-4 pl-0">
           <div className="flex w-full gap-x-0 gap-y-4">
           <div
-            className="mx-0 flex items-center cursor-grab w-10 justify-center"
+            className={`mx-0 flex items-center w-10 justify-center ${ !isMobile ? `cursor-grab` : null}`}
             onPointerDown={(event) => {
+              if (!isMobile) {
               controls.start(event)
               event.preventDefault()
+            }
             }}
           >
+            {/* Drag Handle for desktop, buttons for mobile */}
+            {!isMobile ? (
             <GripVertical
               className="mx-0 p-0 my-4 w-4 h-4 text-gray-400 cursor-grab"
               onPointerDown={(event) => {
                 controls.start(event)
                 event.preventDefault()
               }}
-            />
+            />) : (
+              <div className="flex flex-col gap-y-1 w-9">
+                <Button 
+                  variant="ghost"
+                  onClick={handleUpButtonClick}
+                  className="h-28"
+                  disabled={currentDay.date === "Day 1" && activityIndex === 0}
+                  >
+                    <ArrowBigUp className="text-[#439f96]"/>
+                </Button>
+                <Button 
+                  variant="ghost"
+                  onClick={handleDownButtonClick}
+                  className="h-28"
+                  disabled={days[days.length - 1].date === currentDay.date && activityIndex === currentDay.activities.length - 1}
+                  >
+                    <ArrowBigDown className="text-red-500"/>
+                </Button>
+              </div>
+            )}
+
           </div>
 
           <div className={`flex flex-grow ${isMobile ? 'flex-col' : 'flex-row'} gap-4  ${activity.coordinates && activity.coordinates.length > 1 ? 'cursor-pointer hover:bg-gray-50' : ''}`} onClick={handleCardClick}>

@@ -15,6 +15,7 @@ export const useItinerary = () => {
     const setTripID = useItineraryStore((state) => state.setTripID);
     const getDayAndActivity = useItineraryStore((state) => state.getDayAndActivity);
     const updateActivity = useItineraryStore((state) => state.updateActivity);
+    const updateDay = useItineraryStore((state) => state.updateDay);
     const changeActivityDay = useItineraryStore((state) => state.changeActivityDay);
 
     const { } = useIdleTimer({
@@ -81,6 +82,7 @@ export const useItinerary = () => {
         sendJsonMessage: sendJsonMessage,
         lastJsonMessage: lastJsonMessage,
         updateActivity: updateActivity,
+        updateDay: updateDay,
         changeActivityDay: changeActivityDay,
         readyState: readyState
     };
@@ -124,17 +126,40 @@ export const useItineraryStore = create((set, get) => ({
             return { days: updatedDays };
         });
     },
-    changeActivityDay: (activity, newDay) => {
+    updateDay: (newDay) => {
         set((state) => {
-            const { date: currentDate, activity: foundActivity } = get().getDayAndActivity(activity.id ?? activity);
+            const updatedDays = state.days.map((day) => {
+                if (day.date === newDay.date) {
+                    return newDay
+                }
+                return day;
+            })
+            get().setDays(updatedDays);
+            return { days: updatedDays };
+        })
+    },     
+    changeActivityDay: (activity, newDay, addToStart) => {
+        set((state) => {
+            const { date: currentDate, activity: foundActivity } = get().getDayAndActivity(activity?.id ?? activity);
             if (!currentDate || !foundActivity) return state;
-
+            
+            while (true) {
+                const foundDay = state.days.find((day) => day.date === newDay);
+                if (foundDay) {
+                    break
+                }
+                return state;
+            }
+                
             const updatedDays = state.days.map((day) => {
                 if (day.date === currentDate) {
                     return {
                         ...day,
                         activities: day.activities.filter((a) => a.id !== foundActivity.id),
                     };
+                }
+                if (addToStart && day.date === newDay) {
+                    return { ...day, activities: [foundActivity, ...day.activities] };
                 }
                 if (day.date === newDay) {
                     return { ...day, activities: [...day.activities, foundActivity] };
