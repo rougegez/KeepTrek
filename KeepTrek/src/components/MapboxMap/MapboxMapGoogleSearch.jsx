@@ -179,57 +179,71 @@ const MapboxMap = ({
             {place && (
                 <div className="absolute bottom-4 left-4 right-4 z-10">
                     <Card className="relative bg-white bg-opacity-90">
-                        <CardHeader>
+                        <CardHeader className="pb-0 md:pb-6 pt-2 md:pt-6">
                             <Button
-                                className="absolute top-2 right-2 bg-transparent outline-none 
-                                shadow-none rounded-full hover:bg-black/5"
+                                className="absolute top-1 right-1 bg-transparent outline-none 
+                                shadow-none rounded-full hover:bg-black/5 p-0.5"
                                 size="icon"
                                 onClick={handleCloseLocation}>
-                                <X color="black" />
+                                <X size={16} color="black" />
                             </Button>
-                            <CardTitle className="align-middle">{place.name}</CardTitle>
+                            {/* Image Container - Mobile */}
+                            {place.image && !imageError && (
+                                <div className="md:hidden absolute top-1 right-7 w-16 h-16 overflow-hidden rounded-md flex-shrink-0">
+                                    <a href={place.link} target="_blank" rel="noopener noreferrer">
+                                        <img
+                                            src={place.image}
+                                            alt={place.name}
+                                            className="w-full h-full object-cover"
+                                            onError={() => setImageError(true)}
+                                            loading="lazy"
+                                        />
+                                    </a>
+                                </div>
+                            )}
+                            <CardTitle className="text-base md:text-lg pr-24 md:pr-8 truncate">{place.name}</CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <div className="flex gap-4">
-                                <div className="flex-1">
+                        <CardContent className="pt-1 px-3 md:px-6 pb-3">
+                            <div className="flex flex-col md:flex-row gap-2 md:gap-4">
+                                <div className="flex-1 space-y-1.5 md:space-y-3">
                                     {/* Address */}
-                                    <div className="flex items-start gap-1">
-                                        <MapPin size={16} className="flex-shrink-0 mt-1" />
-                                        <p className="text-gray-500 break-words">{place.address}</p>
+                                    <div className="flex items-start gap-1 md:gap-2 pr-16 md:pr-0">
+                                        <MapPin size={12} className="flex-shrink-0 mt-0.5" />
+                                        <p className="text-gray-500 text-[10px] md:text-sm line-clamp-2 md:line-clamp-none">{place.address}</p>
                                     </div>
 
                                     {/* Rating */}
                                     {place.rating?.rating > 0 && (
-                                        <div className="flex">
-                                            <span className="text-yellow-500 text-[16px]">★</span>
-                                            <p className="pl-1 text-gray-500">{place.rating.rating}</p>
-                                            <p className="pl-1 text-gray-500">({place.rating.count})</p>
+                                        <div className="flex items-center">
+                                            <span className="text-yellow-500 text-xs md:text-base">★</span>
+                                            <p className="pl-1 text-gray-500 text-[10px] md:text-sm">{place.rating.rating}</p>
+                                            <p className="pl-1 text-gray-500 text-[10px] md:text-sm">({place.rating.count})</p>
                                         </div>
                                     )}
 
                                     {/* Opening Hours */}
                                     {place.openingHours?.length > 2 && (
-                                        <div className="flex gap-1">
-                                            <Clock size={16} />
-                                            <Collapsible className="flex gap-1">
+                                        <div className="flex gap-1 md:gap-2">
+                                            <Clock size={12} className="flex-shrink-0 mt-0.5" />
+                                            <Collapsible className="flex gap-0.5">
                                                 <div>
                                                     <CollapsibleContent>
                                                         {place.openingHours.slice(0, getDayIndex()).map((day, index) => (
                                                             <div key={`pre-${index}`}>
                                                                 <CollapsibleTrigger className="inline-block">
-                                                                    <p className="text-gray-500">{day}</p>
+                                                                    <p className="text-gray-500 text-[10px] md:text-sm leading-tight">{day}</p>
                                                                 </CollapsibleTrigger>
                                                             </div>
                                                         ))}
                                                     </CollapsibleContent>
                                                     <CollapsibleTrigger>
-                                                        <span className="text-gray-500">{place.openingHours[getDayIndex()]}</span>
+                                                        <span className="text-gray-500 text-[10px] md:text-sm leading-tight">{place.openingHours[getDayIndex()]}</span>
                                                     </CollapsibleTrigger>
                                                     <CollapsibleContent>
                                                         {place.openingHours.slice(getDayIndex() + 1).map((day, index) => (
                                                             <div key={`post-${index}`}>
                                                                 <CollapsibleTrigger className="inline-block">
-                                                                    <p className="text-gray-500">{day}</p>
+                                                                    <p className="text-gray-500 text-[10px] md:text-sm leading-tight">{day}</p>
                                                                 </CollapsibleTrigger>
                                                             </div>
                                                         ))}
@@ -241,9 +255,12 @@ const MapboxMap = ({
 
                                     {/* Website */}
                                     {place.website && (
-                                        <div className="flex gap-1">
-                                            <Globe size={16} />
-                                            <a href={place.website} target="_blank" rel="noopener noreferrer" className="text-blue-500">
+                                        <div className="flex gap-1 md:gap-2 items-center">
+                                            <Globe size={12} className="flex-shrink-0" />
+                                            <a href={place.website} 
+                                               target="_blank" 
+                                               rel="noopener noreferrer" 
+                                               className="text-blue-500 text-[10px] md:text-sm truncate">
                                                 {place.website}
                                             </a>
                                         </div>
@@ -251,25 +268,30 @@ const MapboxMap = ({
 
                                     {/* Google Maps Link */}
                                     {!place.image && place.link && (
-                                        <div className="flex gap-1">
-                                            <Map size={16} />
-                                            <a href={place.link} target="_blank" rel="noopener noreferrer" className="text-blue-500">
+                                        <div className="flex gap-1 md:gap-2 items-center">
+                                            <Map size={12} className="flex-shrink-0" />
+                                            <a href={place.link} 
+                                               target="_blank" 
+                                               rel="noopener noreferrer" 
+                                               className="text-blue-500 text-[10px] md:text-sm">
                                                 View on Google Maps
                                             </a>
                                         </div>
                                     )}
 
-                                    <Button onClick={handleSaveLocation} className="mt-2">Save Location</Button>
+                                    <Button onClick={handleSaveLocation} className="mt-1 md:mt-2 w-full md:w-auto text-[10px] md:text-sm py-1 md:py-2 h-auto">
+                                        Save Location
+                                    </Button>
                                 </div>
 
-                                {/* Image Container */}
+                                {/* Image Container - Desktop */}
                                 {place.image && !imageError && (
-                                    <div className="w-52 h-32 overflow-hidden rounded-lg">
+                                    <div className="hidden md:block w-52 h-32 overflow-hidden rounded-lg">
                                         <a href={place.link} target="_blank" rel="noopener noreferrer">
                                             <img
                                                 src={place.image}
                                                 alt={place.name}
-                                                className="w-full h-full object-cover "
+                                                className="w-full h-full object-cover"
                                                 onError={() => setImageError(true)}
                                                 loading="lazy"
                                             />

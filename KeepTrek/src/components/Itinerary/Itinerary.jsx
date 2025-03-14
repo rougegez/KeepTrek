@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery, useQueryClient } from "react-query";
 import { withSuspense } from "@/utils/withSuspense.jsx";
@@ -293,7 +292,7 @@ function Itinerary() {
                     axis="y"
                     values={day.activities}
                     onReorder={(newActivities) => updateActivities(newActivities, dayIndex)}
-                    className="space-y-4 w-[90%] ml-14">
+                    className="space-y-4 w-[90%] ml-0 md:ml-14">
                     {day.activities.map((activity) => (
                       <ActivityCard
                         key={activity.id}
@@ -308,7 +307,7 @@ function Itinerary() {
                   {canModify && (
                     <Button
                       variant="outline"
-                      className="w-[92%] ml-8"
+                      className="w-[88%] md:w-[92%] ml-0 md:ml-8"
                       onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date })}
                     >
                       <Plus className="w-4 h-4 mr-2" />
