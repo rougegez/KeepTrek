@@ -16,6 +16,20 @@ import {
 const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLocationClick }) => {
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
 
+  const handleCardClick = (e) => {
+    // Don't trigger location click if clicking on interactive elements
+    if (
+      e.target.tagName.toLowerCase() === 'textarea' ||
+      e.target.tagName.toLowerCase() === 'button' ||
+      e.target.closest('.dropdown-menu') ||
+      !activity.coordinates ||
+      activity.coordinates.length <= 1
+    ) {
+      return;
+    }
+    onLocationClick(activity);
+  };
+
   return (
     <Reorder.Item key={activity.id} value={activity} className="relative">
       <div className="absolute left-0 -ml-24 top-12 flex flex-col space-y-1 text-sm text-muted-foreground px-10">
@@ -30,13 +44,16 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
           </div>}
           </div>
 
-      <Card className="bg-white rounded-xl shadow-sm w-full max-w-4xl">
+      <Card 
+        className={`bg-white rounded-xl shadow-sm w-full max-w-4xl ${activity.coordinates && activity.coordinates.length > 1 ? 'cursor-pointer hover:bg-gray-50' : ''}`}
+        onClick={handleCardClick}
+      >
         <CardContent className="p-4">
           <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-4`}>
             {/* Image for mobile - moved to top with overlapping menu */}
             {isMobile && (
               <div className="w-full relative">
-                <a href={activity.link} target="_blank" rel="noreferrer noopener">
+                <a href={activity.link} target="_blank" rel="noreferrer noopener" onClick={e => e.stopPropagation()}>
                   <img
                     src={activity.image}
                     alt=""
@@ -44,7 +61,7 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
                   />
                 </a>
                 {/* Menu positioned over the image */}
-                <div className="absolute top-2 right-2">
+                <div className="absolute top-2 right-2 dropdown-menu">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-6 w-6 p-0 bg-white/80 hover:bg-white rounded-full cursor-pointer">
@@ -83,15 +100,6 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
 
               {/* Address */}
               <div className="flex items-start gap-1 text-sm text-muted-foreground">
-                <Button
-                  variant="ghost"
-                  className="relative h-8 w-8 rounded-full"
-                  size="icon"
-                  onClick={() => onLocationClick(activity)}
-                  {...(activity.coordinates && activity.coordinates.length > 1 ? {} : {disabled: true})}
-                >
-                  <MapPin className="h-4 w-4" />
-                </Button>
                 <span>{activity.location}</span>
               </div>
 
@@ -101,13 +109,14 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
                 placeholder="Add a note..."
                 value={activity.notes}
                 onChange={(e) => onNoteChange(activity.id, e.target.value)}
+                onClick={e => e.stopPropagation()}
               />
             </div>
 
             {/* Image for desktop - on the right with overlapping menu */}
             {!isMobile && (
               <div className="flex-none relative">
-                <a href={activity.link} target="_blank" rel="noreferrer noopener">
+                <a href={activity.link} target="_blank" rel="noreferrer noopener" onClick={e => e.stopPropagation()}>
                   <img
                     src={activity.image}
                     alt=""
@@ -115,7 +124,7 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
                   />
                 </a>
                 {/* Menu positioned over the image */}
-                <div className="absolute top-2 right-2">
+                <div className="absolute top-2 right-2 dropdown-menu">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-6 w-6 p-0 bg-white/80 hover:bg-white rounded-full cursor-pointer">
