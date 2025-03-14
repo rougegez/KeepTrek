@@ -32,17 +32,34 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
 
   return (
     <Reorder.Item key={activity.id} value={activity} className="relative">
-      <div className="absolute left-0 -ml-24 top-12 flex flex-col space-y-1 text-sm text-muted-foreground px-10">
-        {/* Time */}
-        {activity.time && <div className="font-medium">{formatTime(activity.time)}</div>}
+      {/* Time and Duration - Outside both card views*/}
+      {isMobile ? (
+        // Mobile: Horizontal layout to the left of the card
+        <div className="flex items-center space-x-2 mb-1 text-sm text-muted-foreground">
+          {/* Time */}
+          {activity.time && <div className="font-medium">{formatTime(activity.time)}</div>}
 
-        {/* Duration */}
-        {activity.duration &&
-          <div className="flex items-center gap-1">
-            <Clock className="w-4 h-4" />
-            {activity.duration} h
-          </div>}
-          </div>
+          {/* Duration */}
+          {activity.duration &&
+            <div className="flex items-center gap-1">
+              <Clock className="w-4 h-4" />
+              {activity.duration} h
+            </div>}
+        </div>
+      ) : (
+        // Desktop: Vertical layout to the left of the card
+        <div className="absolute left-0 -ml-24 top-12 flex flex-col space-y-1 text-sm text-muted-foreground px-10">
+          {/* Time */}
+          {activity.time && <div className="font-medium">{formatTime(activity.time)}</div>}
+
+          {/* Duration */}
+          {activity.duration &&
+            <div className="flex items-center gap-1">
+              <Clock className="w-4 h-4" />
+              {activity.duration} h
+            </div>}
+        </div>
+      )}
 
       <Card 
         className={`bg-white rounded-xl shadow-sm w-full max-w-4xl ${activity.coordinates && activity.coordinates.length > 1 ? 'cursor-pointer hover:bg-gray-50' : ''}`}
@@ -57,7 +74,7 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
                   <img
                     src={activity.image}
                     alt=""
-                    className="w-full h-32 rounded-lg object-cover"
+                    className="w-full h-28 rounded-lg object-cover"
                   />
                 </a>
                 {/* Menu positioned over the image */}
@@ -80,9 +97,9 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
             <div className="flex-grow space-y-2">
               {/* Title row with menu for desktop */}
               <div className="flex items-start justify-between">
-                <h3 className="text-lg font-semibold">{activity.title}</h3>
+                <h3 className="text-sm md:text-lg font-semibold">{activity.title}</h3>
                 
-                {/* Menu for desktop view
+                {/* Menu for desktop view - commented out from original code
                 {!isMobile && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -99,13 +116,13 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
               </div>
 
               {/* Address */}
-              <div className="flex items-start gap-1 text-sm text-muted-foreground">
+              <div className="flex items-start gap-1 text-xs md:text-sm text-muted-foreground">
                 <span>{activity.location}</span>
               </div>
 
               {/* Notes */}
               <Textarea
-                className="w-full min-h-[50px] p-2 text-sm bg-muted/50 rounded-lg border-0 resize-none placeholder:text-muted-foreground/50"
+                className="w-full min-h-[50px] p-2 text-xs md:text-sm bg-muted/50 rounded-lg border-0 resize-none placeholder:text-muted-foreground/50"
                 placeholder="Add a note..."
                 value={activity.notes}
                 onChange={(e) => onNoteChange(activity.id, e.target.value)}
