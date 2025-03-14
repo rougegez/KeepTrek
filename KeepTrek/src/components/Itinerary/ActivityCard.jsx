@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, MapPin, MoreHorizontal, Pencil, Trash } from 'lucide-react';
-import { Reorder } from "framer-motion";
+import { Clock, MoreHorizontal, Pencil, Trash, GripVertical, MapPin } from 'lucide-react';
+import { Reorder, useDragControls } from "framer-motion";
 import { formatTime } from '../../utils/timeFormat.jsx';
 import { Textarea } from '@/components/ui/textarea.jsx';
 import { Button } from '../ui/button.jsx';
@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLocationClick }) => {
+
+  const controls = useDragControls();
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
 
   const handleCardClick = (e) => {
@@ -31,7 +33,13 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
   };
 
   return (
-    <Reorder.Item key={activity.id} value={activity} className="relative">
+    <Reorder.Item 
+    key={activity.id}
+    dragListener={false}
+    dragControls={controls}
+    value={activity} 
+    className="relative"
+    >
       {/* Time and Duration - Outside both card views*/}
       {isMobile ? (
         // Mobile: Horizontal layout to the left of the card
@@ -48,7 +56,7 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
         </div>
       ) : (
         // Desktop: Vertical layout to the left of the card
-        <div className="absolute left-0 -ml-24 top-12 flex flex-col space-y-1 text-sm text-muted-foreground px-10">
+        <div className="absolute left-0 -ml-24 top-12 flex flex-col space-y-1 text-sm text-muted-foreground pl-10 pr-0 ">
           {/* Time */}
           {activity.time && <div className="font-medium">{formatTime(activity.time)}</div>}
 
@@ -62,11 +70,28 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
       )}
 
       <Card 
-        className={`bg-white rounded-xl shadow-sm w-full max-w-4xl ${activity.coordinates && activity.coordinates.length > 1 ? 'cursor-pointer hover:bg-gray-50' : ''}`}
-        onClick={handleCardClick}
+        className="bg-white rounded-xl shadow-sm w-full max-w-4xl"
+        // onClick={handleCardClick}
       >
-        <CardContent className="p-4">
-          <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-4`}>
+        <CardContent className="py-4 pr-4 pl-0">
+          <div className="flex w-full gap-x-0 gap-y-4">
+          <div
+            className="mx-0 flex items-center cursor-grab w-10 justify-center"
+            onPointerDown={(event) => {
+              controls.start(event)
+              event.preventDefault()
+            }}
+          >
+            <GripVertical
+              className="mx-0 p-0 my-4 w-4 h-4 text-gray-400 cursor-grab"
+              onPointerDown={(event) => {
+                controls.start(event)
+                event.preventDefault()
+              }}
+            />
+          </div>
+
+          <div className={`flex flex-grow ${isMobile ? 'flex-col' : 'flex-row'} gap-4  ${activity.coordinates && activity.coordinates.length > 1 ? 'cursor-pointer hover:bg-gray-50' : ''}`} onClick={handleCardClick}>
             {/* Image for mobile - moved to top with overlapping menu */}
             {isMobile && (
               <div className="w-full relative">
@@ -86,8 +111,8 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={onEditClick} className="text-[#439f96] cursor-pointer"><Pencil className="w-4 h-4 text-[#439f96]" />Edit</DropdownMenuItem>
-                    <DropdownMenuItem onClick={onDeleteClick} className="text-red-500 cursor-pointer"><Trash className="w-4 h-4 text-red-500" />Delete</DropdownMenuItem>
+                      <DropdownMenuItem onClick={onEditClick} className="text-[#439f96] cursor-pointer"><Pencil className="w-4 h-4 text-[#439f96]" />Edit</DropdownMenuItem>
+                      <DropdownMenuItem onClick={onDeleteClick} className="text-red-500 cursor-pointer"><Trash className="w-4 h-4 text-red-500" />Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -98,21 +123,6 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
               {/* Title row with menu for desktop */}
               <div className="flex items-start justify-between">
                 <h3 className="text-sm md:text-lg font-semibold">{activity.title}</h3>
-                
-                {/* Menu for desktop view - commented out from original code
-                {!isMobile && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                        <MoreHorizontal className="h-3 w-3" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={onEditClick} className="text-[#439f96]"><Pencil className="w-4 h-4 text-[#439f96]" />Edit</DropdownMenuItem>
-                      <DropdownMenuItem onClick={onDeleteClick} className="text-red-500"><Trash className="w-4 h-4 text-red-500" />Delete</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )} */}
               </div>
 
               {/* Address */}
@@ -149,14 +159,14 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={onEditClick} className="text-[#439f96] cursor-pointer"><Pencil className="w-4 h-4 text-[#439f96]" />Edit</DropdownMenuItem>
-                    <DropdownMenuItem onClick={onDeleteClick} className="text-red-500 cursor-pointer"><Trash className="w-4 h-4 text-red-500" />Delete</DropdownMenuItem>
+                      <DropdownMenuItem onClick={onEditClick} className="text-[#439f96] cursor-pointer"><Pencil className="w-4 h-4 text-[#439f96]" />Edit</DropdownMenuItem>
+                      <DropdownMenuItem onClick={onDeleteClick} className="text-red-500 cursor-pointer"><Trash className="w-4 h-4 text-red-500" />Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-                
               </div>
             )}
+          </div>
           </div>
         </CardContent>
       </Card>
