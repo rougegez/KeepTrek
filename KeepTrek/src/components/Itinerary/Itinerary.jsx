@@ -47,7 +47,7 @@ function Itinerary() {
   const [searchedPlace, setSearchedPlace] = useState(null);
   const [savedLocation, setSavedLocation] = useState(null);
 
-  const isMobile = useMediaQuery({ query: '(max-width: 1200px)' });
+  const isMobile = useMediaQuery({ query: '(max-width: 1170px)' });
   const [isMapExpanded, setIsMapExpanded] = useState(true);
   const [scrollPosition, setScrollPosition] = useState(0);
   const contentRef = useRef(null);
