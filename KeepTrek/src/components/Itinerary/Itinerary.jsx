@@ -110,25 +110,6 @@ function Itinerary() {
       setScrollPosition(position);
     };
 
-    const activityCardContentStyle = {
-      display: 'flex',
-      gap: '1rem',
-      flexDirection: isMobile ? 'column' : 'row',
-    };
-
-    const activityImageStyle = {
-      maxWidth: '30rem',
-      maxHeight: '10rem',
-      borderRadius: '0.5rem',
-      objectFit: 'cover',
-      width: isMobile ? '100%' : 'auto',
-      height: isMobile ? 'auto' : 'auto',
-    };
-
-    const cardStyle = {
-      maxWidth: isMobile ? '20rem' : '100%',
-    };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isMapExpanded, lastScrollPosition]);
@@ -229,7 +210,8 @@ function Itinerary() {
             <MapboxMap
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
-              initialPlace={searchedPlace}
+              initCenter={tripDetails.coordinates}
+              handlePanTo={searchedPlace}
               height="100%"
               width="100%"
             />
@@ -337,7 +319,8 @@ function Itinerary() {
             <MapboxMap
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
-              initialPlace={searchedPlace}
+              initCenter={tripDetails.coordinates}
+              handlePanTo={searchedPlace}
               height="100%"
               width="100%"
             />

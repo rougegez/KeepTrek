@@ -331,7 +331,8 @@ export default function WishlistPage() {
             <MapboxMap
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
-              initialPlace={searchedPlace}
+              handlePanTo={searchedPlace}
+              initCenter={tripDetails.coordinates}
               height="100%"
               width="100%"
             />
@@ -460,7 +461,8 @@ export default function WishlistPage() {
             <MapboxMap
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
-              initialPlace={searchedPlace}
+              handlePanTo={searchedPlace}
+              initCenter={tripDetails.coordinates}
               height="100%"
               width="100%"
             />
