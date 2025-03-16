@@ -21,6 +21,7 @@ export default function CreateTrip() {
   const [tripName, setTripName] = useState("");
   const [location, setLocation] = useState("");
   const [image, setImage] = useState("../src/assets/dummy-image.jpg");
+  const [coordinates, setCoordinates] = useState([]);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
@@ -38,7 +39,7 @@ export default function CreateTrip() {
     const endDate = new Date(dateRange.to).toISOString().split("T")[0];
 
     try {
-      const response = await createTrip({ tripName, location, startDate, endDate, image});
+      const response = await createTrip({ tripName, location, coordinates, startDate, endDate, image});
       const tripID = response.tripID;
       // Create itinerary
       const dayCount = Math.ceil((new Date(dateRange.to) - new Date(dateRange.from)) / (1000 * 60 * 60 * 24)) + 1;
@@ -59,11 +60,15 @@ export default function CreateTrip() {
     if (location?.placePrediction?.structuredFormat?.mainText?.text) {
       setLocation(location.placePrediction.structuredFormat.mainText.text);
       const suggestion = await fetchPlaceDetails(location.placePrediction.placeId);
+      setCoordinates([suggestion.coordinates[0], suggestion.coordinates[1]]);
       setImage(suggestion.image);
     } else {
       setLocation(location);
+      setImage("../src/assets/dummy-image.jpg");
+      setCoordinates([]);
     }
   }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <TopNavbar />

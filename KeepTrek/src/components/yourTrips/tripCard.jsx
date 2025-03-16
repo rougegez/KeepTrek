@@ -101,6 +101,7 @@ export default function TripCard({ trip, onDelete }) {
 
   const [creator, setCreator] = useState(null);
   const [isLoadingCreator, setIsLoadingCreator] = useState(true);
+  
   useEffect(() => {
     const fetchCreator = async () => {
       try {
@@ -138,7 +139,7 @@ export default function TripCard({ trip, onDelete }) {
   };
 
   const openInNewTab = () => {
-    window.open(`/itineraryWL/${trip.tripID}`, '_blank');
+    window.open(`/itinerary/${trip.tripID}`, '_blank');
   };
 
   const handleContextMenu = (e) => {

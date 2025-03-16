@@ -25,7 +25,7 @@ const MapboxMap = ({
     initZoom = 15,
     onSaveLocation,
     onMapLoad,
-    initialPlace = null
+    handlePanTo = null
 }) => {
     const mapContainer = useRef(null)
     const mapRef = useRef(null)
@@ -38,17 +38,17 @@ const MapboxMap = ({
 
 
     useEffect(() => {
-        if (initialPlace) {
-            handlePlaceUpdate(initialPlace?.clickLocation ?? initialPlace)
+        if (handlePanTo) {
+            handlePlaceUpdate(handlePanTo?.clickLocation ?? handlePanTo)
         }
-    }, [initialPlace])
+    }, [handlePanTo])
 
     useEffect(() => {
         if (mapContainer.current) {
             mapRef.current = new mapboxgl.Map({
                 container: mapContainer.current,
                 style: 'mapbox://styles/mapbox/streets-v12',
-                center: center,
+                center: center[0] ? center : [101.6160160887531, 3.0644537753819425],
                 zoom: zoom
             })
 
