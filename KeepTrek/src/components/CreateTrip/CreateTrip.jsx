@@ -14,7 +14,7 @@ import { createTrip } from "@/APIs/trip.js";
 import { useNavigate } from "react-router-dom";
 import { createItinerary } from "@/APIs/itinerary.js";
 import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar.jsx";
-import { fetchPlaceDetails } from "@/utils/fetchPlaceDetails.jsx";
+import { fetchPlaceDetails } from "@/APIs/fetchPlaceDetails.js";
 
 export default function CreateTrip() {
   const [dateRange, setDateRange] = useState({ from: undefined, to: undefined });

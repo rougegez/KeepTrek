@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Clock, Globe, Map, MapPin, Star, X } from 'lucide-react'
 import MapSearchBar from './GoogleMapsSearchbar'
-import { fetchPlaceDetails } from '@/utils/fetchPlaceDetails.jsx'
+import { fetchPlaceDetails } from '@/APIs/fetchPlaceDetails.js'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API_KEY
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY

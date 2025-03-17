@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar.jsx";
 import { Textarea } from '@/components/ui/textarea';
-import { fetchPlaceDetails } from '@/utils/fetchPlaceDetails.jsx';
+import { fetchPlaceDetails } from '@/APIs/fetchPlaceDetails.js';
 
 import { useItinerary } from './useItinerarySocket.jsx';
 
