@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { useQuery, useQueryClient } from "react-query";
+import { useQuery } from "react-query";
 import { withSuspense } from "@/utils/withSuspense.jsx";
 
 import { Button } from "@/components/ui/button";
 import { Reorder } from "framer-motion";
-import { Plus, Menu, ChevronUp, ChevronDown, LogOut, Settings } from 'lucide-react'
+import { Plus, ChevronUp, ChevronDown, LogOut, Settings } from 'lucide-react'
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import ActivityCard from "./ActivityCard.jsx";
@@ -14,7 +14,6 @@ import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx";
 import { dateFormatter } from "@/utils/dateFormat.jsx";
 
 import { useParams, useNavigate } from "react-router-dom";
-import { getItinerary, updateItinerary } from "@/APIs/itinerary.js";
 import { getTrip, removeMember } from "@/APIs/trip.js";
 
 import { useMediaQuery } from 'react-responsive';
@@ -23,7 +22,6 @@ import MobileHeader from "../MobileHeader.jsx";
 import InviteButton from "../Invite/InviteButton.jsx";
 import { UserAvatarStack } from '../profilePage/avatar.jsx';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 import { canEdit, UserRole } from "@/utils/permissions";
 import LeaveAlert from '@/components/ui/LeaveAlert';
@@ -85,7 +83,7 @@ function Itinerary() {
       const position = window.scrollY;
       const scrollDelta = position - lastScrollPosition;
 
-      // Auto-expand map when scrolling to top
+      // Auto-expand map when scrolling to top 
       if (position < 50) {
         setIsMapExpanded(true);
       }
