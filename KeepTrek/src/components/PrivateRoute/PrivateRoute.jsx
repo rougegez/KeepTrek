@@ -2,9 +2,12 @@
 
 import React, { useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthProvider";
 
-const PrivateRoute = ({ isLoggedIn, openLoginModal }) => {
+const PrivateRoute = () => {
   const location = useLocation();
+
+  const { isLoggedIn, openLoginModal } = useAuth();
 
   useEffect(() => {
     if (!isLoggedIn) {

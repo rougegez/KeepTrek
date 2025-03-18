@@ -1,61 +1,25 @@
 'use client'
 
-import React, { useEffect, useState } from "react"
-import { Bell, User, Menu, LogOut, User as UserIcon } from 'lucide-react'
+import React, { useState } from "react"
+import { Menu, LogOut, User as UserIcon } from 'lucide-react'
 import { NavLink, useNavigate, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import Modal from "@/components/Authentication/Modal"
-import LoginForm from "@/components/Authentication/login/login-form"
-import RegisterForm from "@/components/Authentication/register/register-form"
-import { Link as ScrollLink } from "react-scroll"
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { UserAvatar } from "@/components/profilePage/avatar"
-import { CurrentUser } from '@/APIs/auth';  
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 
+import { useAuth } from "@/contexts/AuthProvider"
+
 export default function TopNavbar() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [user, setUser] = useState(null)
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
-  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [userId, setUserId] = useState(null)
   const navigate = useNavigate()
   const location = useLocation()
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const token = localStorage.getItem("token")
-      if (token) {
-        try {
-          const currentUserId = await CurrentUser()
-          setUserId(currentUserId)
-          const storedUser = JSON.parse(localStorage.getItem("user"))
-          setUser(storedUser || { username: "Guest" })
-          setIsLoggedIn(true)
-        } catch (error) {
-          console.error('Error fetching user:', error)
-          handleLogout()
-        }
-      } else {
-        setIsLoggedIn(false)
-      }
-    }
-    fetchUserData()
-  }, [])
-
-  const handleLogout = () => {
-    localStorage.removeItem("token")
-    localStorage.removeItem("user")
-    setIsLoggedIn(false)
-    setUser(null)
-    navigate("/")
-  }
+  const { user, isLoggedIn, logout, openLoginModal, openRegisterModal } = useAuth();
 
   const navigateAndScroll = (sectionId) => {
     if (location.pathname !== "/") {
@@ -103,7 +67,7 @@ export default function TopNavbar() {
       </button>
     </>
   )
-
+  
   return (
     <>
       <nav className="sticky top-0 z-50 bg-white border-b shadow-sm">
@@ -132,7 +96,7 @@ export default function TopNavbar() {
               <NavItems />
             </div>
             <div className="flex items-center">
-              {isLoggedIn ? (
+              { isLoggedIn ? (
                 <>
                   <Button asChild className="mr-4 sm:inline-flex">
                     <NavLink
@@ -146,7 +110,7 @@ export default function TopNavbar() {
                     <DropdownMenuTrigger asChild>
                       <Button size="icon" variant="ghost" className="m-2 rounded-full">
                         <UserAvatar 
-                          userId={userId}
+                          userId={user}
                           className="h-12 w-12"
                         />
                       </Button>
@@ -156,23 +120,23 @@ export default function TopNavbar() {
                         <UserIcon className="mr-2 h-4 w-4" />
                         Profile
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleLogout}  className="cursor-pointer text-red-500">
+                      <DropdownMenuItem onClick={() => logout()}  className="cursor-pointer text-red-500">
                         <LogOut className="mr-2 h-4 w-4" />
                         Logout
-                      </DropdownMenuItem>
+                      </DropdownMenuItem> 
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </>
               ) : (
                 <>
                   <Button
-                    onClick={() => setIsLoginModalOpen(true)}
+                    onClick={openLoginModal}
                     className="text-sm font-semibold"
                   >
                     Login
                   </Button>
                   <Button
-                    onClick={() => setIsRegisterModalOpen(true)}
+                    onClick={openRegisterModal}
                     className="ml-2 text-sm font-semibold"
                   >
                     Register
@@ -184,19 +148,6 @@ export default function TopNavbar() {
         </div>
       </nav>
 
-      <Modal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)}>
-        <LoginForm onSwitchToRegister={() => {
-          setIsLoginModalOpen(false)
-          setIsRegisterModalOpen(true)
-        }} />
-      </Modal>
-
-      <Modal isOpen={isRegisterModalOpen} onClose={() => setIsRegisterModalOpen(false)}>
-        <RegisterForm onSwitchToLogin={() => {
-          setIsRegisterModalOpen(false)
-          setIsLoginModalOpen(true)
-        }} />
-      </Modal>
     </>
   )
 }
