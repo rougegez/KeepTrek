@@ -1,4 +1,3 @@
-// GrpSchedule.jsx
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
@@ -21,9 +20,11 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 export const GrpSchedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDates, setSelectedDates] = useState(new Set());
+  const [loading, setLoading] = useState(false); // New: Track submit loading state
   const { tripID } = useParams();
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
   const [currentUser, setCurrentUser] = useState(null);
+  
   const { data: tripDetails } = useQuery(["trip", tripID], () => getTrip(tripID));
 
   useEffect(() => {
@@ -37,37 +38,28 @@ export const GrpSchedule = () => {
   const userRole = useMemo(() => {
     if (!currentUser || !tripDetails?.users) return null;
     const userInTrip = tripDetails.users.find((u) => u.userID === currentUser);
-    console.log("User lookup:", { currentUser, userInTrip });
     return userInTrip?.role;
   }, [currentUser, tripDetails]);
 
   const canModify = useMemo(() => canEdit(userRole), [userRole]);
 
-  // Load the current user's availability from the backend
-  const loadUserAvailability = async () => {
-    try {
-      const userAvailability = await getUserAvailability(tripID);
-      setSelectedDates(new Set(userAvailability));
-    } catch (error) {
-      console.error("Error loading user availability:", error.message);
-    }
-  };
+  // Load user's availability
+  useEffect(() => {
+    const loadUserAvailability = async () => {
+      try {
+        const userAvailability = await getUserAvailability(tripID);
+        setSelectedDates(new Set(userAvailability));
+      } catch (error) {
+        console.error("Error loading user availability:", error.message);
+      }
+    };
+    loadUserAvailability();
+  }, [tripID]);
 
-  // Fetch available trips (for other parts of the UI)
-  const loadAvailableTrips = async () => {
-    try {
-      const trips = await fetchAvailableTrips();
-      const currentTrip = trips.find((trip) => trip.tripID === tripID);
-      if (!currentTrip) throw new Error("Trip not found");
-    } catch (error) {
-      console.error("Error fetching trips:", error.message);
-      alert("Failed to fetch available trips");
-    }
-  };
-
-  // Submit selected dates to the backend
+  // Submit selected dates
   const handleSubmit = async () => {
     try {
+      setLoading(true); // Show loading spinner
       const result = await updateAvailability(Array.from(selectedDates), tripID);
       console.log("Availability saved:", result);
       alert("Availability successfully submitted!");
@@ -75,13 +67,10 @@ export const GrpSchedule = () => {
     } catch (error) {
       console.error("Error saving availability:", error.message);
       alert("Failed to submit availability");
+    } finally {
+      setLoading(false); // Hide loading spinner
     }
   };
-
-  useEffect(() => {
-    loadUserAvailability();
-    loadAvailableTrips();
-  }, [tripID]);
 
   return (
     <SidebarProvider>
@@ -94,13 +83,11 @@ export const GrpSchedule = () => {
           </header>
           <main className="flex-1 overflow-y-auto">
             <div className="w-full p-4">
-              {/* Heading above the calendar */}
               <h2 className="text-2xl font-bold mb-6 text-center">
                 Select your available dates!
               </h2>
               {userRole ? (
                 canModify ? (
-                  // Responsive calendar container: full width on mobile; on desktop minimum width 750px.
                   <div className="flex justify-center overflow-x-auto">
                     <div className="w-full md:w-auto md:min-w-[750px] mx-auto">
                       <Calendar
@@ -109,6 +96,7 @@ export const GrpSchedule = () => {
                         selectedDates={selectedDates}
                         setSelectedDates={setSelectedDates}
                         handleSubmit={handleSubmit}
+                        loading={loading} // Pass loading state
                       />
                     </div>
                   </div>
@@ -118,7 +106,6 @@ export const GrpSchedule = () => {
                   </p>
                 )
               ) : (
-                // Centered, larger spinner when loading user data.
                 <div className="flex items-center justify-center h-64">
                   <div style={{ transform: "scale(1.8)" }}>
                     <LoadingSpinner />
@@ -126,12 +113,10 @@ export const GrpSchedule = () => {
                 </div>
               )}
             </div>
-            {selectedDates.size > 0 && (
-              <div className="max-w-md mx-auto p-4">
-                <h3 className="text-xl font-bold">Available trip dates</h3>
-                <AvailableTrips tripID={tripID} />
-              </div>
-            )}
+            {/* Period Cards Now Always Visible */}
+            <div className="max-w-md mx-auto p-4">
+              <AvailableTrips tripID={tripID} />
+            </div>
           </main>
         </div>
       </div>
