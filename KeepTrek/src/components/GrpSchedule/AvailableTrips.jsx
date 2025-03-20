@@ -102,7 +102,7 @@ const AvailabilityIcon = ({ tripID, period, totalPeople }) => {
 
 const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) => {
   const [isUpdating, setIsUpdating] = useState(false);
-  // When not editing, determine if this period is selected.
+  // Determine if this period is selected.
   const isSelected =
     selectedPeriod.start_date === period.start_date &&
     selectedPeriod.end_date === period.end_date;
@@ -178,21 +178,15 @@ const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) =
     }
   };
 
-  // Define the button label.
-  const buttonLabel = isUpdating
-    ? "Updating..."
-    : !isEditing && isSelected
-    ? "Selected"
-    : "Select";
+  // Define the button label text for non-loading states.
+  const buttonLabel = !isEditing && isSelected ? "Selected" : "Select";
 
   // Determine if the select button should be disabled.
-  // When not editing, it's disabled if already selected or updating.
-  // When editing, it's disabled if the range is invalid or updating.
   const buttonDisabled = !isEditing
     ? (isSelected || isUpdating)
     : (!validRange || isUpdating);
 
-  // If in edit mode and the range is invalid, define a tooltip message.
+  // Tooltip message for invalid range (when editing).
   const tooltipMessage = "Please select a continuous date range. A trip cannot skip days.";
 
   return (
@@ -206,12 +200,11 @@ const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) =
           <div className="flex space-x-2">
             <button
               onClick={handleEditToggle}
-              className="px-2 py-1 border rounded text-sm"
+              className="px-2 py-1 border rounded text-sm bg-[#4DB6AC] text-white"
             >
               {isEditing ? "Cancel" : "Edit"}
             </button>
             {isEditing && !validRange ? (
-              // Wrap the Select button in a tooltip if editing and range is invalid.
               <Tooltip>
                 <TooltipTrigger>
                   <button
@@ -219,7 +212,7 @@ const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) =
                     className="px-4 py-2 border rounded text-white bg-[#22544f] cursor-not-allowed"
                     disabled={true}
                   >
-                    {buttonLabel}
+                    {isUpdating ? "Updating..." : buttonLabel}
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>{tooltipMessage}</TooltipContent>
@@ -234,7 +227,7 @@ const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) =
                 }`}
                 disabled={buttonDisabled}
               >
-                {buttonLabel}
+                {isUpdating ? "Updating..." : buttonLabel}
               </button>
             )}
           </div>
@@ -247,27 +240,18 @@ const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) =
           />
         </div>
       </Card>
-      <div className="mt-2">
-        {isEditing ? (
+      {isEditing && (
+        <div className="mt-2">
           <Calendar
             currentDate={editCurrentDate}
             setCurrentDate={setEditCurrentDate}
             selectedDates={editedDates}
             setSelectedDates={setEditedDates}
             readOnly={false}
-            showControls={false} // Hide calendar's bottom controls when editing
+            showControls={false}
           />
-        ) : (
-          <Calendar
-            currentDate={new Date(period.start_date)}
-            setCurrentDate={() => {}}
-            selectedDates={new Set()}
-            setSelectedDates={() => {}}
-            readOnly={true}
-            highlightRange={{ start_date: period.start_date, end_date: period.end_date }}
-          />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -315,20 +299,36 @@ const AvailableTrips = ({ tripID }) => {
     fetchData();
   }, [tripID]);
 
-  if (!suggestedPeriods)
+  // Check if at least one period card exists.
+  const hasPeriodCards =
+    suggestedPeriods &&
+    (suggestedPeriods.most_people_period ||
+      suggestedPeriods.longest_period_min_2_people ||
+      (suggestedPeriods.other_five_seven_day_periods &&
+        suggestedPeriods.other_five_seven_day_periods.length > 0));
+
+  if (!suggestedPeriods) {
     return (
       <div className="mt-8">
         <LoadingSpinner />
       </div>
     );
+  }
+
+  // If no period cards exist, render nothing.
+  if (!hasPeriodCards) {
+    return null;
+  }
 
   return (
+    <div className="max-w-md mx-auto ">
+      <h3 className="text-xl font-bold">Available trip dates</h3>    
     <div className="max-w-md mx-auto">
       {suggestedPeriods.most_people_period && (
         <div>
           <h4 className="text-lg font-semibold mb-2">
-            5-7 day with most people available
-          </h4>
+            Best Option
+            </h4>
           <PeriodCard
             tripID={tripID}
             period={suggestedPeriods.most_people_period}
@@ -342,7 +342,7 @@ const AvailableTrips = ({ tripID }) => {
       {suggestedPeriods.longest_period_min_2_people && (
         <div>
           <h4 className="text-lg font-semibold mb-2">
-            Longest period with at least 2 people available
+            Longest Overlapping Availability
           </h4>
           <PeriodCard
             tripID={tripID}
@@ -358,7 +358,7 @@ const AvailableTrips = ({ tripID }) => {
         suggestedPeriods.other_five_seven_day_periods.length > 0 && (
           <div>
             <h4 className="text-lg font-semibold mb-2">
-              Other Five to Seven Day Periods
+              Alternative Options
             </h4>
             {suggestedPeriods.other_five_seven_day_periods.map((period, index) => (
               <PeriodCard
@@ -372,6 +372,7 @@ const AvailableTrips = ({ tripID }) => {
             ))}
           </div>
         )}
+    </div>
     </div>
   );
 };
