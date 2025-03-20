@@ -12,6 +12,7 @@ const Calendar = ({
   highlightRange = null,
   showControls = true,
   compact = false,
+  loading = false, // loading state passed from parent
 }) => {
   const isDragging = useRef(false);
   const [opacity, setOpacity] = useState(0);
@@ -20,7 +21,7 @@ const Calendar = ({
   useEffect(() => {
     const timer = setTimeout(() => {
       setOpacity(1);
-    }, 300); // Delay of 00ms; adjust as needed.
+    }, 300);
     return () => clearTimeout(timer);
   }, []);
 
@@ -201,11 +202,15 @@ const Calendar = ({
             Today
           </button>
           <button
-            className="px-4 py-2 border rounded text-white hover:opacity-80"
+            className="px-4 py-2 border rounded text-white hover:opacity-80 disabled:bg-gray-400"
             style={{ backgroundColor: "#4DB6AC" }}
             onClick={handleSubmit}
+            disabled={loading}
           >
-            Submit
+            {/* Fixed-width container to maintain button size */}
+            <span className="inline-flex items-center justify-center w-16">
+              {loading ? "Updating..." : "Submit"}
+            </span>
           </button>
         </div>
       )}
