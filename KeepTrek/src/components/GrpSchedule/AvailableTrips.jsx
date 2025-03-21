@@ -8,6 +8,7 @@ import {
   updateTripPeriod,
   getSelectedPeriod,
 } from "@/APIs/dateFinder";
+import { toast } from "sonner";
 
 const AvailabilityIcon = ({ tripID, period, totalPeople }) => {
   const [usernames, setUsernames] = useState(null);
@@ -134,11 +135,11 @@ const PeriodCard = ({
 
       onSelect({ start_date: period.start_date, end_date: period.end_date });
 
-      alert("Trip period updated successfully!");
+      toast.success("Trip period updated successfully!");
       console.log("Updated Trip:", result);
     } catch (error) {
       console.error("Error updating trip period:", error.message);
-      alert("Failed to update trip period.");
+      toast.error("Failed to update trip period.");
     } finally {
       setIsUpdating(false);
     }

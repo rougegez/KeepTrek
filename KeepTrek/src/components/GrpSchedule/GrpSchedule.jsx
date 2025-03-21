@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import {
@@ -17,6 +15,7 @@ import { canEdit } from "@/utils/permissions";
 import { useQuery } from "react-query";
 import { getTrip } from "@/APIs/trip";
 import { CurrentUser } from "@/APIs/auth";
+import { toast } from "sonner";
 
 export const GrpSchedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -68,7 +67,7 @@ export const GrpSchedule = () => {
       setAvailableTrips(currentTrip.available_dates || []);
     } catch (error) {
       console.error("Error fetching trips:", error.message);
-      alert("Failed to fetch available trips");
+      toast.error("Failed to fetch available trips");
     }
   };
 
@@ -80,11 +79,11 @@ export const GrpSchedule = () => {
         tripID
       );
       console.log("Availability saved:", result);
-      alert("Availability successfully submitted!");
+      toast.success("Availability successfully submitted!");
       window.location.reload(); // Refresh the page after successful submission
     } catch (error) {
       console.error("Error saving availability:", error.message);
-      alert("Failed to submit availability");
+      toast.error("Failed to submit availability");
     }
   };
 

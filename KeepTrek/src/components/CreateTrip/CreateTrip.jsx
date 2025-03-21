@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { createItinerary } from "@/APIs/itinerary.js";
 import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar.jsx";
 import { fetchPlaceDetails } from "@/APIs/fetchPlaceDetails.js";
+import { toast } from "sonner";
 
 export default function CreateTrip() {
   const [dateRange, setDateRange] = useState({ from: undefined, to: undefined });
@@ -48,7 +49,7 @@ export default function CreateTrip() {
         activities: []
       }));
       await createItinerary({ tripID, days});      
-      alert("Trip created successfully!");
+      toast.success("Trip created successfully!");
       navigate("/yourTrips"); // Redirect to homepage or trips page
     } catch (err) {
       console.error("Error creating trip:", err);

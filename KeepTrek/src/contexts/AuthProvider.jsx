@@ -3,6 +3,7 @@ import Modal from "@/components/Authentication/Modal";
 import LoginForm from "@/components/Authentication/login/login-form";
 import RegisterForm from "@/components/Authentication/register/register-form";
 import { CurrentUser, registerUser, loginUser } from "@/APIs/auth";
+import { toast } from "sonner"
 
 const AuthContext = createContext();
 
@@ -75,7 +76,7 @@ export function AuthProvider({ children }) {
     try {
       const response = await registerUser(userData)
       setState((prev) => ({ ...prev, user: response["userID"], isLoggedIn: false, response: response, error: null }))
-      alert("Account created successfully, login to continue")
+      toast.success("Account created successfully" , {description: "Please login to continue"})
       openLoginModal();
     } catch (err) {
       if (err?.response) {
@@ -95,6 +96,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem("token", response["access_token"]);
       checkStatus();
       closeModals();
+      toast.success("Logged in successfully")
     } catch (err) {
       if (err?.response) {
         setState((prev) => ({ ...prev, error: err }));
@@ -111,6 +113,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("token");
     // MAYBE : management of authentication in backend which requires communication
     setLoading(false);
+    toast.info("Logged out successfully")
   }, []);
 
   const openLoginModal = () => {

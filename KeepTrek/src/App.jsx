@@ -1,5 +1,5 @@
 // src/App.js
-import React, { useState } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { AuthProvider } from "./contexts/AuthProvider";
@@ -16,6 +16,7 @@ import { ProfilePage } from "./components/profilePage/profilePage.jsx";
 // import { TripDetailsPage } from "./components/TripDetails/TripDetailsPage.jsx";
 import { GrpSchedule } from "./components/GrpSchedule/GrpSchedule.jsx";
 import InvitePage from './components/Invite/InvitePage';
+import { Toaster } from '@/components/ui/sonner';
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,8 @@ function App() {
                 </Routes>
               </div>
             </div>
+            <Toaster 
+              position='top-center'/>
           </Router>
       </AuthProvider>
     </QueryClientProvider>
