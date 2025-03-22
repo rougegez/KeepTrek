@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import LoadingSkeleton from "@/components/ui/loadingAnimation";
 import { Loader2 } from "lucide-react";
+import { UserAvatar } from "@/components/profilePage/avatar";
 
 // Add loading spinner component
 const LoadingSpinner = () => (
@@ -179,9 +180,10 @@ export default function DebtsSummary() {
                 className="flex justify-between items-center border-b border-gray-200 pb-2 last:border-b-0"
               >
                 <div className="flex items-center gap-4">
-                  <div className="bg-gray-300 w-10 h-10 rounded-full flex items-center justify-center">
-                    <span className="text-sm text-gray-600">👤</span>
-                  </div>
+                  <UserAvatar 
+                    userId={userID}
+                    className="h-8 w-8"
+                  />
                   <span className="text-gray-800">
                     <span className="font-medium">{getUserName(userID)}</span> owes you
                   </span>
@@ -215,9 +217,10 @@ export default function DebtsSummary() {
                 onClick={() => handlePayClick(userID, amount)}
               >
                 <div className="flex items-center gap-4">
-                  <div className="bg-gray-300 w-10 h-10 rounded-full flex items-center justify-center">
-                    <span className="text-sm text-gray-600">👤</span>
-                  </div>
+                  <UserAvatar 
+                    userId={userID}
+                    className="h-8 w-8"
+                  />
                   <span className="text-gray-800">
                     You owe <span className="font-medium">{getUserName(userID)}</span>
                   </span>

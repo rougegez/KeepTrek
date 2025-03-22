@@ -75,7 +75,7 @@ const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton = true, onCh
     };
 
     const handleSuggestionClick = (suggestion) => {
-        setQuery(suggestion.placePrediction.structuredFormat.mainText.text);
+        setQuery(suggestion?.placePrediction?.structuredFormat?.mainText?.text);
         setPlace(suggestion);
         setSuggestions([]);
 
@@ -116,14 +116,14 @@ const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton = true, onCh
                     </li>
                     {suggestions.map((suggestion) => (
                         <li
-                            key={suggestion.placePrediction.placeId}
+                            key={suggestion?.placePrediction?.placeId}
                             onClick={() => handleSuggestionClick(suggestion)}
                             className="p-2 hover:bg-gray-100 cursor-pointer"
                         >
-                            <strong>{suggestion.placePrediction.structuredFormat.mainText.text}</strong>
+                            <strong>{suggestion?.placePrediction?.structuredFormat?.mainText?.text}</strong>
                             <br />
                             <span className="text-sm text-gray-500">
-                                {suggestion.placePrediction.structuredFormat.secondaryText.text}
+                                {suggestion?.placePrediction?.structuredFormat?.secondaryText?.text ?? null }
                             </span>
                         </li>
                     ))}
