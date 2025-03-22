@@ -14,7 +14,7 @@ import { useMediaQuery } from 'react-responsive';
 
 export const TripDetailsPage = () => {
   const location = useLocation();
-  const { id } = useParams(); // Get the itinerary id from the URL
+  const { id } = useParams(); // Get the itinerary id from the UR
   const navigate = useNavigate();
 
   const [itinerary, setItinerary] = useState(location.state?.itinerary || null);
