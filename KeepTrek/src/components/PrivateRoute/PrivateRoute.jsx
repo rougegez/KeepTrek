@@ -8,15 +8,15 @@ import { toast } from "sonner";
 const PrivateRoute = () => {
   const location = useLocation();
 
-  const { isLoggedIn, openLoginModal, isAuthLoaded} = useAuth();
+  const { isLoggedIn, openLoginModal} = useAuth();
 
   useEffect(() => {
-    if (isAuthLoaded && !isLoggedIn) {
+    if (!isLoggedIn) {
       openLoginModal(); // Open the login modal
     }
-  }, [isAuthLoaded, isLoggedIn, openLoginModal]);
+  }, [isLoggedIn, openLoginModal]);
 
-  if (isAuthLoaded && !isLoggedIn) {
+  if (!isLoggedIn) {
     toast.error("Please login to access this page");
     return <Navigate to="/" state={{ from: location }} replace />; // Redirect to landing page if modal is closed
   }

@@ -12,7 +12,6 @@ import facebook from "/assets/facebook icon.png";
 import appStore from "/assets/App_Store_Icon.png";
 import tiktok from "/assets/tiktok icon.png";
 import { Calendar, Users, PieChart, Map, Search, Share2, Calculator, FileText, Rocket, Sparkles, Bell } from 'lucide-react';
-import { useAuth } from "@/contexts/AuthProvider";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -41,7 +40,6 @@ export default function LandingPage() {
   // Use a string to track which button's popup is active (or null)
   const [activePopup, setActivePopup] = useState(null);
   const popupRef = useRef(null);
-  const {isAuthLoaded} = useAuth();
 
   // Handle clicks on buttons that are "unavailable"
   const handleUnavailableClick = (id, e) => {
@@ -62,10 +60,6 @@ export default function LandingPage() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-if (!isAuthLoaded) {
-    return null;
-}
 
   return (
     <div className="min-h-screen bg-white">

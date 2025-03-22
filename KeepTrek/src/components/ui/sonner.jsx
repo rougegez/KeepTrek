@@ -17,12 +17,17 @@ const Toaster = ({
           //   "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
           // Default styling from shadcn, below is customised
           toast:
-          "group toast group-[.toaster]:bg-white group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg group-[.toaster]:text-",
+          "group toast group-[.toaster]:bg-white group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
           description: "group-[.toast]:text-muted-foreground",
           actionButton:
             "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
           cancelButton:
             "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
+          // https://github.com/shadcn-ui/ui/issues/3579 - ! is used to override the default styles
+          // https://github.com/emilkowalski/sonner/issues/417 - code for shifting the close button
+          closeButton:
+            `group-[.toast]:!bg-white group-[.toast]:!text-muted-foreground group-[.toast]:border-none group-[.toast]:!shadow-lg 
+            group-[.toast]:!start-auto group-[.toast]:!end-0 group-[.toast]:!translate-x-[35%] group-[.toast]:!translate-y-[-35%]`,
         },
       }}
       // From https://github.com/shadcn-ui/ui/issues/2254#issuecomment-2221240785

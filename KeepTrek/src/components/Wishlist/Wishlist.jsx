@@ -10,7 +10,6 @@ import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx";
 import { getAllItems, createItem, editItem, deleteItem, upvoteItem, downvoteItem, deleteFile } from "@/APIs/wishlist";
 import { getItinerary, updateItinerary } from "@/APIs/itinerary";
 import { useParams } from "react-router-dom";
-import { CurrentUser } from '@/APIs/auth';
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -27,11 +26,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { canEdit } from "@/utils/permissions";
 import { useQuery } from 'react-query';
 import { getTrip } from '@/APIs/trip';
+import { useAuth } from "@/contexts/AuthProvider.jsx";
 
 export default function WishlistPage() {
   const { tripID } = useParams();
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user } = useAuth();
   
   const [wishlistData, setWishlistData] = useState({ accommodation: [], activities: [], food: [] });
   const [selectedItem, setSelectedItem] = useState(null);
@@ -112,23 +112,12 @@ export default function WishlistPage() {
     setWishlistData({ accommodation, activities, food });
   };
 
-  const fetchUser = useCallback(async () => {
-      try {
-        const userData = await CurrentUser();
-        setUser(userData);
-      } catch (error) {
-        console.error('Error fetching user:', error);
-        setError(error.message);
-      }
-    }, []);
-
   const fetchItineraryDays = async () => {
     const itinerary = await getItinerary(tripID);
     setItineraryDays(itinerary.days);
   };
 
   useEffect(() => {
-    fetchUser();
     fetchWishlistData();
     fetchItineraryDays();
   }, []);

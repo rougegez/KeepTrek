@@ -4,6 +4,7 @@ import LoginForm from "@/components/Authentication/login/login-form";
 import RegisterForm from "@/components/Authentication/register/register-form";
 import { CurrentUser, registerUser, loginUser } from "@/APIs/auth";
 import { toast } from "sonner"
+import { PageLoader } from "@/components/ui/pageLoader";
 
 const AuthContext = createContext();
 
@@ -36,8 +37,8 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     setLoading(true);
     checkStatus().finally(() => {
-    setLoading(false)
-    setAuthLoaded(true);
+      setLoading(false)
+      setAuthLoaded(true);
     });
   }, []);
 
@@ -76,7 +77,7 @@ export function AuthProvider({ children }) {
     try {
       const response = await registerUser(userData)
       setState((prev) => ({ ...prev, user: response["userID"], isLoggedIn: false, response: response, error: null }))
-      toast.success("Account created successfully" , {description: "Please login to continue"})
+      toast.success("Account created successfully", { description: "Please login to continue" })
       openLoginModal();
     } catch (err) {
       if (err?.response) {
@@ -131,37 +132,41 @@ export function AuthProvider({ children }) {
     setIsRegisterModalOpen(false);
   };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        isLoggedIn,
-        response,
-        error,
-        isLoading,
-        isAuthLoaded,
-        register,
-        googleLogin,
-        login,
-        logout,
-        openLoginModal,
-        openRegisterModal,
-      }}
-    >
-      {children}
+  if (isAuthLoaded) {
+    return (
+      <AuthContext.Provider
+        value={{
+          user,
+          token,
+          isLoggedIn,
+          response,
+          error,
+          isLoading,
+          isAuthLoaded,
+          register,
+          googleLogin,
+          login,
+          logout,
+          openLoginModal,
+          openRegisterModal,
+        }}
+      >
+        {children}
 
-      {/* Modals */}
-      <Modal isOpen={isLoginModalOpen} onClose={closeModals}>
-        <LoginForm onSwitchToRegister={openRegisterModal} />
-      </Modal>
+        {/* Modals */}
+        <Modal isOpen={isLoginModalOpen} onClose={closeModals}>
+          <LoginForm onSwitchToRegister={openRegisterModal} />
+        </Modal>
 
-      <Modal isOpen={isRegisterModalOpen} onClose={closeModals}>
-        <RegisterForm onSwitchToLogin={openLoginModal} />
-      </Modal>
+        <Modal isOpen={isRegisterModalOpen} onClose={closeModals}>
+          <RegisterForm onSwitchToLogin={openLoginModal} />
+        </Modal>
 
-    </AuthContext.Provider>
-  );
+      </AuthContext.Provider>
+    );
+  } else {
+    return <PageLoader />;
+  }
 }
 
 export function useAuth() {

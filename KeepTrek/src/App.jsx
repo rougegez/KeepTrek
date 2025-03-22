@@ -53,7 +53,7 @@ function App() {
               </div>
             </div>
             <Toaster 
-              position='top-center'/>
+              position='top-center' closeButton/>
           </Router>
       </AuthProvider>
     </QueryClientProvider>

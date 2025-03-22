@@ -14,8 +14,8 @@ import { useMediaQuery } from "react-responsive";
 import { canEdit } from "@/utils/permissions";
 import { useQuery } from "react-query";
 import { getTrip } from "@/APIs/trip";
-import { CurrentUser } from "@/APIs/auth";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthProvider.jsx";
 
 export const GrpSchedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -24,16 +24,8 @@ export const GrpSchedule = () => {
   const isDragging = useRef(false);
   const { tripID } = useParams();
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
-  const [currentUser, setCurrentUser] = useState(null);
+  const { user: currentUser } = useAuth();
   const { data: tripDetails } = useQuery(['trip', tripID], () => getTrip(tripID));
-
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      const user = await CurrentUser();
-      setCurrentUser(user);
-    };
-    fetchCurrentUser();
-  }, []);
 
   // Only compute userRole when both currentUser and tripDetails are available
   const userRole = useMemo(() => {
