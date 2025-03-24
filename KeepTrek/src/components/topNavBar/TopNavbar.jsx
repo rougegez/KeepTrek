@@ -31,13 +31,15 @@ export default function TopNavbar() {
 
   const NavItems = ({ onClick = () => {} }) => (
     <>
-      <NavLink
-        to="/yourTrips"
-        className="border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-        onClick={onClick}
-      >
-        Trips
-      </NavLink>
+      {isLoggedIn && (
+        <NavLink
+          to="/yourTrips"
+          className="border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+          onClick={onClick}
+        >
+          Trips
+        </NavLink>
+      )}
       <button
         onClick={() => {
           navigateAndScroll("features")
