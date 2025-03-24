@@ -4,7 +4,6 @@ import TripsList from "./tripList.jsx";
 import ErrorMessage from "./erroeMessage.jsx";
 import NoTripsMessage from "./noTripsMessage.jsx";
 import { getUserTrips } from "@/APIs/trip.js"; // API function to fetch trips
-import JoinButton from "../Invite/JoinButton.jsx";
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function YourTrips() {
@@ -35,7 +34,6 @@ export default function YourTrips() {
         <div className="mx-auto max-w-6xl">
           <div className="flex justify-between">
             <h1 className="text-3xl font-bold text-center mb-6">Your Trips</h1>
-            <JoinButton />
           </div>
           {error ? (
             <ErrorMessage error={error} />
