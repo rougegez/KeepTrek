@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar";
 import { Textarea } from '@/components/ui/textarea';
-import { fetchPlaceDetails } from "@/utils/fetchPlaceDetails.jsx";
+import { fetchPlaceDetails } from "@/APIs/fetchPlaceDetails.js";
 
 const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, location, days, selectedDay }) => {
     const [newActivity, setNewActivity] = useState({

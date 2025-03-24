@@ -8,8 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { getUserProfile } from "@/APIs/users";
 import { useState, useEffect } from "react";
 import { UserAvatar, UserAvatarStack } from '../profilePage/avatar';
-import { canEdit, UserRole } from "@/utils/permissions";
-import { CurrentUser } from "@/APIs/auth";
+import { UserRole } from "@/utils/permissions";
 import { MoreVertical, ExternalLink, Pencil, Trash2, LogOut } from 'lucide-react';
 import {
   DropdownMenu,
@@ -32,13 +31,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { editTrip } from "@/APIs/trip.js";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useAuth } from "@/contexts/AuthProvider";
 
 export default function TripCard({ trip, onDelete }) {
   const navigate = useNavigate();
   const [showLeaveAlert, setShowLeaveAlert] = useState(false);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [userRole, setUserRole] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
@@ -47,21 +45,17 @@ export default function TripCard({ trip, onDelete }) {
   const [renameError, setRenameError] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const { user : currentUser } = useAuth();
+
   // Fetch current user and set permissions
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const userId = await CurrentUser();
-        setCurrentUser(userId);
-
-        const role = trip.users.find(u => u.userID === userId)?.role;
-        setUserRole(role);
-
+        const role = trip.users.find(u => u.userID === currentUser)?.role;
         setIsAdmin(role === UserRole.ADMIN);
 
         const creatorId = typeof trip.creatorID === 'object' ? trip.creatorID.userID : trip.creatorID;
-        setIsCreator(userId === creatorId);
-
+        setIsCreator(currentUser === creatorId);
         console.log('User permissions set:', {
           userId,
           role,

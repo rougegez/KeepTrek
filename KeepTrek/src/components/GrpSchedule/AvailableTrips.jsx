@@ -10,6 +10,7 @@ import {
   updateTripPeriod,
   getSelectedPeriod,
 } from "@/APIs/dateFinder";
+import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -167,12 +168,12 @@ const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) =
       };
       const result = await updateTripPeriod(tripID, newPeriod);
       onSelect({ start_date: newStartDate, end_date: newEndDate });
-      alert("Trip period updated successfully!");
+      toast.success("Trip period updated successfully!");
       console.log("Updated Trip:", result);
       if (isEditing) setIsEditing(false);
     } catch (error) {
       console.error("Error updating trip period:", error.message);
-      alert("Failed to update trip period.");
+      toast.error("Failed to update trip period.");
     } finally {
       setIsUpdating(false);
     }

@@ -6,7 +6,51 @@ import NoTripsMessage from "./noTripsMessage.jsx";
 import { getUserTrips } from "@/APIs/trip.js"; // API function to fetch trips
 import JoinButton from "../Invite/JoinButton.jsx";
 import { Skeleton } from "@/components/ui/skeleton"
-import { useQueryClient } from "react-query";
+
+export default function YourTrips() {
+  const [trips, setTrips] = useState([]);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTrips = async () => {
+      try {
+        setIsLoading(true);
+        const userTrips = await getUserTrips();
+        setTrips(userTrips);
+        setIsLoading(false);
+      } catch (err) {
+        setError(err.response?.data?.detail || "Failed to fetch trips.");
+        setIsLoading(false);
+      }
+    };
+
+    fetchTrips();
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <TopNavbar />
+      <div className="py-12 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex justify-between">
+            <h1 className="text-3xl font-bold text-center mb-6">Your Trips</h1>
+            <JoinButton />
+          </div>
+          {error ? (
+            <ErrorMessage error={error} />
+          ) : isLoading ? (
+            <YourTripsLoadingSkeleton />
+          ) : trips.length > 0 ? (
+            <TripsList trips={trips} />
+          ) : (
+            <NoTripsMessage />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const YourTripsLoadingSkeleton = () => {
   return (
@@ -15,7 +59,7 @@ const YourTripsLoadingSkeleton = () => {
         <div key={index} className="bg-slate-100 rounded-lg shadow overflow-hidden">
           {/* Image placeholder */}
           <Skeleton className="w-full h-48" />
-          
+
           <div className="p-6">
             {/* Status badge placeholder */}
             <div className="flex justify-end mb-4">
@@ -47,69 +91,4 @@ const YourTripsLoadingSkeleton = () => {
       ))}
     </div>
   )
-}
-export default function YourTrips() {
-  const [trips, setTrips] = useState([]);
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const queryClient = useQueryClient();
-  
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchTrips = async () => {
-      try {
-        setIsLoading(true);
-        const userTrips = await getUserTrips();
-        
-        if (isMounted) {
-          setTrips(userTrips);
-          setIsLoading(false);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(err.response?.data?.detail || "Failed to fetch trips.");
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchTrips();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const handleTripDelete = (tripId) => {
-    // Optimistically remove the trip from UI
-    setTrips(prev => prev.filter(trip => trip.tripID !== tripId));
-    
-    // Invalidate trips query to refresh data
-    queryClient.invalidateQueries('trips');
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <TopNavbar />
-      <div className="py-12 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <div className="flex justify-between">
-          <h1 className="text-3xl font-bold text-center mb-6">Your Trips</h1>
-          <JoinButton />
-          </div>
-          {error ? (
-            <ErrorMessage error={error} />
-          ) : isLoading ? (
-            <YourTripsLoadingSkeleton />
-          ) : trips.length > 0 ? (
-            <TripsList trips={trips} />
-          ) : (
-            <NoTripsMessage />
-          )}
-        </div>
-      </div>
-    </div>
-  );
 }

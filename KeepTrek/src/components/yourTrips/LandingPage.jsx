@@ -13,7 +13,6 @@ import appStore from "/assets/App_Store_Icon.png";
 import tiktok from "/assets/tiktok icon.png";
 import { Calendar, Users, PieChart, Map, Search, Share2, Calculator, FileText, Rocket, Sparkles, Bell } from 'lucide-react';
 
-
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
@@ -37,6 +36,7 @@ const AnimatedSection = ({ children }) => {
 };
 
 export default function LandingPage() {
+
   // Use a string to track which button's popup is active (or null)
   const [activePopup, setActivePopup] = useState(null);
   const popupRef = useRef(null);

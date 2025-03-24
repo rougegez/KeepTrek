@@ -13,7 +13,8 @@ import AvailableTrips from "@/components/GrpSchedule/AvailableTrips";
 import MobileHeader from "../MobileHeader";
 import { canEdit } from "@/utils/permissions";
 import { getTrip } from "@/APIs/trip";
-import { CurrentUser } from "@/APIs/auth";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthProvider.jsx";
 import Calendar from "@/components/GrpSchedule/Calendar";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
@@ -22,19 +23,11 @@ export const GrpSchedule = () => {
   const [selectedDates, setSelectedDates] = useState(new Set());
   const [loading, setLoading] = useState(false); // New: Track submit loading state
   const { tripID } = useParams();
-  const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
-  const [currentUser, setCurrentUser] = useState(null);
-  
-  const { data: tripDetails } = useQuery(["trip", tripID], () => getTrip(tripID));
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
+  const { user: currentUser } = useAuth();
+  const { data: tripDetails } = useQuery(['trip', tripID], () => getTrip(tripID));
 
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      const user = await CurrentUser();
-      setCurrentUser(user);
-    };
-    fetchCurrentUser();
-  }, []);
-
+  // Only compute userRole when both currentUser and tripDetails are available
   const userRole = useMemo(() => {
     if (!currentUser || !tripDetails?.users) return null;
     const userInTrip = tripDetails.users.find((u) => u.userID === currentUser);
@@ -62,7 +55,7 @@ export const GrpSchedule = () => {
       setLoading(true); // Show loading spinner
       const result = await updateAvailability(Array.from(selectedDates), tripID);
       console.log("Availability saved:", result);
-      alert("Availability successfully submitted!");
+      toast.success("Availability successfully submitted!");
       window.location.reload();
     } catch (error) {
       console.error("Error saving availability:", error.message);
