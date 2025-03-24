@@ -59,7 +59,7 @@ export const GrpSchedule = () => {
       window.location.reload();
     } catch (error) {
       console.error("Error saving availability:", error.message);
-      alert("Failed to submit availability");
+      toast.error("Failed to submit availability");
     } finally {
       setLoading(false); // Hide loading spinner
     }

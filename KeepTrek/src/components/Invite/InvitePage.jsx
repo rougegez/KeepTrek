@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { CalendarIcon, MapPin } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { UserAvatar, UserAvatarStack } from '../profilePage/avatar';
+import { toast } from "sonner";
 
 import { useAuth } from '../../contexts/AuthProvider';
 
@@ -13,7 +14,6 @@ const InvitePage = () => {
     const { inviteCode } = useParams();
     const navigate = useNavigate();
     const [preview, setPreview] = useState(null);
-    const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [joining, setJoining] = useState(false);
 
@@ -22,10 +22,9 @@ const InvitePage = () => {
     const fetchPreview = async () => {
         try {
             const response = await getInvitePreview(inviteCode);
-            console.log('Preview response:', response); // Debug log
 
             if (!response) {
-                throw new Error('Failed to load trip preview');
+                toast.error('Failed to load trip preview');
             }
 
             setPreview({
@@ -48,14 +47,14 @@ const InvitePage = () => {
         } catch (err) {
             console.error('Preview error:', err);
             if (err.response?.status === 401) {
-                setError('Please log in to view this trip');
+                toast.error('Please log in to view this trip');
                 openLoginModal()
             } else if (err.response?.status === 400) {
-                setError('Invalid invite link');
+                toast.error('Invalid invite link');
             } else if (err.response?.status === 404) {
-                setError('Trip not found');
+                toast.error('Trip not found');
             } else {
-                setError('Failed to load trip preview');
+                toast.error('Failed to load trip preview');
             }
         } finally {
             setLoading(false);
@@ -78,9 +77,10 @@ const InvitePage = () => {
         setJoining(true);
         try {
             const result = await joinTrip(inviteCode);
+            toast.success('Successfully joined trip!');
             navigate(`/itinerary/${result.tripID}`);
         } catch (err) {
-            setError(err.response?.data?.detail || 'Failed to join trip');
+            toast.error('Failed to join trip');
             setJoining(false);
         }
     };
@@ -127,7 +127,6 @@ const InvitePage = () => {
                         <CardFooter className="flex flex-col gap-2">
                             <Button
                                 className="w-full"
-                                // onClick={() => setShowLoginModal(true)}
                                 onClick={() => openLoginModal()}
                             >
                                 Login
@@ -135,7 +134,6 @@ const InvitePage = () => {
                             <Button
                                 className="w-full"
                                 variant="outline"
-                                // onClick={() => setShowRegisterModal(true)}
                                 onClick={() => openRegisterModal()}
                             >
                                 Register
@@ -193,31 +191,32 @@ const InvitePage = () => {
                                     {getTripStatus().charAt(0).toUpperCase() + getTripStatus().slice(1)}
                                 </Badge>
                             </div>
-                            <CardHeader>
+                            <CardHeader className="pb-3">
                                 <h3 className="text-2xl font-semibold">{preview.tripName}</h3>
                             </CardHeader>
                             <CardContent>
-                                <div className="flex items-center space-x-2 text-md text-gray-500 mb-2">
-                                    <MapPin className="w-4 h-4" />
-                                    <span>{preview.location}</span>
-                                </div>
-                                <div className="flex items-center space-x-2 text-md text-gray-500 mb-2">
-                                    <CalendarIcon className="w-4 h-4" />
-                                    <span>{new Date(preview.startDate).toLocaleDateString()} - {new Date(preview.endDate).toLocaleDateString()}</span>
-                                </div>
-                                <div className="flex items-center space-x-2 text-sm text-gray-500">
-                                    <UserAvatarStack
-                                        userIds={preview.users}
-                                        size={6}
-                                        maxUsers={5}
-                                        className="-space-x-2"
-                                    />
-                                    <span>{preview.memberCount} participants</span>
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center space-x-2 text-md text-gray-500">
+                                        <MapPin className="w-4 h-4" />
+                                        <span>{preview.location}</span>
+                                    </div>
+                                    <div className="flex items-center space-x-2 text-md text-gray-500">
+                                        <CalendarIcon className="w-4 h-4" />
+                                        <span>{new Date(preview.startDate).toLocaleDateString()} - {new Date(preview.endDate).toLocaleDateString()}</span>
+                                    </div>
+                                    <div className="flex items-center space-x-2 text-sm text-gray-500">
+                                        <UserAvatarStack 
+                                            userIds={preview.users}
+                                            size={6}
+                                            maxUsers={5}
+                                        />
+                                        <span>{preview.memberCount} participants</span>
+                                    </div>
                                 </div>
                             </CardContent>
                             <CardFooter className="flex flex-col gap-4 w-full">
                                 <div className="flex items-center gap-2 overflow-hidden w-full">
-                                    <UserAvatar
+                                    <UserAvatar 
                                         userId={preview.creator.id}
                                         className="h-6 w-6"
                                     />
@@ -226,16 +225,20 @@ const InvitePage = () => {
                                     </span>
                                 </div>
                                 {preview.isMember ? (
-                                    <Button
-                                        className="w-full"
-                                        variant="secondary"
-                                        disabled
-                                    >
-                                        You're already a member of this trip
-                                    </Button>
+                                    <div className="w-full">
+                                        <span className="text-sm text-gray-500">
+                                            You're already a member of this trip.
+                                        </span>
+                                        <Button 
+                                            className="w-full mt-2"
+                                            onClick={() => navigate(`/itinerary/${preview.tripID}`)}
+                                        >
+                                            View Trip
+                                        </Button>
+                                    </div>
                                 ) : (
-                                    <Button
-                                        className="w-full"
+                                    <Button 
+                                        className="w-full" 
                                         onClick={handleJoin}
                                         disabled={joining}
                                     >
