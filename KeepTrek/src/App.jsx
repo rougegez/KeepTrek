@@ -23,8 +23,9 @@ const queryClient = new QueryClient();
 function App() {
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+    <>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
           <Router>
             <div className="min-h-screen flex flex-col">
               <div className="flex-grow">
@@ -52,11 +53,12 @@ function App() {
                 </Routes>
               </div>
             </div>
-            <Toaster 
-              position='top-center' closeButton/>
           </Router>
-      </AuthProvider>
-    </QueryClientProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+      <Toaster
+        position='top-center' closeButton />
+    </>
   );
 }
 

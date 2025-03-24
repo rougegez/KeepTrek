@@ -26,7 +26,7 @@ const Toaster = ({
           // https://github.com/shadcn-ui/ui/issues/3579 - ! is used to override the default styles
           // https://github.com/emilkowalski/sonner/issues/417 - code for shifting the close button
           closeButton:
-            `group-[.toast]:!bg-white group-[.toast]:!text-muted-foreground group-[.toast]:border-none group-[.toast]:!shadow-lg 
+            `group-[.toast]:!bg-white group-[.toast]:!text-muted-foreground group-[.toast]:!border-none group-[.toast]:!shadow-lg 
             group-[.toast]:!start-auto group-[.toast]:!end-0 group-[.toast]:!translate-x-[35%] group-[.toast]:!translate-y-[-35%]`,
         },
       }}

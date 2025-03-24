@@ -14,7 +14,7 @@ const PrivateRoute = () => {
     if (!isLoggedIn) {
       openLoginModal(); // Open the login modal
     }
-  }, [isLoggedIn, openLoginModal]);
+  }, [isLoggedIn]);
 
   if (!isLoggedIn) {
     toast.error("Please login to access this page");
