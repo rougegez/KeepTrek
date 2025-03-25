@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Users } from "lucide-react";
-import Calendar from "@/components/GrpSchedule/Calendar";
+import AutoFillCalendar from "@/components/GrpSchedule/AutoFillCalendar"; // Updated import!
 import {
   getSuggestedPeriods,
   fetchTripDetails,
@@ -280,20 +280,18 @@ const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) =
       </Card>
       {isEditing && (
         <div className="mt-2">
-          <Calendar
+          {/* Use the AutoFillCalendar with autofill behavior for AvailableTrips */}
+          <AutoFillCalendar
             currentDate={editCurrentDate}
             setCurrentDate={setEditCurrentDate}
             selectedDates={editedDates}
             setSelectedDates={setEditedDates}
-            readOnly={false}
-            showControls={false}
           />
         </div>
       )}
     </div>
   );
 };
-
 
 const AvailableTrips = ({ tripID }) => {
   const [suggestedPeriods, setSuggestedPeriods] = useState(null);
@@ -362,47 +360,47 @@ const AvailableTrips = ({ tripID }) => {
   return (
     <div className="max-w-md mx-auto ">
       <h3 className="text-xl font-bold">Available trip dates</h3>    
-    <div className="max-w-md mx-auto">
-      {suggestedPeriods.most_people_period && (
-        <div>
-          <PeriodCard
-            tripID={tripID}
-            period={suggestedPeriods.most_people_period}
-            totalPeople={totalPeople}
-            selectedPeriod={selectedPeriod}
-            onSelect={setSelectedPeriod}
-          />
-        </div>
-      )}
-
-      {suggestedPeriods.longest_period_min_2_people && (
-        <div>
-          <PeriodCard
-            tripID={tripID}
-            period={suggestedPeriods.longest_period_min_2_people}
-            totalPeople={totalPeople}
-            selectedPeriod={selectedPeriod}
-            onSelect={setSelectedPeriod}
-          />
-        </div>
-      )}
-
-      {suggestedPeriods.other_five_seven_day_periods &&
-        suggestedPeriods.other_five_seven_day_periods.length > 0 && (
+      <div className="max-w-md mx-auto">
+        {suggestedPeriods.most_people_period && (
           <div>
-            {suggestedPeriods.other_five_seven_day_periods.map((period, index) => (
-              <PeriodCard
-                key={index}
-                tripID={tripID}
-                period={period}
-                totalPeople={totalPeople}
-                selectedPeriod={selectedPeriod}
-                onSelect={setSelectedPeriod}
-              />
-            ))}
+            <PeriodCard
+              tripID={tripID}
+              period={suggestedPeriods.most_people_period}
+              totalPeople={totalPeople}
+              selectedPeriod={selectedPeriod}
+              onSelect={setSelectedPeriod}
+            />
           </div>
         )}
-    </div>
+
+        {suggestedPeriods.longest_period_min_2_people && (
+          <div>
+            <PeriodCard
+              tripID={tripID}
+              period={suggestedPeriods.longest_period_min_2_people}
+              totalPeople={totalPeople}
+              selectedPeriod={selectedPeriod}
+              onSelect={setSelectedPeriod}
+            />
+          </div>
+        )}
+
+        {suggestedPeriods.other_five_seven_day_periods &&
+          suggestedPeriods.other_five_seven_day_periods.length > 0 && (
+            <div>
+              {suggestedPeriods.other_five_seven_day_periods.map((period, index) => (
+                <PeriodCard
+                  key={index}
+                  tripID={tripID}
+                  period={period}
+                  totalPeople={totalPeople}
+                  selectedPeriod={selectedPeriod}
+                  onSelect={setSelectedPeriod}
+                />
+              ))}
+            </div>
+          )}
+      </div>
     </div>
   );
 };
