@@ -82,16 +82,41 @@ const Calendar = ({
   const handleDateSelect = (day) => {
     if (day === null) return;
     const formattedDate = formatDate(day);
+    // Custom logic: use setSelectedDates updater to control selection behavior.
     setSelectedDates((prev) => {
       const newSelectedDates = new Set(prev);
+      // If the clicked date is already selected, reset selection to just that date.
       if (newSelectedDates.has(formattedDate)) {
-        newSelectedDates.delete(formattedDate);
+        return new Set([formattedDate]);
       } else {
-        newSelectedDates.add(formattedDate);
+        // If no date is selected yet, simply add this date.
+        if (newSelectedDates.size === 0) {
+          newSelectedDates.add(formattedDate);
+          return newSelectedDates;
+        }
+        // If exactly one date is already selected, autofill the range.
+        if (newSelectedDates.size === 1) {
+          const existing = Array.from(newSelectedDates)[0];
+          let start = new Date(existing);
+          let end = new Date(formattedDate);
+          // Ensure start is before end.
+          if (start > end) {
+            [start, end] = [end, start];
+          }
+          const filled = new Set();
+          let current = new Date(start);
+          while (current <= end) {
+            filled.add(current.toISOString().slice(0, 10));
+            current.setDate(current.getDate() + 1);
+          }
+          return filled;
+        }
+        // If more than one date is already selected, reset to this date.
+        return new Set([formattedDate]);
       }
-      return newSelectedDates;
     });
   };
+
 
   // Handlers for dragging selection (only in interactive mode).
   const handleDragStart = (day) => (e) => {
