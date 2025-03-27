@@ -204,6 +204,8 @@ function Itinerary() {
               handlePanTo={searchedPlace}
               height="100%"
               width="100%"
+              disableSaveLocation={canModify}
+              enableSearchBar={!canModify}
             />
             <MapToggleButton />
           </motion.div>
@@ -313,6 +315,8 @@ function Itinerary() {
               handlePanTo={searchedPlace}
               height="100%"
               width="100%"
+              disableSaveLocation={!canModify}
+              disableSearchBar={!canModify}
             />
           </div>
         )}

@@ -15,7 +15,12 @@ const loadGoogleMapsApi = () => {
   document.head.appendChild(script);
 };
 
-const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton = true, onChange, initialPlace }) => {
+const MapSearchBar = ({ 
+    mapInstance, 
+    onLocationSearch, 
+    searchButton = true, 
+    onChange, 
+    initialPlace}) => {
     const [query, setQuery] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [place, setPlace] = useState("");
@@ -101,7 +106,8 @@ const MapSearchBar = ({ mapInstance, onLocationSearch, searchButton = true, onCh
                     className="w-full p-2 border rounded bg-white"
                 />
                 {searchButton && (
-                    <Button onClick={handleSearchClick}>
+                    <Button 
+                        onClick={handleSearchClick}>
                         Search
                     </Button>
                 )}
