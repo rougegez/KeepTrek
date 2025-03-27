@@ -96,7 +96,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        {error && <p className="text-red-500 text-sm">{error?.response?.data?.detail ?? error}</p>}
+        {error && <p className="text-red-500 text-sm">{error?.response?.data?.detail[0].ctx?.reason ?? error?.response?.data?.detail ?? error}</p>}
         <Button
           type="submit"
           className="w-full bg-teal-500 hover:bg-teal-600 text-white"

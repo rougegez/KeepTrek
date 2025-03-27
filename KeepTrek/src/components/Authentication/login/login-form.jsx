@@ -13,6 +13,9 @@ export default function LoginForm({ onSwitchToRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  if (error) {
+    console.log(error)
+  }
   return (
     <Card className="w-full max-w-md mx-auto p-8 border-none shadow-none space-y-6">
       <div className="text-center">
@@ -76,7 +79,7 @@ export default function LoginForm({ onSwitchToRegister }) {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        {error && <p className="text-red-500 text-sm">{error?.response?.data?.detail ?? error}</p>}
+        {error && <p className="text-red-500 text-sm">{error?.response?.data?.detail[0].ctx?.reason ?? error?.response?.data?.detail ?? error}</p>}
         <Button
           type="submit"
           className="w-full"
