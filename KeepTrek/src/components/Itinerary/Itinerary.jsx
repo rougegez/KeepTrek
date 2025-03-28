@@ -204,8 +204,8 @@ function Itinerary() {
               handlePanTo={searchedPlace}
               height="100%"
               width="100%"
-              disableSaveLocation={canModify}
-              enableSearchBar={!canModify}
+              disableSaveLocation={!canModify}
+              disableSearchBar={!canModify}
             />
             <MapToggleButton />
           </motion.div>
@@ -275,6 +275,7 @@ function Itinerary() {
                         onEditClick={() => handleEditClick(dayIndex, activity)}
                         onDeleteClick={() => handleDeleteClick(dayIndex, activity.id)}
                         onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                        canModify={canModify}
                       />
                     ))}
                   </Reorder.Group>

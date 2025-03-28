@@ -169,7 +169,7 @@ const MapboxMap = ({
     return (
         <div className="relative w-full" style={{ height: height, width: width }}>
             <div ref={mapContainer} className="absolute inset-0" />
-            {disableSearchBar && (
+            {!disableSearchBar && (
             <div className="absolute top-4 left-4 right-4 z-10">
                 <div className="w-full max-w-md mx-auto">
                     <MapSearchBar
@@ -282,7 +282,7 @@ const MapboxMap = ({
                                             </a>
                                         </div>
                                     )}
-                                {disableSaveLocation && (
+                                {!disableSaveLocation && (
                                     <Button 
                                         onClick={handleSaveLocation} 
                                         className="mt-1 md:mt-2 w-full md:w-auto text-[10px] md:text-sm py-1 md:py-2 h-auto"
