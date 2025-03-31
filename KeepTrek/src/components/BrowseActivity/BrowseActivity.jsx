@@ -13,7 +13,7 @@ import {
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 // Use the API URL from Vite's environment variables or fallback to localhost.
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://keeptrek-backend.onrender.com/'; //http://localhost:8000
 // Using the route prefix so that the final endpoint becomes /affiliate/affiliate?city=...
 const API_ROUTE_PREFIX = import.meta.env.VITE_API_ROUTE_PREFIX || '/affiliate';
 
