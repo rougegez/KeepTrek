@@ -26,17 +26,17 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 import { canEdit, UserRole } from "@/utils/permissions";
-import { CurrentUser } from "@/APIs/auth";
 import LeaveAlert from '@/components/ui/LeaveAlert';
 import TripSettings from '../TripSettings/TripSettings.jsx';
 
 import { useItinerary } from './useItinerarySocket.jsx';
 import { Skeleton } from "@/components/ui/skeleton.jsx";
 import { ReadyState } from "react-use-websocket";
+import { useAuth } from "@/contexts/AuthProvider.jsx";
 
 function Itinerary() {
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState(null);
+  const { user : currentUser } = useAuth();
   const { tripID } = useParams();
 
   const [addModalState, setAddModalState] = useState({ isOpen: false, selectedDay: null });
@@ -70,14 +70,6 @@ function Itinerary() {
   useEffect(() => {
     setTripID(tripID);
   }, [tripID]);
-
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      const user = await CurrentUser();
-      setCurrentUser(user);
-    };
-    fetchCurrentUser();
-  }, []);
 
   const userRole = useMemo(() => {
     if (!currentUser || !tripDetails?.users) return null;

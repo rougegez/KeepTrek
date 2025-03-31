@@ -12,14 +12,14 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { canEdit } from "@/utils/permissions";
 import { useQuery } from 'react-query';
 import { getTrip } from "@/APIs/trip";
-import { CurrentUser } from '@/APIs/auth';
+import { useAuth } from "@/contexts/AuthProvider.jsx";
 
 export default function MainExpensePage() {
   const { tripID } = useParams();
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
   const [isRightSideOpen, setIsRightSideOpen] = useState(false);
   const { data: tripDetails } = useQuery(['trip', tripID], () => getTrip(tripID));
-  const currentUser = CurrentUser();
+  const { user : currentUser } = useAuth();
   const userRole = tripDetails?.users.find(u => u.userID === currentUser)?.role;
   const canModify = canEdit(userRole);
 

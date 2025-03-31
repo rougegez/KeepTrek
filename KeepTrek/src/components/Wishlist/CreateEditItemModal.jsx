@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { fetchPlaceDetails } from "@/utils/fetchPlaceDetails.jsx";
+import { fetchPlaceDetails } from "@/APIs/fetchPlaceDetails.js";
 import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar";
 import { Textarea } from '@/components/ui/textarea';
 import { LoadingSpinner } from "@/components/ui/loading-spinner";

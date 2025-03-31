@@ -3,63 +3,21 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { loginUser } from "@/APIs/auth"; // existing email/password login API
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useAuth } from "@/contexts/AuthProvider";
 
-export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
+export default function LoginForm({ onSwitchToRegister }) {
+
+  const { isLoading, login, googleLogin , error } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setIsLoggingIn(true);
-    setError(null);
-    try {
-      const response = await loginUser({ email, password });
-      const { access_token } = response;
-      localStorage.setItem("token", access_token);
-      if (onLoginSuccess) onLoginSuccess();
-      window.location.reload();
-    } catch (err) {
-      console.error("Login Error:", err.response?.data || err.message);
-      setError(err.response?.data?.detail || "Login failed. Please try again.");
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
-
-  const handleGoogleLogin = () => {
-    // URL of your backend endpoint that starts the Google OAuth flow
-    const googleLoginUrl = "https://keeptrek-backend.onrender.com/auth/google-login";
-    const width = 500;
-    const height = 600;
-    const left = (window.innerWidth - width) / 2;
-    const top = (window.innerHeight - height) / 2;
-    const authWindow = window.open(
-      googleLoginUrl,
-      "Google Login",
-      `width=${width},height=${height},top=${top},left=${left}`
-    );
-
-    // Listen for the token message from the popup window
-    const handleMessage = (event) => {
-      // Optionally verify event.origin for security (ensure it comes from your backend)
-      if (event.data && event.data.token) {
-        localStorage.setItem("token", event.data.token);
-        if (onLoginSuccess) onLoginSuccess();
-        window.removeEventListener("message", handleMessage);
-        if (authWindow) authWindow.close();
-        window.location.reload();
-      }
-    };
-
-    window.addEventListener("message", handleMessage, false);
-  };
-
+  if (error) {
+    console.log(error)
+  }
   return (
-    <Card className="w-full max-w-md mx-auto p-8 border-none shadow-md space-y-6">
+    <Card className="w-full max-w-md mx-auto p-8 border-none shadow-none space-y-6">
       <div className="text-center">
         <img
           src="/assets/logo.png"
@@ -73,7 +31,7 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
       <Button
         variant="outline"
         className="w-full flex items-center justify-center gap-2 border-gray-300"
-        onClick={handleGoogleLogin}
+        onClick={() => googleLogin()}
       >
         <img src="/assets/google.png" alt="Google" className="h-5 w-5" />
         Sign in with Google
@@ -92,7 +50,9 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
       </div>
 
       {/* Email and Password Form */}
-      <form className="space-y-4" onSubmit={handleLogin}>
+      <form className="space-y-4" onSubmit={(e) =>  {
+        e.preventDefault()
+        login({ email, password })}}>
         <div className="space-y-2">
           <label htmlFor="email" className="text-sm font-medium">
             Email
@@ -119,13 +79,13 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }) {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {error && <p className="text-red-500 text-sm">{error?.response?.data?.detail[0].ctx?.reason ?? error?.response?.data?.detail ?? error}</p>}
         <Button
           type="submit"
-          className="w-full bg-teal-500 hover:bg-teal-600 text-white"
-          disabled={isLoggingIn}
+          className="w-full"
+          disabled={isLoading}
         >
-          {isLoggingIn ? <LoadingSpinner /> : "Login"}
+          {isLoading ? <LoadingSpinner /> : "Login"}
         </Button>
       </form>
 

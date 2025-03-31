@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Users } from "lucide-react";
-import Calendar from "@/components/GrpSchedule/Calendar";
+import AutoFillCalendar from "@/components/GrpSchedule/AutoFillCalendar"; // Updated import!
 import {
   getSuggestedPeriods,
   fetchTripDetails,
@@ -10,6 +10,7 @@ import {
   updateTripPeriod,
   getSelectedPeriod,
 } from "@/APIs/dateFinder";
+import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -128,14 +129,6 @@ const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) =
     return dateSet;
   };
 
-  const handleEditToggle = () => {
-    if (!isEditing) {
-      // Initialize editedDates when entering edit mode.
-      setEditedDates(initializeEditedDates());
-    }
-    setIsEditing(!isEditing);
-  };
-
   // Check if the selected (edited) dates form a continuous range.
   const isContinuous = () => {
     if (!isEditing) return true;
@@ -149,106 +142,150 @@ const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) =
 
   const validRange = isContinuous();
 
-  const handleSelect = async () => {
-    // If in edit mode and range is invalid, do nothing.
-    if (isEditing && !validRange) return;
-    setIsUpdating(true);
-    try {
-      let newStartDate = period.start_date;
-      let newEndDate = period.end_date;
-      if (isEditing && editedDates.size > 0) {
-        const datesArray = Array.from(editedDates).sort();
-        newStartDate = datesArray[0];
-        newEndDate = datesArray[datesArray.length - 1];
+  // Auto-fill the date range when exactly two dates are selected.
+  useEffect(() => {
+    if (isEditing && editedDates.size === 2) {
+      const datesArray = Array.from(editedDates).sort();
+      const startDate = new Date(datesArray[0]);
+      const endDate = new Date(datesArray[1]);
+      const newDateSet = new Set();
+      const current = new Date(startDate);
+      while (current <= endDate) {
+        const year = current.getFullYear();
+        const month = String(current.getMonth() + 1).padStart(2, "0");
+        const day = String(current.getDate()).padStart(2, "0");
+        newDateSet.add(`${year}-${month}-${day}`);
+        current.setDate(current.getDate() + 1);
       }
-      const newPeriod = {
-        startDate: newStartDate,
-        endDate: newEndDate,
-      };
-      const result = await updateTripPeriod(tripID, newPeriod);
-      onSelect({ start_date: newStartDate, end_date: newEndDate });
-      alert("Trip period updated successfully!");
-      console.log("Updated Trip:", result);
-      if (isEditing) setIsEditing(false);
-    } catch (error) {
-      console.error("Error updating trip period:", error.message);
-      alert("Failed to update trip period.");
-    } finally {
-      setIsUpdating(false);
+      if (newDateSet.size !== editedDates.size) {
+        setEditedDates(newDateSet);
+      }
+    }
+  }, [editedDates, isEditing]);
+
+  // Compute the display range dynamically.
+  const getDisplayRange = () => {
+    if (isEditing && editedDates.size > 0) {
+      const sortedDates = Array.from(editedDates).sort();
+      return { start: sortedDates[0], end: sortedDates[sortedDates.length - 1] };
+    }
+    return { start: period.start_date, end: period.end_date };
+  };
+
+  const { start: displayStart, end: displayEnd } = getDisplayRange();
+
+  // Merged handleSelect: if not editing, enter edit mode; if editing, confirm update.
+  const handleSelect = async () => {
+    if (!isEditing) {
+      // Enter edit mode and initialize dates.
+      setEditedDates(initializeEditedDates());
+      setIsEditing(true);
+      return;
+    }
+    // When in editing mode, if range is valid, submit update.
+    if (isEditing && validRange) {
+      setIsUpdating(true);
+      try {
+        const datesArray = Array.from(editedDates).sort();
+        const newStartDate = datesArray[0];
+        const newEndDate = datesArray[datesArray.length - 1];
+        const newPeriod = {
+          startDate: newStartDate,
+          endDate: newEndDate,
+        };
+        const result = await updateTripPeriod(tripID, newPeriod);
+        onSelect({ start_date: newStartDate, end_date: newEndDate });
+        toast.success("Trip period updated successfully!");
+        console.log("Updated Trip:", result);
+        setIsEditing(false);
+      } catch (error) {
+        console.error("Error updating trip period:", error.message);
+        toast.error("Failed to update trip period.");
+      } finally {
+        setIsUpdating(false);
+      }
     }
   };
 
-  // Define the button label text for non-loading states.
-  const buttonLabel = !isEditing && isSelected ? "Selected" : "Select";
+  // Helper function to calculate duration in Days and Nights.
+  const getDurationText = (start, end) => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const diffTime = endDate - startDate;
+    const days = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    const nights = days - 1;
+    return `${days} ${days > 1 ? "Days" : "Day"} ${nights} ${nights !== 1 ? "Nights" : "Night"}`;
+  };
 
-  // Determine if the select button should be disabled.
-  const buttonDisabled = !isEditing
-    ? (isSelected || isUpdating)
-    : (!validRange || isUpdating);
-
-  // Tooltip message for invalid range (when editing).
-  const tooltipMessage = "Please select a continuous date range. A trip cannot skip days.";
+  // Render buttons based on editing state.
+  const renderButtons = () => {
+    if (!isEditing) {
+      return (
+        <button
+          onClick={handleSelect}
+          className={`px-4 py-2 border rounded text-white hover:opacity-80 ${
+            isUpdating
+              ? "bg-[#22544f] cursor-not-allowed"
+              : (isSelected ? "bg-[#22544f]" : "bg-[#4DB6AC]")
+          }`}
+          disabled={isUpdating}
+        >
+          {isUpdating ? "Updating..." : (isSelected ? "Selected" : "Select")}
+        </button>
+      );
+    } else {
+      return (
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setIsEditing(false)}
+            className="px-4 py-2 border rounded text-white hover:opacity-80 bg-[#4DB6AC]"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSelect}
+            className={`px-4 py-2 border rounded text-white hover:opacity-80 ${
+              isUpdating || !validRange
+                ? "bg-[#22544f] cursor-not-allowed"
+                : "bg-[#4DB6AC]"
+            }`}
+            disabled={isUpdating || !validRange}
+          >
+            {isUpdating ? "Updating..." : "Confirm"}
+          </button>
+        </div>
+      );
+    }
+  };
 
   return (
     <div className="mb-8">
       <Card className="p-4 flex flex-col">
         <div className="flex justify-between items-center">
           <div className="font-medium">
-            {new Date(period.start_date).toLocaleDateString("en-GB")} -{" "}
-            {new Date(period.end_date).toLocaleDateString("en-GB")}
+            {new Date(displayStart).toLocaleDateString("en-GB")} -{" "}
+            {new Date(displayEnd).toLocaleDateString("en-GB")}
           </div>
-          <div className="flex space-x-2">
-            <button
-              onClick={handleEditToggle}
-              className="px-2 py-1 border rounded text-sm bg-[#4DB6AC] text-white"
-            >
-              {isEditing ? "Cancel" : "Edit"}
-            </button>
-            {isEditing && !validRange ? (
-              <Tooltip>
-                <TooltipTrigger>
-                  <button
-                    onClick={handleSelect}
-                    className="px-4 py-2 border rounded text-white bg-[#22544f] cursor-not-allowed"
-                    disabled={true}
-                  >
-                    {isUpdating ? "Updating..." : buttonLabel}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>{tooltipMessage}</TooltipContent>
-              </Tooltip>
-            ) : (
-              <button
-                onClick={handleSelect}
-                className={`px-4 py-2 border rounded text-white hover:opacity-80 ${
-                  (!isEditing && (isSelected || isUpdating))
-                    ? "bg-[#22544f] cursor-not-allowed"
-                    : "bg-[#4DB6AC]"
-                }`}
-                disabled={buttonDisabled}
-              >
-                {isUpdating ? "Updating..." : buttonLabel}
-              </button>
-            )}
-          </div>
+          {renderButtons()}
+        </div>
+        <div className="mt-2 text-sm text-black">
+          {getDurationText(displayStart, displayEnd)}
         </div>
         <div className="mt-4">
-          <AvailabilityIcon
-            tripID={tripID}
-            period={period}
-            totalPeople={totalPeople}
-          />
+          {/* Hide availability if the selected range does not match the original period */}
+          {displayStart === period.start_date && displayEnd === period.end_date && (
+            <AvailabilityIcon tripID={tripID} period={period} totalPeople={totalPeople} />
+          )}
         </div>
       </Card>
       {isEditing && (
         <div className="mt-2">
-          <Calendar
+          {/* Use the AutoFillCalendar with autofill behavior for AvailableTrips */}
+          <AutoFillCalendar
             currentDate={editCurrentDate}
             setCurrentDate={setEditCurrentDate}
             selectedDates={editedDates}
             setSelectedDates={setEditedDates}
-            readOnly={false}
-            showControls={false}
           />
         </div>
       )}
@@ -323,56 +360,47 @@ const AvailableTrips = ({ tripID }) => {
   return (
     <div className="max-w-md mx-auto ">
       <h3 className="text-xl font-bold">Available trip dates</h3>    
-    <div className="max-w-md mx-auto">
-      {suggestedPeriods.most_people_period && (
-        <div>
-          <h4 className="text-lg font-semibold mb-2">
-            Best Option
-            </h4>
-          <PeriodCard
-            tripID={tripID}
-            period={suggestedPeriods.most_people_period}
-            totalPeople={totalPeople}
-            selectedPeriod={selectedPeriod}
-            onSelect={setSelectedPeriod}
-          />
-        </div>
-      )}
-
-      {suggestedPeriods.longest_period_min_2_people && (
-        <div>
-          <h4 className="text-lg font-semibold mb-2">
-            Longest Overlapping Availability
-          </h4>
-          <PeriodCard
-            tripID={tripID}
-            period={suggestedPeriods.longest_period_min_2_people}
-            totalPeople={totalPeople}
-            selectedPeriod={selectedPeriod}
-            onSelect={setSelectedPeriod}
-          />
-        </div>
-      )}
-
-      {suggestedPeriods.other_five_seven_day_periods &&
-        suggestedPeriods.other_five_seven_day_periods.length > 0 && (
+      <div className="max-w-md mx-auto">
+        {suggestedPeriods.most_people_period && (
           <div>
-            <h4 className="text-lg font-semibold mb-2">
-              Alternative Options
-            </h4>
-            {suggestedPeriods.other_five_seven_day_periods.map((period, index) => (
-              <PeriodCard
-                key={index}
-                tripID={tripID}
-                period={period}
-                totalPeople={totalPeople}
-                selectedPeriod={selectedPeriod}
-                onSelect={setSelectedPeriod}
-              />
-            ))}
+            <PeriodCard
+              tripID={tripID}
+              period={suggestedPeriods.most_people_period}
+              totalPeople={totalPeople}
+              selectedPeriod={selectedPeriod}
+              onSelect={setSelectedPeriod}
+            />
           </div>
         )}
-    </div>
+
+        {suggestedPeriods.longest_period_min_2_people && (
+          <div>
+            <PeriodCard
+              tripID={tripID}
+              period={suggestedPeriods.longest_period_min_2_people}
+              totalPeople={totalPeople}
+              selectedPeriod={selectedPeriod}
+              onSelect={setSelectedPeriod}
+            />
+          </div>
+        )}
+
+        {suggestedPeriods.other_five_seven_day_periods &&
+          suggestedPeriods.other_five_seven_day_periods.length > 0 && (
+            <div>
+              {suggestedPeriods.other_five_seven_day_periods.map((period, index) => (
+                <PeriodCard
+                  key={index}
+                  tripID={tripID}
+                  period={period}
+                  totalPeople={totalPeople}
+                  selectedPeriod={selectedPeriod}
+                  onSelect={setSelectedPeriod}
+                />
+              ))}
+            </div>
+          )}
+      </div>
     </div>
   );
 };

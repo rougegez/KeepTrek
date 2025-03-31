@@ -2,12 +2,6 @@ import React, { useState, useEffect } from 'react';
 import QRCode from 'react-qr-code';
 import { generateInviteLink, getTripMembers, updateMemberRole, removeMember } from '@/APIs/trip';
 import { Button } from '../ui/button';
-import {
-    Popover,
-    PopoverTrigger,
-    PopoverContent,
-} from '../ui/popover';
-import { Input } from '../ui/input';
 import { Copy, QrCode, Share2 } from 'lucide-react';
 import {
     Dialog,
@@ -29,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { UserAvatar } from '../profilePage/avatar';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const InviteButton = ({ tripID, userRole }) => {
     const navigate = useNavigate();
@@ -81,7 +76,7 @@ const InviteButton = ({ tripID, userRole }) => {
 
     const handleCopyInviteLink = () => {
         navigator.clipboard.writeText(inviteLink);
-        alert('Invite link copied to clipboard!');
+        toast.success('Invite link copied to clipboard!');
     };
 
     const refreshMembers = async () => {
@@ -150,9 +145,9 @@ const InviteButton = ({ tripID, userRole }) => {
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select a role" />
                                         </SelectTrigger>
-                                        <SelectContent className="cursor-pointer">
-                                            <SelectItem className="hover:bg-slate-200 cursor-pointer" value={UserRole.VIEWER}>Viewer</SelectItem>
-                                            <SelectItem className="hover:bg-slate-200 cursor-pointer" value={UserRole.COLLABORATOR}>Collaborator</SelectItem>
+                                        <SelectContent>
+                                            <SelectItem value={UserRole.VIEWER}>Viewer</SelectItem>
+                                            <SelectItem value={UserRole.COLLABORATOR}>Collaborator</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseURL = 'https://keeptrek-backend.onrender.com/';
+const baseURL = 'https://keeptrek-backend.onrender.com/'; // http://localhost:8000/
 
 const axiosInstance = axios.create({
   baseURL,

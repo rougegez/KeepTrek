@@ -3,8 +3,8 @@ import { addExpense, getExpense, deleteExpense, updateExpense, totalTripExpense,
 import { balanceMap, settleDebt, getSettledDebts, editSettledDebt, deleteSettledDebt } from '@/APIs/settledDebts';
 import { viewBudgets, editBudget, createBudget, deleteBudget } from '@/APIs/userBudgets';
 import { useParams } from 'react-router-dom';
-import { CurrentUser } from '@/APIs/auth';
 import { getTripMembers } from '@/APIs/trip';
+import { useAuth } from '@/contexts/AuthProvider';
 
 const ExpensesContext = createContext(null);
 
@@ -20,7 +20,6 @@ export function useExpenses() {
 export function ExpensesProvider({ children }) {
   const { tripID } = useParams();
 
-  const [user, setUser] = useState(null);
   const [expenses, setExpenses] = useState([]);
   const [tripMembers, setTripMembers] = useState([]);
   const [totals, setTotals] = useState({
@@ -47,6 +46,8 @@ export function ExpensesProvider({ children }) {
   const [isLoadingMain, setIsLoadingMain] = useState(false);
   const [isLoadingDependent, setIsLoadingDependent] = useState(false);
 
+  const { user } = useAuth();
+
   // Enhanced cache with more data
   const cache = useRef({
     mainData: null,
@@ -70,7 +71,7 @@ export function ExpensesProvider({ children }) {
       setIsLoadingMain(true);
 
       const [userData, members, tripData] = await Promise.all([
-        CurrentUser(),
+        user,
         getTripMembers(tripID),
         getTripData(tripID),
       ]);
@@ -103,7 +104,6 @@ export function ExpensesProvider({ children }) {
       });
 
       // Batch state updates with exact field names
-      setUser(userData);
       setTripMembers(members);
       setUsernames(newUsernames);
       setExpenses(mappedData.expenses);
@@ -133,7 +133,6 @@ export function ExpensesProvider({ children }) {
         const { mainData, expenses, settledDebts, balances, totals } = cache.current;
 
         // Use cached data
-        setUser(mainData.user);
         setTripMembers(mainData.members);
         setExpenses(expenses || []);
         setSettledDebts(settledDebts || []);

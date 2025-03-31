@@ -3,41 +3,12 @@ import { UserAvatar } from './avatar';
 import EditProfileModal from './EditProfileModal';
 import { useState, useEffect } from 'react';
 import { getUserProfile, updateUserProfile } from '@/APIs/users';
-import { CurrentUser } from '@/APIs/auth';  
 import TopNavbar from '../topNavBar/TopNavbar';
 import TripsList from '../yourTrips/tripList';
 import { getUserTrips } from '@/APIs/trip';
 import { motion } from 'framer-motion'
 import { Skeleton } from "@/components/ui/skeleton"
-
-const ProfileLoadingSkeleton = () => {
-    return (
-        <main className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <div className="bg-slate-100 rounded-lg shadow p-6 mb-8">
-            <div className="flex flex-col items-center space-y-4 pb-6">
-              <Skeleton className="w-32 h-32 rounded-full" />
-              <div className="space-y-2">
-                <Skeleton className="h-6 w-48" />
-                <Skeleton className="h-4 w-64" />
-              </div>
-              <Skeleton className="h-10 w-32" />
-            </div>
-            <div className="grid grid-cols-2 gap-4 py-4">
-              <Skeleton className="h-24 rounded-lg" />
-              <Skeleton className="h-24 rounded-lg" />
-            </div>
-          </div>
-          <div className="bg-card rounded-lg shadow p-6">
-            <Skeleton className="h-8 w-64 mb-6" />
-            <div className="space-y-4">
-              <Skeleton className="h-20 rounded-lg" />
-              <Skeleton className="h-20 rounded-lg" />
-              <Skeleton className="h-20 rounded-lg" />
-            </div>
-          </div>
-        </main>
-      )
-    }
+import { useAuth } from '@/contexts/AuthProvider';
   
 export const ProfilePage = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -50,11 +21,12 @@ export const ProfilePage = () => {
         groupsJoined: 4
     });
 
+    const { user : userId } = useAuth();
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 // Fetch user data
-                const userId = await CurrentUser();
                 const profile = await getUserProfile(userId);
                 
                 if (!profile) {
@@ -160,5 +132,35 @@ export const ProfilePage = () => {
         </div>
     );
 };
+
+
+const ProfileLoadingSkeleton = () => {
+    return (
+        <main className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+          <div className="bg-slate-100 rounded-lg shadow p-6 mb-8">
+            <div className="flex flex-col items-center space-y-4 pb-6">
+              <Skeleton className="w-32 h-32 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-64" />
+              </div>
+              <Skeleton className="h-10 w-32" />
+            </div>
+            <div className="grid grid-cols-2 gap-4 py-4">
+              <Skeleton className="h-24 rounded-lg" />
+              <Skeleton className="h-24 rounded-lg" />
+            </div>
+          </div>
+          <div className="bg-card rounded-lg shadow p-6">
+            <Skeleton className="h-8 w-64 mb-6" />
+            <div className="space-y-4">
+              <Skeleton className="h-20 rounded-lg" />
+              <Skeleton className="h-20 rounded-lg" />
+              <Skeleton className="h-20 rounded-lg" />
+            </div>
+          </div>
+        </main>
+      )
+    }
 
 export default ProfilePage;

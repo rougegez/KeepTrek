@@ -3,6 +3,7 @@ import { useExpenses } from '@/components/Expenses/expenseContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { toast } from 'sonner';
 
 export const BudgetProgress = () => {
   const { totals, user, userBudgets, handleCreateBudget, handleEditBudget, handleDeleteBudget } = useExpenses();
@@ -32,7 +33,7 @@ export const BudgetProgress = () => {
     try {
       const amount = parseFloat(budgetAmount);
       if (isNaN(amount) || amount <= 0) {
-        alert("Please enter a valid amount");
+        toast.info("Please enter a valid amount");
         return;
       }
       if (isEditMode) {

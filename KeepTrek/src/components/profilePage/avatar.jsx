@@ -67,7 +67,7 @@ export function UserAvatarStack({ userIds, size = 10, maxUsers = 5, className })
 
   return (
     <div className={cn("flex items-center", className)}>
-      <div className="flex -space-x-2 rtl:space-x-reverse">
+      <div className={`flex -space-x-${Math.floor(size / 2)} rtl:space-x-reverse`}>
         {displayedProfiles.map((profile, index) => (
           <UserAvatar
             key={profile?.id || index}

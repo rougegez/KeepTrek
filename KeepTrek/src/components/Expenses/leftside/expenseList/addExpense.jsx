@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Utensils, Droplet, Bike, Home, Waves, Wine, UserPlus, DollarSign, Users, UserCog, ShoppingBag } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 import { useExpenses } from '@/components/Expenses/expenseContext';
+import { toast } from "sonner";
 
 export const AddExpense = () => {
     const { tripID } = useParams();
@@ -38,12 +38,12 @@ export const AddExpense = () => {
 
       const handleAddExpense = async () => {
   if (!newExpense.description || !newExpense.amount || !newExpense.type || !newExpense.paidBy) {
-    alert("Please fill all required fields");
+    toast.info("Please fill all required fields");
     return;
   }
   if (!tripID) {
     console.error("TripID is not defined!");
-    alert("TripID is missing. Please try again.");
+    toast.warning("TripID is missing. Please try again.");
     return;
   }
 
@@ -88,11 +88,11 @@ export const AddExpense = () => {
     console.log('Expense data being sent to createExpense:', expenseData);
     await createExpense(expenseData);
     setShowAddExpense(false); // Close the modal
-    alert("Expense added successfully!"); // Show success feedback
+    toast.success("Expense added successfully!"); // Show success feedback
 
   } catch (error) {
     console.error('Error:', error);
-    alert(`Failed to add expense: ${error.message}`);
+    toast.error("Failed to add expense", {description: `${error.message}`});
   }
 };
 
@@ -252,7 +252,7 @@ export const AddExpense = () => {
                                                 0
                                             );
                                             if (currentTotalPercentage + value > 100) {
-                                                alert("Total percentage cannot exceed 100%.");
+                                                toast.info("Total percentage cannot exceed 100%.");
                                                 return;
                                             }
                                 

@@ -2,60 +2,25 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { registerUser } from "@/APIs/auth"; // Ensure this function handles API calls
+
+import { useAuth } from "@/contexts/AuthProvider";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Alert } from "@/components/ui/alert";
 
 export default function RegisterForm({ onSwitchToLogin }) {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
 
-  const handleRegister = async (e) => {
+  const { isLoading,  register , googleLogin, error } = useAuth();
+
+  const handleRegister = (e) => {
     e.preventDefault();
-    setError(null); // Clear previous errors
-
-    try {
-      await registerUser({ email, username, password }); // Call register API
-      alert("Registration successful! Please log in to continue.");
-      onSwitchToLogin(); // Switch to the login modal
-    } catch (err) {
-      console.error("Registration Error:", err.response?.data || err.message);
-      setError(
-        err.response?.data?.detail ||
-          "Registration failed. Please try again."
-      );
-    }
-  };
-
-  const handleGoogleRegister = () => {
-    // URL of your backend endpoint that starts the Google OAuth flow
-    const googleLoginUrl = "https://keeptrek-backend.onrender.com/auth/google-login";
-    const width = 500;
-    const height = 600;
-    const left = (window.innerWidth - width) / 2;
-    const top = (window.innerHeight - height) / 2;
-    const authWindow = window.open(
-      googleLoginUrl,
-      "Google Register",
-      `width=${width},height=${height},top=${top},left=${left}`
-    );
-
-    // Listen for the token message from the popup window
-    const handleMessage = (event) => {
-      // Optionally verify event.origin for security (ensure it comes from your backend)
-      if (event.data && event.data.token) {
-        localStorage.setItem("token", event.data.token);
-        window.removeEventListener("message", handleMessage);
-        if (authWindow) authWindow.close();
-        window.location.reload();
-      }
-    };
-
-    window.addEventListener("message", handleMessage, false);
-  };
+    register({ email, username, password });
+  }
 
   return (
-    <Card className="w-full max-w-md mx-auto p-8 border-none shadow-md space-y-6">
+    <Card className="w-full max-w-md mx-auto p-8 border-none shadow-none space-y-6">
       {/* Logo and Header */}
       <div className="text-center">
         <img
@@ -72,7 +37,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
       <Button
         variant="outline"
         className="w-full flex items-center justify-center gap-2 border-gray-300"
-        onClick={handleGoogleRegister}
+        onClick={() => googleLogin()}
       >
         <img src="/assets/google.png" alt="Google" className="h-5 w-5" />
         Sign up with Google
@@ -131,12 +96,13 @@ export default function RegisterForm({ onSwitchToLogin }) {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {error && <p className="text-red-500 text-sm">{error?.response?.data?.detail[0].ctx?.reason ?? error?.response?.data?.detail ?? error}</p>}
         <Button
           type="submit"
           className="w-full bg-teal-500 hover:bg-teal-600 text-white"
+          disabled={isLoading}
         >
-          Register
+          {isLoading ? <LoadingSpinner/> : "Register"}
         </Button>
       </form>
 
