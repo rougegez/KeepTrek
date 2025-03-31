@@ -21,6 +21,7 @@ import { useMediaQuery } from 'react-responsive';
 import { motion } from "framer-motion";
 import MobileHeader from "../MobileHeader.jsx";
 import InviteButton from "../Invite/InviteButton.jsx";
+import BrowseActivity from "../BrowseActivity/BrowseActivity.jsx";
 import { UserAvatarStack } from '../profilePage/avatar.jsx';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -223,7 +224,7 @@ function Itinerary() {
           } : {}}
           style={{ flexShrink: 0 }}
         >
-          <ScrollArea className={`${isMobile ? 'p-4' : 'h-full px-2 pt-6'}`}>
+          <ScrollArea className="h-full px-2 pt-6">
             <div className="space-y-6">
               <div className="flex justify-between space-y-2 mr-5">
                 <div>
@@ -235,7 +236,10 @@ function Itinerary() {
                 <div className="flex items-center gap-2">
                   <UserAvatarStack userIds={tripDetails.users} />
                   {canModify && (
-                    <InviteButton tripID={tripID} userRole={userRole} />
+                    <>
+                      <InviteButton tripID={tripID} userRole={userRole} />
+                      <BrowseActivity location={tripDetails.location} />
+                    </>
                   )}
                   {userRole === UserRole.ADMIN && (
                     <Button
