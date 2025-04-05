@@ -32,12 +32,12 @@ const InviteButton = ({ tripID, userRole }) => {
         console.log('User role not yet available');
         return null;
     }
-    console.log('UserRole enum:', UserRole);
-    console.log('Can manage users check:', { 
-        userRole, 
-        isAdmin: userRole === UserRole.ADMIN,
-        canManage: canManageUsers(userRole)
-    });
+    // console.log('UserRole enum:', UserRole);
+    // console.log('Can manage users check:', { 
+    //     userRole, 
+    //     isAdmin: userRole === UserRole.ADMIN,
+    //     canManage: canManageUsers(userRole)
+    // });
 
     const [inviteLink, setInviteLink] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);

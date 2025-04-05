@@ -21,11 +21,11 @@ export const hasPermission = (userRole, requiredRole) => {
   const normalizedUserRole = userRole.toLowerCase();
   const normalizedRequiredRole = requiredRole.toLowerCase();
 
-  console.log('Checking permission:', { 
-    userRole: normalizedUserRole, 
-    requiredRole: normalizedRequiredRole, 
-    result: ROLE_HIERARCHY[normalizedUserRole] >= ROLE_HIERARCHY[normalizedRequiredRole] 
-  });
+  // console.log('Checking permission:', { 
+  //   userRole: normalizedUserRole, 
+  //   requiredRole: normalizedRequiredRole, 
+  //   result: ROLE_HIERARCHY[normalizedUserRole] >= ROLE_HIERARCHY[normalizedRequiredRole] 
+  // });
   
   return ROLE_HIERARCHY[normalizedUserRole] >= ROLE_HIERARCHY[normalizedRequiredRole];
 };
