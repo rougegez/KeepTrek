@@ -54,9 +54,8 @@ const BrowseActivity = ({ location }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" title="Browse Activities">
-          <Search className="mr-2 h-4 w-4" />
-          Browse Activity
+        <Button variant="outline" size="icon" title="Browse Activities">
+          <Search size={4} />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">

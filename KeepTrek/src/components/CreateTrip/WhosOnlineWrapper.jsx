@@ -29,9 +29,6 @@ export function WhosOnlineWrapper() {
             onOpen: () => {
                 sendJsonMessage({ "current_page": currentPage, "is_idle": isIdle });
             },
-            onMessage: (event) => {
-                setLastJsonMessage(JSON.parse(event.data));
-            },
             shouldReconnect: (closeEvent) => {
                 if (closeEvent.code === 1000) {
                     return false;
@@ -77,7 +74,7 @@ export function WhosOnlineWrapper() {
                 sendJsonMessage({ "current_page": currentPage, "is_idle": false });
             }
         },
-        timeout: 10 * 60 * 5, // 10 minutes
+        timeout: 1000 * 60 * 5, // 5 minutes idle time
     });
 
     return <Outlet />

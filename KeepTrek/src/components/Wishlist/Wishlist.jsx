@@ -321,7 +321,7 @@ export default function WishlistPage() {
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
               handlePanTo={searchedPlace}
-              initCenter={tripDetails.coordinates}
+              initCenter={tripDetails?.coordinates}
               height="100%"
               width="100%"
             />
@@ -451,7 +451,7 @@ export default function WishlistPage() {
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
               handlePanTo={searchedPlace}
-              initCenter={tripDetails.coordinates}
+              initCenter={tripDetails?.coordinates}
               height="100%"
               width="100%"
             />
