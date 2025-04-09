@@ -40,8 +40,8 @@ export const useItinerary = () => {
     )
 
     const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(
-        // `wss://keeptrek-backend.onrender.com/itinerary/ws/${tripID}?token=${token}`,
-        `ws://localhost:8000/itinerary/ws/${tripID}?token=${token}`,
+        `wss://keeptrek-backend.onrender.com/itinerary/ws/${tripID}?token=${token}`,
+        // `ws://localhost:8000/itinerary/ws/${tripID}?token=${token}`,
         {
             shouldReconnect: (closeEvent) => {
                 console.log(closeEvent);
