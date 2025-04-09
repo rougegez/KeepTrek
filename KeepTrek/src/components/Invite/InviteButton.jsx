@@ -32,12 +32,12 @@ const InviteButton = ({ tripID, userRole }) => {
         console.log('User role not yet available');
         return null;
     }
-    console.log('UserRole enum:', UserRole);
-    console.log('Can manage users check:', { 
-        userRole, 
-        isAdmin: userRole === UserRole.ADMIN,
-        canManage: canManageUsers(userRole)
-    });
+    // console.log('UserRole enum:', UserRole);
+    // console.log('Can manage users check:', { 
+    //     userRole, 
+    //     isAdmin: userRole === UserRole.ADMIN,
+    //     canManage: canManageUsers(userRole)
+    // });
 
     const [inviteLink, setInviteLink] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
@@ -118,9 +118,8 @@ const InviteButton = ({ tripID, userRole }) => {
         <>
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
-                    <Button>
-                        <Share2 className="mr-2 h-4 w-4" />
-                        Share Trip
+                    <Button size="icon">
+                        <Share2 size={4} />
                     </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[500px]">

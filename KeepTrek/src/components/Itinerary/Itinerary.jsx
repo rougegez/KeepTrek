@@ -32,6 +32,7 @@ import { useItinerary } from './useItinerarySocket.jsx';
 import { Skeleton } from "@/components/ui/skeleton.jsx";
 import { ReadyState } from "react-use-websocket";
 import { useAuth } from "@/contexts/AuthProvider.jsx";
+import { useWhosOnline } from "../CreateTrip/WhosOnlineWrapper.jsx";
 
 function Itinerary() {
   const navigate = useNavigate();
@@ -64,11 +65,8 @@ function Itinerary() {
     }
   );
 
-  const { setTripID, days, setDays, readyState } = useItinerary()
-
-  useEffect(() => {
-    setTripID(tripID);
-  }, [tripID]);
+  const { days, setDays, readyState } = useItinerary()
+  const { whosOnline } = useWhosOnline(); 
 
   const userRole = useMemo(() => {
     if (!currentUser || !tripDetails?.users) return null;
@@ -234,7 +232,7 @@ function Itinerary() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <UserAvatarStack userIds={tripDetails.users} />
+                  <UserAvatarStack userIds={tripDetails.users} isIdle={whosOnline}/>
                   {canModify && (
                     <>
                       <InviteButton tripID={tripID} userRole={userRole} />
