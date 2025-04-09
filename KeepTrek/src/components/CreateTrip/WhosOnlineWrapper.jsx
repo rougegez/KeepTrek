@@ -24,8 +24,8 @@ export function WhosOnlineWrapper() {
     const setLastJsonMessage = useWhosOnlineStore((state) => state.setLastJsonMessage);
 
     const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(
-        `wss://keeptrek-backend.onrender.com/whois-online?trip_id=${tripID}&token=${token}`,
-        // `wss://localhost:8000/trip/whois-online?trip_id=${tripID}&token=${token}`,
+        `wss://keeptrek-backend.onrender.com/trip/whois-online?trip_id=${tripID}&token=${token}`,
+        // `ws://localhost:8000/trip/whois-online?trip_id=${tripID}&token=${token}`,
         {
             onOpen: () => {
                 sendJsonMessage({ "current_page": currentPage, "is_idle": isIdle });
