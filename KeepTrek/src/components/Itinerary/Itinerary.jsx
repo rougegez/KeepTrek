@@ -33,6 +33,7 @@ import { Skeleton } from "@/components/ui/skeleton.jsx";
 import { ReadyState } from "react-use-websocket";
 import { useAuth } from "@/contexts/AuthProvider.jsx";
 import { useWhosOnline } from "../CreateTrip/WhosOnlineWrapper.jsx";
+import DeleteAlert from "../ui/DeleteAlert.jsx";
 
 function Itinerary() {
   const navigate = useNavigate();
@@ -53,6 +54,7 @@ function Itinerary() {
   const contentRef = useRef(null);
   const [lastScrollPosition, setLastScrollPosition] = useState(0);
 
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [showLeaveAlert, setShowLeaveAlert] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
@@ -65,7 +67,7 @@ function Itinerary() {
     }
   );
 
-  const { days, setDays, readyState } = useItinerary()
+  const { days, setDays, readyState , getDayAndActivity} = useItinerary()
   const { whosOnline } = useWhosOnline(); 
 
   const userRole = useMemo(() => {
@@ -145,12 +147,21 @@ function Itinerary() {
   };
 
   const handleDeleteClick = (dayIndex, activityId) => {
+    const { activity } = getDayAndActivity(activityId);
+    setCurrentActivity({dayIndex : dayIndex, activity: activity});
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    const { activity : deleteActivity, dayIndex } = currentActivity;  
     const updatedDays = [...days];
     updatedDays[dayIndex].activities = updatedDays[dayIndex].activities.filter(
-      (activity) => activity.id !== activityId
+      (activity) => activity.id !== deleteActivity.id
     );
     setDays(updatedDays);
-  };
+    setIsDeleteConfirmOpen(false);
+    setCurrentActivity(null);
+  }
 
   const handleAddActivity = (newActivity) => {
     const updatedDays = [...days];
@@ -345,6 +356,13 @@ function Itinerary() {
           setCurrentActivity(null);
         }}
         activityId={currentActivity?.id}
+      />
+
+      <DeleteAlert
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        itemName={currentActivity?.activity?.title}
       />
 
       <LeaveAlert
