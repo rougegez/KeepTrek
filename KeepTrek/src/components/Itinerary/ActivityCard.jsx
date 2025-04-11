@@ -158,7 +158,7 @@ const ActivityCard = ({
             <div className={`flex flex-grow ${isMobile ? 'flex-col' : 'flex-row'} gap-4  ${activity.coordinates && activity.coordinates.length > 1 ? 'cursor-pointer hover:bg-gray-50' : ''}`} onClick={handleCardClick}>
               {/* Image for mobile - moved to top with overlapping menu */}
               {isMobile && (
-                <div className="w-full relative">
+                <div className="w-full relative" onClick={e => e.stopPropagation()}>
                   <a href={activity.link} target="_blank" rel="noreferrer noopener" onClick={e => e.stopPropagation()}>
                     <img
                       src={activity.image}
@@ -209,7 +209,7 @@ const ActivityCard = ({
 
               {/* Image for desktop - on the right with overlapping menu */}
               {!isMobile && (
-                <div className="flex-none relative">
+                <div className="flex-none relative" onClick={e => e.stopPropagation()}>
                   <a href={activity.link} target="_blank" rel="noreferrer noopener" onClick={e => e.stopPropagation()}>
                     <img
                       src={activity.image}

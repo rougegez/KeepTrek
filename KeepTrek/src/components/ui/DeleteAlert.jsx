@@ -21,7 +21,7 @@ const DeleteAlert = ({ isOpen, onClose, onConfirm, itemName = 'item', isLoading 
         >
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Delete {itemName}</AlertDialogTitle>
+                    <AlertDialogTitle>Delete {itemName}?</AlertDialogTitle>
                     <AlertDialogDescription>
                         Are you sure you want to delete this {itemName.toLowerCase()}? 
                         This action cannot be undone and all associated data will be permanently lost.
