@@ -1,160 +1,137 @@
 // src/components/ShareTrips/ShareModal2.jsx
 import React, { useState } from "react";
-import { X, Clock, MapPin, Upload } from "lucide-react";
+import { X, Clock, MapPin, Upload, Share2, CalendarIcon, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+  DialogHeader,
+  DialogFooter,
+  DialogClose,
+  DialogDescription,
+  DialogPortal,
+  DialogOverlay,
+} from "@/components/ui/dialog.jsx";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover.jsx";
 import { Textarea } from "@/components/ui/textarea";
+import { FileUploader } from "../ui/file-uploader";
+import { UserAvatarStack } from "@/components/profilePage/avatar.jsx";
 
-export default function ShareModal2({ onClose }) {
-  const [isOpen, setIsOpen] = useState(true);
-
-  const handleClose = () => {
-    setIsOpen(false);
-    onClose?.();
-  };
+export default function ShareModal2(
+  { trip,
+  }) {
 
   const handleShare = () => {
     console.log("Shared!");
-    // optionally close both modals:
-    // handleClose();
   };
 
-  if (!isOpen) return null;
+  const handleFileUpload = (files) => {
+    console.log("Files uploaded:", files);
+  }
+
+  const days = Math.ceil(
+    (new Date(trip.endDate) - new Date(trip.startDate)) / (1000 * 60 * 60 * 24)
+  );
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <Card className="bg-white rounded-lg shadow-lg max-w-xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        {/* header */}
-        <div className="p-4 border-b flex justify-between items-center">
-          <h2 className="text-xl font-bold">Penang Trip w/ the Boys</h2>
-          <button
-            onClick={handleClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <Dialog>
+      <DialogTrigger asChlid>
+        <Button className="w-full">
+          <Share2 className="h-4 w-4 mr-1" />
+          Share
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="font-bold text-xl">Share {trip.tripName}?</DialogTitle>
+          <DialogDescription>
+            Edit the trip image or add a description
+          </DialogDescription>
+        </DialogHeader>
 
+        <Card className="overflow-hidden relative group">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" className="relative w-full h-48 m-0 p-0 hover:bg-slate-50">
+                <img
+                  src={trip.image}
+                  alt={trip.tripName}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 hover:opacity-100 transition-opacity">
+                  <Pencil className="h-6 w-6 text-white" />
+                </div>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+              <div className="space-y-4">
+                <h4 className="font-medium leading-none">Upload New Banner</h4>
+                <FileUploader
+                  className="w-full"
+                  onValueChange={(files) => handleFileChange(files)}
+                />
+              </div>
+            </PopoverContent>
+          </Popover>
+          <CardHeader>
+            <h3 className="text-2xl font-semibold">{trip.tripName}</h3>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-2 text-md text-gray-500 mb-2">
+              <MapPin className="w-4 h-4" />
+              <span>{trip.location}</span>
+            </div>
+            <div className="flex items-center space-x-2 text-md text-gray-500 mb-2 justify-between">
+              <div className="flex items-center space-x-2">
+                <CalendarIcon className="w-4 h-4" />
+                <span>
+                  {new Date(trip.startDate).toLocaleDateString()} -{" "}
+                  {new Date(trip.endDate).toLocaleDateString()}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Clock className="w-4 h-4" />
+                <span className="text-gray-400 text-right">
+                  {days} days
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2 text-sm text-gray-500">
+              <UserAvatarStack
+                userIds={trip.users}
+                size={6}
+                maxUsers={5}
+                className="-space-x-2"
+              />
+              <span>{trip.users.length} participants</span>
+            </div>
+          </CardContent>
+        </Card>
         {/* body */}
-        <div className="p-4 overflow-y-auto flex-grow">
-          <div className="border-2 border-dashed rounded-lg p-8 mb-4 flex flex-col items-center justify-center text-gray-400">
-            <div className="bg-gray-200 rounded-full p-2 mb-2">
-              <Upload className="w-5 h-5" />
-            </div>
-            <span>Image</span>
-          </div>
-
-          <Textarea
-            placeholder="Description..."
-            className="w-full mb-6 resize-none text-gray-500"
-            rows={3}
-          />
-
-          <div className="space-y-4">
-            <div className="bg-gray-100 rounded-lg p-3">
-              <h3 className="font-semibold mb-2">Day 1</h3>
-
-              {/* item 1 */}
-              <div className="bg-white rounded-lg p-3 mb-3 shadow-sm">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-500 text-sm">1:30 PM</span>
-                      <h4 className="font-medium">Hameediyah Restaurant</h4>
-                    </div>
-                    <div className="flex items-center gap-1 text-gray-500 text-xs">
-                      <MapPin className="w-3 h-3 flex-shrink-0" />
-                      <span className="line-clamp-1">
-                        164 A, Lebuh Campbell Street, 10100 George Town,
-                        Pulau Pinang, Malaysia
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 text-gray-500 text-xs">
-                      <Clock className="w-3 h-3" />
-                      <span>1h</span>
-                    </div>
-                    <p className="text-sm">Nasi Kandar</p>
-                  </div>
-                  <div className="ml-2 flex-shrink-0">
-                    <img
-                      src="https://via.placeholder.com/80"
-                      alt="Hameediyah Restaurant"
-                      className="rounded-lg object-cover w-20 h-20"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* item 2 */}
-              <div className="bg-white rounded-lg p-3 mb-3 shadow-sm">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-500 text-sm">3:00 PM</span>
-                      <h4 className="font-medium">Penang War Museum</h4>
-                    </div>
-                    <div className="flex items-center gap-1 text-gray-500 text-xs">
-                      <MapPin className="w-3 h-3 flex-shrink-0" />
-                      <span className="line-clamp-1">
-                        Penang War Museum, Jalan Batu Maung, 11960 Batu Maung,
-                        Pulau Pinang, Malaysia
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 text-gray-500 text-xs">
-                      <Clock className="w-3 h-3" />
-                      <span>1h</span>
-                    </div>
-                    <p className="text-sm">history of boom boom</p>
-                  </div>
-                  <div className="ml-2 flex-shrink-0">
-                    <img
-                      src="https://via.placeholder.com/80"
-                      alt="Penang War Museum"
-                      className="rounded-lg object-cover w-20 h-20"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* item 3 */}
-              <div className="bg-white rounded-lg p-3 shadow-sm">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-500 text-sm">5:00 PM</span>
-                      <h4 className="font-medium">Kek Lok Si Temple</h4>
-                    </div>
-                    <div className="flex items-center gap-1 text-gray-500 text-xs">
-                      <MapPin className="w-3 h-3 flex-shrink-0" />
-                      <span className="line-clamp-1">
-                        Kek Lok Si Temple, Air Itam, Penang, Malaysia
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 text-gray-500 text-xs">
-                      <Clock className="w-3 h-3" />
-                      <span>1h 30m</span>
-                    </div>
-                  </div>
-                  <div className="ml-2 flex-shrink-0">
-                    <img
-                      src="https://via.placeholder.com/80"
-                      alt="Kek Lok Si Temple"
-                      className="rounded-lg object-cover w-20 h-20"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Textarea
+          placeholder="Description..."
+          className="w-full mb-6 resize-none text-gray-500"
+          rows={3}
+        />
 
         {/* footer */}
-        <div className="p-4 border-t">
+        <DialogFooter>
           <Button onClick={handleShare} className="w-full">
             Share
           </Button>
-        </div>
-      </Card>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
