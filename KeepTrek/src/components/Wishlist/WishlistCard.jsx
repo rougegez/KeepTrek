@@ -37,7 +37,10 @@ export function WishlistCard({
         scale: { duration: 0.2 }
       }}
     >
-      <Card className={`group cursor-pointer hover:shadow-md transition-shadow ${isSelected ? 'border-4 border-primary' : ''}`} onClick={!addMode ? onClick : undefined}>
+      <Card
+        className={`group cursor-pointer hover:shadow-md transition-shadow ${isSelected ? 'border-4 border-primary' : ''}`}
+        onClick={addMode ? () => onSelect(item) : onClick}
+      >
         <CardContent className="p-0 relative">
           <img 
             src={item.image || "./src/assets/dummy-image.jpg"} 
@@ -46,7 +49,13 @@ export function WishlistCard({
           />
           <div className="absolute top-2 right-2 flex gap-1">
             {addMode ? (
-              <Button size="icon" variant="secondary" className={`flex gap-1 h-6 backdrop-blur-sm ${isSelected ? 'bg-primary text-white' : ''}`} onClick={(e) => { e.stopPropagation(); onSelect(item); }}>
+              <Button
+                size="icon"
+                variant="secondary"
+                className={`flex gap-1 h-6 backdrop-blur-sm ${isSelected ? 'bg-primary text-white' : ''}`}
+                tabIndex={-1}
+                aria-pressed={isSelected}
+              >
                 <span className="sr-only">Select</span>
                 <CheckIcon className={`w-3 h-3 mt-0.5 flex-shrink-0`} />
               </Button>
