@@ -303,6 +303,7 @@ export default function TripCard({ trip, onDelete }) {
         onClose={() => !isDeleting && setShowDeleteAlert(false)}
         onConfirm={handleDelete}
         itemName="Trip"
+        itemType="trip"
         isLoading={isDeleting}
       />
 
