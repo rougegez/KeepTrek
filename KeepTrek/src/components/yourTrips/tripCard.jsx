@@ -1,15 +1,15 @@
-import React from "react";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+// src/components/TripCard.jsx
+import React, { useState, useEffect } from "react";
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { NavLink } from "react-router-dom";
-import { CalendarIcon, Users2Icon, MapPin } from 'lucide-react'
-import { motion } from "framer-motion"
+import { CalendarIcon, MapPin } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
 import { getUserProfile } from "@/APIs/users";
-import { useState, useEffect } from "react";
-import { UserAvatar, UserAvatarStack } from '../profilePage/avatar';
+import { UserAvatar, UserAvatarStack } from "../profilePage/avatar";
 import { UserRole } from "@/utils/permissions";
-import { MoreVertical, ExternalLink, Pencil, Trash2, LogOut } from 'lucide-react';
+import { MoreVertical, ExternalLink, Pencil, Trash2, LogOut, Share2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,10 +17,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import LeaveAlert from '@/components/ui/LeaveAlert';
-import DeleteAlert from '@/components/ui/DeleteAlert';
-import { useNavigate } from 'react-router-dom';
-import { removeMember, deleteTrip } from "@/APIs/trip.js";
+import LeaveAlert from "@/components/ui/LeaveAlert";
+import DeleteAlert from "@/components/ui/DeleteAlert";
+import { useNavigate } from "react-router-dom";
+import { removeMember, deleteTrip, editTrip } from "@/APIs/trip.js";
 import {
   Dialog,
   DialogContent,
@@ -29,178 +29,148 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { editTrip } from "@/APIs/trip.js";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useAuth } from "@/contexts/AuthProvider";
+import ShareModal from "@/components/ShareTrips/ShareModal";
 
 export default function TripCard({ trip, onDelete }) {
   const navigate = useNavigate();
-  const [showLeaveAlert, setShowLeaveAlert] = useState(false);
-  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const { user: currentUser } = useAuth();
+
+  // permissions
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
-  const [showRenameDialog, setShowRenameDialog] = useState(false);
-  const [newTripName, setNewTripName] = useState('');
-  const [isRenaming, setIsRenaming] = useState(false);
-  const [renameError, setRenameError] = useState('');
-  const [isDeleting, setIsDeleting] = useState(false);
 
-  const { user : currentUser } = useAuth();
-
-  // Fetch current user and set permissions
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const role = trip.users.find(u => u.userID === currentUser)?.role;
-        setIsAdmin(role === UserRole.ADMIN);
-
-        const creatorId = typeof trip.creatorID === 'object' ? trip.creatorID.userID : trip.creatorID;
-        setIsCreator(currentUser === creatorId);
-        console.log('User permissions set:', {
-          userId,
-          role,
-          isAdmin: role === UserRole.ADMIN,
-          isCreator: userId === creatorId,
-          tripCreator: trip.creatorID
-        });
-      } catch (error) {
-        console.error('Error fetching user:', error);
-      }
-    };
-
-    fetchUser();
-  }, [trip.users, trip.creatorID]);
-
-  const getTripStatus = () => {
-    const currentDate = new Date();
-    const startDate = new Date(trip.startDate);
-    const endDate = new Date(trip.endDate);
-
-    if (currentDate < startDate) {
-      return "upcoming";
-    } else if (currentDate >= startDate && currentDate <= endDate) {
-      return "ongoing";
-    } else {
-      return "completed";
-    }
-  };
-
-  const statusColors = {
-    upcoming: "bg-blue-100 text-blue-800 hover:bg-blue-200",
-    ongoing: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
-    completed: "bg-green-100 text-green-800 hover:bg-green-200",
-  };
-
-  const status = getTripStatus();
-
+  // creator profile
   const [creator, setCreator] = useState(null);
   const [isLoadingCreator, setIsLoadingCreator] = useState(true);
-  
+
+  // UI state
+  const [showLeaveAlert, setShowLeaveAlert] = useState(false);
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showRenameDialog, setShowRenameDialog] = useState(false);
+  const [newTripName, setNewTripName] = useState("");
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameError, setRenameError] = useState("");
+  const [showShareModal, setShowShareModal] = useState(false);
+
+  // determine roles
   useEffect(() => {
-    const fetchCreator = async () => {
+    const roleObj = trip.users.find((u) => u.userID === currentUser);
+    const role = roleObj?.role;
+    setIsAdmin(role === UserRole.ADMIN);
+
+    const creatorId = typeof trip.creatorID === "object"
+      ? trip.creatorID.userID
+      : trip.creatorID;
+    setIsCreator(currentUser === creatorId);
+  }, [trip.users, trip.creatorID, currentUser]);
+
+  // fetch creator profile
+  useEffect(() => {
+    (async () => {
       try {
-        const userProfile = await getUserProfile(trip.creatorID.userID || trip.creatorID);
-        setCreator(userProfile);
-      } catch (error) {
-        console.error('Error fetching creator:', error);
+        const profile = await getUserProfile(trip.creatorID.userID || trip.creatorID);
+        setCreator(profile);
+      } catch (e) {
+        console.error(e);
       } finally {
         setIsLoadingCreator(false);
       }
-    };
-
-    fetchCreator();
+    })();
   }, [trip.creatorID]);
 
+  // trip status
+  const getTripStatus = () => {
+    const now = new Date();
+    const start = new Date(trip.startDate);
+    const end = new Date(trip.endDate);
+    if (now < start) return "upcoming";
+    if (now <= end) return "ongoing";
+    return "completed";
+  };
+  const status = getTripStatus();
+  const statusColors = {
+    upcoming: "bg-blue-100 text-blue-800 hover:bg-blue-200",
+    ongoing:  "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
+    completed:"bg-green-100 text-green-800 hover:bg-green-200",
+  };
+  const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+
+  // handlers
+  const openInNewTab = () => window.open(`/itinerary/${trip.tripID}`, "_blank");
   const handleLeave = async () => {
-    try {
-      await removeMember(trip.tripID, currentUser);
-      window.location.reload();
-    } catch (error) {
-      console.error('Error leaving trip:', error);
-    }
+    await removeMember(trip.tripID, currentUser);
+    window.location.reload();
   };
-
   const handleDelete = async () => {
-    try {
-      setIsDeleting(true);
-      await deleteTrip(trip.tripID);
-      onDelete?.(trip.tripID);
-      window.location.reload();
-    } catch (error) {
-      console.error('Error deleting trip:', error);
-      setIsDeleting(false);
-    }
+    setIsDeleting(true);
+    await deleteTrip(trip.tripID);
+    onDelete?.(trip.tripID);
+    window.location.reload();
   };
-
-  const openInNewTab = () => {
-    window.open(`/itinerary/${trip.tripID}`, '_blank');
-  };
-
-  const handleContextMenu = (e) => {
-    e.preventDefault();
-    const dropdownTrigger = document.getElementById(`trip-menu-${trip.tripID}`);
-    dropdownTrigger?.click();
-  };
-
   const openRenameDialog = () => {
     setNewTripName(trip.tripName);
-    setRenameError('');
+    setRenameError("");
     setShowRenameDialog(true);
   };
-
   const handleRename = async () => {
     if (!newTripName.trim()) {
-      setRenameError('Trip name cannot be empty');
+      setRenameError("Trip name cannot be empty");
       return;
     }
-
     setIsRenaming(true);
     try {
-      // Prepare update data with all original trip values
-      const updateData = {
+      await editTrip(trip.tripID, {
         tripName: newTripName,
         location: trip.location,
         startDate: new Date(trip.startDate),
         endDate: new Date(trip.endDate),
-        image: trip.image
-      };
-
-      await editTrip(trip.tripID, updateData);
+        image: trip.image,
+      });
       setShowRenameDialog(false);
-
       window.location.reload();
-    } catch (error) {
-      console.error('Error renaming trip:', error);
-      setRenameError(error.message || 'Failed to rename trip');
+    } catch (e) {
+      setRenameError(e.message || "Failed to rename trip");
     } finally {
       setIsRenaming(false);
     }
   };
+  const handleContextMenu = (e) => {
+    e.preventDefault();
+    document.getElementById(`trip-menu-${trip.tripID}`)?.click();
+  };
+
+  // calculate days
+  const days =
+    Math.ceil(
+      (new Date(trip.endDate) - new Date(trip.startDate)) /
+      (1000 * 60 * 60 * 24)
+    ) || 1;
 
   return (
     <>
-      <NavLink
-        to={`/itinerary/${trip.tripID}`}
-        className="no-underline"
-        onContextMenu={handleContextMenu}
+      <motion.div
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        transition={{ type: "spring", stiffness: 400, damping: 17 }}
       >
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          transition={{ type: "spring", stiffness: 400, damping: 17 }}
-        >
-          <Card className="overflow-hidden hover:bg-[#f8fffd] relative group">
+        <Card className="overflow-hidden hover:bg-[#f8fffd] relative group">
+          {/* clickable area */}
+          <NavLink
+            to={`/itinerary/${trip.tripID}`}
+            className="no-underline block"
+            onContextMenu={handleContextMenu}
+          >
             <div className="relative h-48">
               <img
                 src={trip.image}
                 alt={trip.tripName}
                 className="w-full h-full object-cover"
               />
-              <Badge
-                className={`absolute top-2 right-2 ${statusColors[status]}`}
-
-              >
-                {status.charAt(0).toUpperCase() + status.slice(1)}
+              <Badge className={`absolute top-2 right-2 ${statusColors[status]}`}>
+                {statusLabel}
               </Badge>
             </div>
             <CardHeader>
@@ -213,7 +183,10 @@ export default function TripCard({ trip, onDelete }) {
               </div>
               <div className="flex items-center space-x-2 text-md text-gray-500 mb-2">
                 <CalendarIcon className="w-4 h-4" />
-                <span>{new Date(trip.startDate).toLocaleDateString()} - {new Date(trip.endDate).toLocaleDateString()}</span>
+                <span>
+                  {new Date(trip.startDate).toLocaleDateString()} -{" "}
+                  {new Date(trip.endDate).toLocaleDateString()}
+                </span>
               </div>
               <div className="flex items-center space-x-2 text-sm text-gray-500">
                 <UserAvatarStack
@@ -225,17 +198,31 @@ export default function TripCard({ trip, onDelete }) {
                 <span>{trip.users.length} participants</span>
               </div>
             </CardContent>
-            <CardFooter>
-              <div className="flex w-full items-center justify-between">
-                <div className="flex items-center gap-2 overflow-hidden">
-                  <UserAvatar
-                    userId={creator?.id}
-                    className="h-6 w-6"
-                  />
-                  <span className="text-sm text-gray-500">
-                    {isLoadingCreator ? 'Loading...' : `Created by ${creator?.username || 'Unknown'}`}
-                  </span>
-                </div>
+          </NavLink>
+
+          {/* controls outside the link */}
+          <CardFooter>
+            <div className="flex w-full items-center justify-between">
+              <div className="flex items-center gap-2 overflow-hidden">
+                <UserAvatar userId={creator?.id} className="h-6 w-6" />
+                <span className="text-sm text-gray-500">
+                  {isLoadingCreator
+                    ? "Loading..."
+                    : `Created by ${creator?.username || "Unknown"}`}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowShareModal(true);
+                  }}
+                >
+                  <Share2 className="h-4 w-4" />
+                </Button>
+
                 {currentUser && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -249,21 +236,24 @@ export default function TripCard({ trip, onDelete }) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      <DropdownMenuItem onClick={(e) => {
-                        e.preventDefault();
-                        openInNewTab();
-                      }}>
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.preventDefault();
+                          openInNewTab();
+                        }}
+                      >
                         <ExternalLink className="h-4 w-4 mr-2" />
                         Open in new tab
                       </DropdownMenuItem>
-
                       {isAdmin && (
                         <>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={(e) => {
-                            e.preventDefault();
-                            openRenameDialog();
-                          }}>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.preventDefault();
+                              openRenameDialog();
+                            }}
+                          >
                             <Pencil className="h-4 w-4 mr-2" />
                             Rename
                           </DropdownMenuItem>
@@ -279,7 +269,6 @@ export default function TripCard({ trip, onDelete }) {
                           </DropdownMenuItem>
                         </>
                       )}
-
                       {!isCreator && currentUser && (
                         <>
                           <DropdownMenuSeparator />
@@ -299,11 +288,10 @@ export default function TripCard({ trip, onDelete }) {
                   </DropdownMenu>
                 )}
               </div>
-            </CardFooter>
-          </Card>
-        </motion.div>
-      </NavLink>
-
+            </div>
+          </CardFooter>
+        </Card>
+      </motion.div>
 
       <LeaveAlert
         isOpen={showLeaveAlert}
@@ -312,9 +300,7 @@ export default function TripCard({ trip, onDelete }) {
       />
       <DeleteAlert
         isOpen={showDeleteAlert}
-        onClose={() => {
-          if (!isDeleting) setShowDeleteAlert(false);
-        }}
+        onClose={() => !isDeleting && setShowDeleteAlert(false)}
         onConfirm={handleDelete}
         itemName="Trip"
         isLoading={isDeleting}
@@ -323,9 +309,7 @@ export default function TripCard({ trip, onDelete }) {
       {/* Rename Dialog */}
       <Dialog
         open={showRenameDialog}
-        onOpenChange={(open) => {
-          if (!isRenaming) setShowRenameDialog(open);
-        }}
+        onOpenChange={(open) => !isRenaming && setShowRenameDialog(open)}
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -343,7 +327,9 @@ export default function TripCard({ trip, onDelete }) {
                 placeholder="Enter new name for your trip"
                 className="col-span-3"
               />
-              {renameError && <p className="text-sm text-red-500">{renameError}</p>}
+              {renameError && (
+                <p className="text-sm text-red-500">{renameError}</p>
+              )}
             </div>
           </div>
           <DialogFooter>
@@ -354,16 +340,26 @@ export default function TripCard({ trip, onDelete }) {
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleRename}
-              disabled={isRenaming}
-            >
+            <Button onClick={handleRename} disabled={isRenaming}>
               {isRenaming ? <LoadingSpinner className="mr-2 h-4 w-4" /> : null}
-              {isRenaming ? 'Saving...' : 'Save'}
+              {isRenaming ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <ShareModal
+          tripName={trip.tripName}
+          location={trip.location}
+          startDate={new Date(trip.startDate).toLocaleDateString()}
+          endDate={new Date(trip.endDate).toLocaleDateString()}
+          days={days}
+          participants={trip.users.length}
+          onClose={() => setShowShareModal(false)}
+        />
+      )}
     </>
   );
 }

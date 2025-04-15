@@ -25,7 +25,9 @@ const MapboxMap = ({
     initZoom = 15,
     onSaveLocation,
     onMapLoad,
-    handlePanTo = null
+    handlePanTo = null,
+    disableSearchBar = false,
+    disableSaveLocation = false
 }) => {
     const mapContainer = useRef(null)
     const mapRef = useRef(null)
@@ -167,6 +169,7 @@ const MapboxMap = ({
     return (
         <div className="relative w-full" style={{ height: height, width: width }}>
             <div ref={mapContainer} className="absolute inset-0" />
+            {!disableSearchBar && (
             <div className="absolute top-4 left-4 right-4 z-10">
                 <div className="w-full max-w-md mx-auto">
                     <MapSearchBar
@@ -176,6 +179,7 @@ const MapboxMap = ({
                     />
                 </div>
             </div>
+            )}
             {place && (
                 <div className="absolute bottom-4 left-4 right-4 z-10">
                     <Card className="relative bg-white bg-opacity-90">
@@ -278,10 +282,14 @@ const MapboxMap = ({
                                             </a>
                                         </div>
                                     )}
-
-                                    <Button onClick={handleSaveLocation} className="mt-1 md:mt-2 w-full md:w-auto text-[10px] md:text-sm py-1 md:py-2 h-auto">
+                                {!disableSaveLocation && (
+                                    <Button 
+                                        onClick={handleSaveLocation} 
+                                        className="mt-1 md:mt-2 w-full md:w-auto text-[10px] md:text-sm py-1 md:py-2 h-auto"
+                                        >
                                         Save Location
                                     </Button>
+                                )}
                                 </div>
 
                                 {/* Image Container - Desktop */}

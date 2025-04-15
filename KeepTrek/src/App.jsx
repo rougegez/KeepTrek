@@ -17,6 +17,7 @@ import { ProfilePage } from "./components/profilePage/profilePage.jsx";
 import { GrpSchedule } from "./components/GrpSchedule/GrpSchedule.jsx";
 import InvitePage from './components/Invite/InvitePage';
 import { Toaster } from '@/components/ui/sonner';
+import { WhosOnlineWrapper } from "./components/CreateTrip/WhosOnlineWrapper";
 
 const queryClient = new QueryClient();
 
@@ -42,11 +43,13 @@ function App() {
                     }
                   >
                     <Route path="/yourTrips" element={<YourTrips />} />
-                    <Route path="/expenses/:tripID" element={<MainExpensePage />} />
-                    <Route path="/itinerary/:tripID" element={<Itinerary />} />
-                    {/* <Route path="/trip-details" element={<TripDetailsPage />} /> */}
-                    <Route path="/schedule/:tripID" element={<GrpSchedule />} />
-                    <Route path="/wishlist/:tripID" element={<Wishlist />} />
+                    <Route element={<WhosOnlineWrapper />}>
+                      <Route path="/expenses/:tripID" element={<MainExpensePage />} />
+                      <Route path="/itinerary/:tripID" element={<Itinerary />} />
+                      {/* <Route path="/trip-details" element={<TripDetailsPage />} /> */}
+                      <Route path="/schedule/:tripID" element={<GrpSchedule />} />
+                      <Route path="/wishlist/:tripID" element={<Wishlist />} />
+                    </Route>
                     <Route path="/create-trip" element={<CreateTrip />} />
                     <Route path="/profile" element={<ProfilePage />} />
                   </Route>

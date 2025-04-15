@@ -1,22 +1,23 @@
 import { useEffect } from 'react';
-import useWebSocket, { ReadyState } from 'react-use-websocket';
+import useWebSocket from 'react-use-websocket';
 import { create } from 'zustand';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery} from 'react-query';
 import { getShortToken } from '@/APIs/auth';
 import { useIdleTimer } from 'react-idle-timer';
+import { useParams } from 'react-router-dom';
 
 export const useItinerary = () => {
 
     const token = useItineraryStore((state) => state.token);
     const setToken = useItineraryStore((state) => state.setToken);
-    const tripID = useItineraryStore((state) => state.tripID);
     const days = useItineraryStore((state) => state.days);
     const setDays = useItineraryStore((state) => state.setDays);
-    const setTripID = useItineraryStore((state) => state.setTripID);
     const getDayAndActivity = useItineraryStore((state) => state.getDayAndActivity);
     const updateActivity = useItineraryStore((state) => state.updateActivity);
     const updateDay = useItineraryStore((state) => state.updateDay);
     const changeActivityDay = useItineraryStore((state) => state.changeActivityDay);
+
+    const { tripID } = useParams();
 
     const { } = useIdleTimer({
         onActive: () => {
@@ -26,8 +27,8 @@ export const useItinerary = () => {
     });
 
     const { refetch, isStale } = useQuery(
-        ['shortToken'],
-        () => getShortToken('websocket'),
+        ['itineraryShortToken'],
+        () => getShortToken('itinerary'),
         {
             staleTime: 1000 * 60 * 5, // 5 minutes
             suspense: true,
@@ -40,6 +41,7 @@ export const useItinerary = () => {
 
     const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(
         `wss://keeptrek-backend.onrender.com/itinerary/ws/${tripID}?token=${token}`,
+        // `ws://localhost:8000/itinerary/ws/${tripID}?token=${token}`,
         {
             shouldReconnect: (closeEvent) => {
                 console.log(closeEvent);
@@ -75,7 +77,6 @@ export const useItinerary = () => {
 
 
     return {
-        setTripID: setTripID,
         days: days,
         getDayAndActivity: getDayAndActivity,
         setDays: setDays,
@@ -90,10 +91,8 @@ export const useItinerary = () => {
 
 export const useItineraryStore = create((set, get) => ({
     token: '',
-    tripID: '',
     days: [],
     setToken: (newToken) => set({ token: newToken }),
-    setTripID: (newTripID) => set({ tripID: newTripID }),
     setDays: (newDays) => {
         set({ days: newDays });
         // Broadcast to the server (avoid loops only if you trust the server not to echo unchanged data)

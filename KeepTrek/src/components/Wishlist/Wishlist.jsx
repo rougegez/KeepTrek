@@ -8,7 +8,6 @@ import ItemModal from "./ItemModal.jsx";
 import CreateEditItemModal from "./CreateEditItemModal.jsx";
 import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx";
 import { getAllItems, createItem, editItem, deleteItem, upvoteItem, downvoteItem, deleteFile } from "@/APIs/wishlist";
-import { getItinerary, updateItinerary } from "@/APIs/itinerary";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +26,7 @@ import { canEdit } from "@/utils/permissions";
 import { useQuery } from 'react-query';
 import { getTrip } from '@/APIs/trip';
 import { useAuth } from "@/contexts/AuthProvider.jsx";
+import { useItinerary } from "../Itinerary/useItinerarySocket.jsx";
 
 export default function WishlistPage() {
   const { tripID } = useParams();
@@ -51,7 +51,6 @@ export default function WishlistPage() {
   // New state for add mode
   const [addMode, setAddMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
-  const [itineraryDays, setItineraryDays] = useState([]);
   const [selectedDay, setSelectedDay] = useState("");
 
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
@@ -112,14 +111,10 @@ export default function WishlistPage() {
     setWishlistData({ accommodation, activities, food });
   };
 
-  const fetchItineraryDays = async () => {
-    const itinerary = await getItinerary(tripID);
-    setItineraryDays(itinerary.days);
-  };
+  const {days : itineraryDays, setDays, readyState} = useItinerary();
 
   useEffect(() => {
     fetchWishlistData();
-    fetchItineraryDays();
   }, []);
 
   useEffect(() => {
@@ -262,8 +257,8 @@ export default function WishlistPage() {
           ...day,
           activities: [
             ...day.activities,
-            ...selectedItems.map(item => ({
-              id: `${Date.now()}`,
+            ...selectedItems.map((item, index) => ({
+              id: `${Date.now()}-${index}`,
               day: selectedDay,
               type: item.category,
               time: "",
@@ -284,10 +279,10 @@ export default function WishlistPage() {
       return day;
     });
 
-    await updateItinerary(tripID, { days: updatedDays });
+    setDays(updatedDays);
     setAddMode(false);
     setSelectedItems([]);
-    navigate(`/itineraryWL/${tripID}`);
+    navigate(`/itinerary/${tripID}`);
   };
 
   const getMapHeight = () => isMapExpanded ? '65vh' : '10vh';
@@ -321,7 +316,7 @@ export default function WishlistPage() {
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
               handlePanTo={searchedPlace}
-              initCenter={tripDetails.coordinates}
+              initCenter={tripDetails?.coordinates}
               height="100%"
               width="100%"
             />
@@ -451,7 +446,7 @@ export default function WishlistPage() {
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
               handlePanTo={searchedPlace}
-              initCenter={tripDetails.coordinates}
+              initCenter={tripDetails?.coordinates}
               height="100%"
               width="100%"
             />

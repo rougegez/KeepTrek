@@ -15,9 +15,15 @@ import {
 
 import { useItinerary } from './useItinerarySocket.jsx';
 
-const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLocationClick }) => {
+const ActivityCard = ({
+  activity,
+  onNoteChange,
+  onEditClick,
+  onDeleteClick,
+  onLocationClick,
+  canModify = false }) => {
 
-  const {days, updateDay, getDayAndActivity, changeActivityDay} = useItinerary();
+  const { days, updateDay, getDayAndActivity, changeActivityDay } = useItinerary();
   const { day: currentDay } = getDayAndActivity(activity.id);
   const activityIndex = currentDay.activities.findIndex((a) => a.id === activity.id);
 
@@ -40,15 +46,15 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
 
   const handleUpButtonClick = () => {
     if (activityIndex !== 0) {
-    currentDay.activities[activityIndex] = currentDay.activities[activityIndex - 1];
-    currentDay.activities[activityIndex - 1] = activity;
-    updateDay(currentDay);
+      currentDay.activities[activityIndex] = currentDay.activities[activityIndex - 1];
+      currentDay.activities[activityIndex - 1] = activity;
+      updateDay(currentDay);
     }
     if (activityIndex === 0) {
       const newDayDate = "Day " + (parseInt(currentDay.date.replace(/[A-z]+/g, "")) - 1);
       changeActivityDay(activity, newDayDate);
     }
-  } 
+  }
 
   const handleDownButtonClick = () => {
     if (activityIndex !== currentDay.activities.length - 1) {
@@ -64,14 +70,14 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
 
   return (
     <Reorder.Item
-    key={activity.id}
-    dragListener={false}
-    dragControls={controls}
-    value={activity}
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }} 
-    className="relative"
+      key={activity.id}
+      dragListener={false}
+      dragControls={controls}
+      value={activity}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="relative"
     >
       {/* Time and Duration - Outside both card views*/}
       {isMobile ? (
@@ -102,127 +108,134 @@ const ActivityCard = ({ activity, onNoteChange, onEditClick, onDeleteClick, onLo
         </div>
       )}
 
-      <Card 
+      <Card
         className="bg-white rounded-xl shadow-sm w-full max-w-4xl"
       >
         <CardContent className="py-4 pr-4 pl-0">
           <div className="flex w-full gap-x-0 gap-y-4">
-          <div
-            className={`mx-0 flex items-center w-10 justify-center ${ !isMobile ? `cursor-grab` : null}`}
-            onPointerDown={(event) => {
-              if (!isMobile) {
-              controls.start(event)
-              event.preventDefault()
-            }
-            }}
-          >
-            {/* Drag Handle for desktop, buttons for mobile */}
-            {!isMobile ? (
-            <GripVertical
-              className="mx-0 p-0 my-4 w-4 h-4 text-gray-400 cursor-grab"
-              onPointerDown={(event) => {
-                controls.start(event)
-                event.preventDefault()
-              }}
-            />) : (
-              <div className="flex flex-col gap-y-1 w-9">
-                <Button 
-                  variant="ghost"
-                  onClick={handleUpButtonClick}
-                  className="h-28"
-                  disabled={currentDay.date === "Day 1" && activityIndex === 0}
-                  >
-                    <ArrowBigUp className="text-[#439f96]"/>
-                </Button>
-                <Button 
-                  variant="ghost"
-                  onClick={handleDownButtonClick}
-                  className="h-28"
-                  disabled={days[days.length - 1].date === currentDay.date && activityIndex === currentDay.activities.length - 1}
-                  >
-                    <ArrowBigDown className="text-red-500"/>
-                </Button>
+            {canModify ? (
+              <div
+                className={`mx-0 flex items-center w-10 justify-center ${!isMobile ? `cursor-grab` : null}`}
+                onPointerDown={(event) => {
+                  if (!isMobile) {
+                    controls.start(event)
+                    event.preventDefault()
+                  }
+                }}
+              >
+                {/* Drag Handle for desktop, buttons for mobile */}
+                {!isMobile ? (
+                  <GripVertical
+                    className="mx-0 p-0 my-4 w-4 h-4 text-gray-400 cursor-grab"
+                    onPointerDown={(event) => {
+                      controls.start(event)
+                      event.preventDefault()
+                    }}
+                  />) : (
+                  <div className="flex flex-col gap-y-1 w-9">
+                    <Button
+                      variant="ghost"
+                      onClick={handleUpButtonClick}
+                      className="h-28"
+                      disabled={currentDay.date === "Day 1" && activityIndex === 0}
+                    >
+                      <ArrowBigUp className="text-[#439f96]" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={handleDownButtonClick}
+                      className="h-28"
+                      disabled={days[days.length - 1].date === currentDay.date && activityIndex === currentDay.activities.length - 1}
+                    >
+                      <ArrowBigDown className="text-red-500" />
+                    </Button>
+                  </div>
+                )}
+
               </div>
-            )}
+            ) : <div className="w-4" />}
 
-          </div>
-
-          <div className={`flex flex-grow ${isMobile ? 'flex-col' : 'flex-row'} gap-4  ${activity.coordinates && activity.coordinates.length > 1 ? 'cursor-pointer hover:bg-gray-50' : ''}`} onClick={handleCardClick}>
-            {/* Image for mobile - moved to top with overlapping menu */}
-            {isMobile && (
-              <div className="w-full relative">
-                <a href={activity.link} target="_blank" rel="noreferrer noopener" onClick={e => e.stopPropagation()}>
-                  <img
-                    src={activity.image}
-                    alt=""
-                    className="w-full h-28 rounded-lg object-cover"
-                  />
-                </a>
-                {/* Menu positioned over the image */}
-                <div className="absolute top-2 right-2 dropdown-menu">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0 bg-white/80 hover:bg-white rounded-full cursor-pointer">
-                        <MoreHorizontal className="h-3 w-3" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={onEditClick} className="text-[#439f96] cursor-pointer"><Pencil className="w-4 h-4 text-[#439f96]" />Edit</DropdownMenuItem>
-                      <DropdownMenuItem onClick={onDeleteClick} className="text-red-500 cursor-pointer"><Trash className="w-4 h-4 text-red-500" />Delete</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+            <div className={`flex flex-grow ${isMobile ? 'flex-col' : 'flex-row'} gap-4  ${activity.coordinates && activity.coordinates.length > 1 ? 'cursor-pointer hover:bg-gray-50' : ''}`} onClick={handleCardClick}>
+              {/* Image for mobile - moved to top with overlapping menu */}
+              {isMobile && (
+                <div className="w-full relative" onClick={e => e.stopPropagation()}>
+                  <a href={activity.link} target="_blank" rel="noreferrer noopener" onClick={e => e.stopPropagation()}>
+                    <img
+                      src={activity.image}
+                      alt=""
+                      className="w-full h-28 rounded-lg object-cover"
+                    />
+                  </a>
+                  {/* Menu positioned over the image */}
+                  {canModify && (
+                    <div className="absolute top-2 right-2 dropdown-menu">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0 bg-white/80 hover:bg-white rounded-full cursor-pointer">
+                            <MoreHorizontal className="h-3 w-3" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={onEditClick} className="text-[#439f96] cursor-pointer"><Pencil className="w-4 h-4 text-[#439f96]" />Edit</DropdownMenuItem>
+                          <DropdownMenuItem onClick={onDeleteClick} className="text-red-500 cursor-pointer"><Trash className="w-4 h-4 text-red-500" />Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              )}
 
-            <div className="flex-grow space-y-2">
-              {/* Title row with menu for desktop */}
-              <div className="flex items-start justify-between">
-                <h3 className="text-sm md:text-lg font-semibold">{activity.title}</h3>
+              <div className="flex-grow space-y-2">
+                {/* Title row with menu for desktop */}
+                <div className="flex items-start justify-between">
+                  <h3 className="text-sm md:text-lg font-semibold">{activity.title}</h3>
+                </div>
+
+                {/* Address */}
+                <div className="flex items-start gap-1 text-xs md:text-sm text-muted-foreground">
+                  <span>{activity.location}</span>
               </div>
 
-              {/* Address */}
-              <div className="flex items-start gap-1 text-xs md:text-sm text-muted-foreground">
-                <span>{activity.location}</span>
+                {/* Notes */}
+                <Textarea
+                  className="w-full min-h-[50px] p-2 text-xs md:text-sm bg-muted/50 rounded-lg border-0 resize-none placeholder:text-muted-foreground/50"
+                  placeholder="Add a note..."
+                  value={activity.notes}
+                  onChange={(e) => onNoteChange(activity.id, e.target.value)}
+                  onClick={e => e.stopPropagation()}
+                  readOnly={!canModify}
+                />
               </div>
 
-              {/* Notes */}
-              <Textarea
-                className="w-full min-h-[50px] p-2 text-xs md:text-sm bg-muted/50 rounded-lg border-0 resize-none placeholder:text-muted-foreground/50"
-                placeholder="Add a note..."
-                value={activity.notes}
-                onChange={(e) => onNoteChange(activity.id, e.target.value)}
-                onClick={e => e.stopPropagation()}
-              />
+              {/* Image for desktop - on the right with overlapping menu */}
+              {!isMobile && (
+                <div className="flex-none relative" onClick={e => e.stopPropagation()}>
+                  <a href={activity.link} target="_blank" rel="noreferrer noopener" onClick={e => e.stopPropagation()}>
+                    <img
+                      src={activity.image}
+                      alt=""
+                      className="w-52 h-32 rounded-lg object-cover"
+                    />
+                  </a>
+                  {/* Menu positioned over the image */}
+                  {canModify && (
+                    <div className="absolute top-2 right-2 dropdown-menu">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0 bg-white/80 rounded-full cursor-pointer">
+                            <MoreHorizontal className="h-3 w-3" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={onEditClick} className="text-[#439f96] cursor-pointer"><Pencil className="w-4 h-4 text-[#439f96]" />Edit</DropdownMenuItem>
+                          <DropdownMenuItem onClick={onDeleteClick} className="text-red-500 cursor-pointer"><Trash className="w-4 h-4 text-red-500" />Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-
-            {/* Image for desktop - on the right with overlapping menu */}
-            {!isMobile && (
-              <div className="flex-none relative">
-                <a href={activity.link} target="_blank" rel="noreferrer noopener" onClick={e => e.stopPropagation()}>
-                  <img
-                    src={activity.image}
-                    alt=""
-                    className="w-52 h-32 rounded-lg object-cover"
-                  />
-                </a>
-                {/* Menu positioned over the image */}
-                <div className="absolute top-2 right-2 dropdown-menu">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0 bg-white/80 hover:bg-white rounded-full cursor-pointer">
-                        <MoreHorizontal className="h-3 w-3" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={onEditClick} className="text-[#439f96] cursor-pointer"><Pencil className="w-4 h-4 text-[#439f96]" />Edit</DropdownMenuItem>
-                      <DropdownMenuItem onClick={onDeleteClick} className="text-red-500 cursor-pointer"><Trash className="w-4 h-4 text-red-500" />Delete</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-            )}
-          </div>
           </div>
         </CardContent>
       </Card>

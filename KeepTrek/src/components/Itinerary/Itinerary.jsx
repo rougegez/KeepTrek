@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { useQuery, useQueryClient } from "react-query";
+import { useQuery } from "react-query";
 import { withSuspense } from "@/utils/withSuspense.jsx";
 
 import { Button } from "@/components/ui/button";
 import { Reorder } from "framer-motion";
-import { Plus, Menu, ChevronUp, ChevronDown, LogOut, Settings } from 'lucide-react'
+import { Plus, ChevronUp, ChevronDown, LogOut, Settings } from 'lucide-react'
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import ActivityCard from "./ActivityCard.jsx";
@@ -14,16 +14,15 @@ import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx";
 import { dateFormatter } from "@/utils/dateFormat.jsx";
 
 import { useParams, useNavigate } from "react-router-dom";
-import { getItinerary, updateItinerary } from "@/APIs/itinerary.js";
 import { getTrip, removeMember } from "@/APIs/trip.js";
 
 import { useMediaQuery } from 'react-responsive';
 import { motion } from "framer-motion";
 import MobileHeader from "../MobileHeader.jsx";
 import InviteButton from "../Invite/InviteButton.jsx";
+import BrowseActivity from "../BrowseActivity/BrowseActivity.jsx";
 import { UserAvatarStack } from '../profilePage/avatar.jsx';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 import { canEdit, UserRole } from "@/utils/permissions";
 import LeaveAlert from '@/components/ui/LeaveAlert';
@@ -33,6 +32,8 @@ import { useItinerary } from './useItinerarySocket.jsx';
 import { Skeleton } from "@/components/ui/skeleton.jsx";
 import { ReadyState } from "react-use-websocket";
 import { useAuth } from "@/contexts/AuthProvider.jsx";
+import { useWhosOnline } from "../CreateTrip/WhosOnlineWrapper.jsx";
+import DeleteAlert from "../ui/DeleteAlert.jsx";
 
 function Itinerary() {
   const navigate = useNavigate();
@@ -53,6 +54,7 @@ function Itinerary() {
   const contentRef = useRef(null);
   const [lastScrollPosition, setLastScrollPosition] = useState(0);
 
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [showLeaveAlert, setShowLeaveAlert] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
@@ -65,11 +67,8 @@ function Itinerary() {
     }
   );
 
-  const { setTripID, days, setDays, readyState } = useItinerary()
-
-  useEffect(() => {
-    setTripID(tripID);
-  }, [tripID]);
+  const { days, setDays, readyState , getDayAndActivity} = useItinerary()
+  const { whosOnline } = useWhosOnline(); 
 
   const userRole = useMemo(() => {
     if (!currentUser || !tripDetails?.users) return null;
@@ -85,7 +84,7 @@ function Itinerary() {
       const position = window.scrollY;
       const scrollDelta = position - lastScrollPosition;
 
-      // Auto-expand map when scrolling to top
+      // Auto-expand map when scrolling to top 
       if (position < 50) {
         setIsMapExpanded(true);
       }
@@ -148,12 +147,21 @@ function Itinerary() {
   };
 
   const handleDeleteClick = (dayIndex, activityId) => {
+    const { activity } = getDayAndActivity(activityId);
+    setCurrentActivity({dayIndex : dayIndex, activity: activity});
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    const { activity : deleteActivity, dayIndex } = currentActivity;  
     const updatedDays = [...days];
     updatedDays[dayIndex].activities = updatedDays[dayIndex].activities.filter(
-      (activity) => activity.id !== activityId
+      (activity) => activity.id !== deleteActivity.id
     );
     setDays(updatedDays);
-  };
+    setIsDeleteConfirmOpen(false);
+    setCurrentActivity(null);
+  }
 
   const handleAddActivity = (newActivity) => {
     const updatedDays = [...days];
@@ -206,6 +214,8 @@ function Itinerary() {
               handlePanTo={searchedPlace}
               height="100%"
               width="100%"
+              disableSaveLocation={!canModify}
+              disableSearchBar={!canModify}
             />
             <MapToggleButton />
           </motion.div>
@@ -223,7 +233,7 @@ function Itinerary() {
           } : {}}
           style={{ flexShrink: 0 }}
         >
-          <ScrollArea className={`${isMobile ? 'p-4' : 'h-full px-2 pt-6'}`}>
+          <ScrollArea className="h-full px-2 pt-6">
             <div className="space-y-6">
               <div className="flex justify-between space-y-2 mr-5">
                 <div>
@@ -233,9 +243,12 @@ function Itinerary() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <UserAvatarStack userIds={tripDetails.users} />
+                  <UserAvatarStack userIds={tripDetails.users} isIdle={whosOnline}/>
                   {canModify && (
-                    <InviteButton tripID={tripID} userRole={userRole} />
+                    <>
+                      <InviteButton tripID={tripID} userRole={userRole} />
+                      <BrowseActivity location={tripDetails.location} />
+                    </>
                   )}
                   {userRole === UserRole.ADMIN && (
                     <Button
@@ -275,6 +288,7 @@ function Itinerary() {
                         onEditClick={() => handleEditClick(dayIndex, activity)}
                         onDeleteClick={() => handleDeleteClick(dayIndex, activity.id)}
                         onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                        canModify={canModify}
                       />
                     ))}
                   </Reorder.Group>
@@ -315,6 +329,8 @@ function Itinerary() {
               handlePanTo={searchedPlace}
               height="100%"
               width="100%"
+              disableSaveLocation={!canModify}
+              disableSearchBar={!canModify}
             />
           </div>
         )}
@@ -340,6 +356,13 @@ function Itinerary() {
           setCurrentActivity(null);
         }}
         activityId={currentActivity?.id}
+      />
+
+      <DeleteAlert
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        itemName={currentActivity?.activity?.title}
       />
 
       <LeaveAlert
