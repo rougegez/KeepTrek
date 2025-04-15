@@ -27,6 +27,7 @@ import { useQuery } from 'react-query';
 import { getTrip } from '@/APIs/trip';
 import { useAuth } from "@/contexts/AuthProvider.jsx";
 import { useItinerary } from "../Itinerary/useItinerarySocket.jsx";
+import DeleteAlert from "../ui/DeleteAlert.jsx";
 
 export default function WishlistPage() {
   const { tripID } = useParams();
@@ -65,6 +66,10 @@ export default function WishlistPage() {
   const { data: tripDetails } = useQuery(['trip', tripID], () => getTrip(tripID));
   const userRole = tripDetails?.users.find(u => u.userID === user)?.role;
   const canModify = canEdit(userRole);
+
+  // Add state for delete alert
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -216,15 +221,26 @@ export default function WishlistPage() {
     setIsEditModalOpen(false);
   };
 
-  const handleDelete = async (item) => {
-    if (item.image) {
-      const imageUrlParts = item.image.split('/');
-      const imageFileName = imageUrlParts[imageUrlParts.length - 1];
-      await deleteFile(item.tripID, imageFileName);
+  // Update handleDelete to show alert instead of deleting immediately
+  const handleDelete = (item) => {
+    setItemToDelete(item);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  // New: Confirm delete handler
+  const handleDeleteConfirm = async () => {
+    if (itemToDelete) {
+      if (itemToDelete.image) {
+        const imageUrlParts = itemToDelete.image.split('/');
+        const imageFileName = imageUrlParts[imageUrlParts.length - 1];
+        await deleteFile(itemToDelete.tripID, imageFileName);
+      }
+      await deleteItem(itemToDelete.tripID, itemToDelete.id);
+      await fetchWishlistData();
+      setSelectedItem(null);
     }
-    await deleteItem(item.tripID, item.id);
-    await fetchWishlistData();
-    setSelectedItem(null);
+    setIsDeleteConfirmOpen(false);
+    setItemToDelete(null);
   };
 
   const handleUpvote = async (item) => {
@@ -486,6 +502,14 @@ export default function WishlistPage() {
         itemId={selectedItem?.id}
         tripId={selectedItem?.tripID}
         location={selectedItem}
+      />
+
+      {/* Delete confirmation alert */}
+      <DeleteAlert
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        itemName={itemToDelete?.title}
       />
     </SidebarProvider>
   );
