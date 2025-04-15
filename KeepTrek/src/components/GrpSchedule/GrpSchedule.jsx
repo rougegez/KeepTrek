@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
 import { useQuery } from "react-query";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import {
   fetchAvailableTrips,
   updateAvailability,
@@ -68,6 +68,7 @@ export const GrpSchedule = () => {
   return (
     <SidebarProvider>
       <AppSidebar tripID={tripID} />
+      {!isMobile && <SidebarTrigger />}
       {isMobile && <MobileHeader title="Group Schedule" />}
       <div className="flex h-screen w-screen">
         <div className="flex flex-col flex-1 overflow-hidden">
