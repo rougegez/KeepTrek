@@ -1,107 +1,120 @@
-'use client'
+"use client";
 
-import React, { useEffect, useState } from "react"
-import { Bell, User, Menu } from 'lucide-react'
-import { NavLink, useNavigate, useLocation } from "react-router-dom"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import Modal from "@/components/Authentication/Modal"
-import LoginForm from "@/components/Authentication/login/login-form"
-import RegisterForm from "@/components/Authentication/register/register-form"
-import { Link as ScrollLink } from "react-scroll"
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet"
-import { UserAvatar } from "@/components/profilePage/avatar"
-import { CurrentUser } from '@/APIs/auth';  
+import React, { useEffect, useState } from "react";
+import { Bell, User, Menu } from "lucide-react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import Modal from "@/components/Authentication/Modal";
+import LoginForm from "@/components/Authentication/login/login-form";
+import RegisterForm from "@/components/Authentication/register/register-form";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { UserAvatar } from "@/components/profilePage/avatar";
+import { CurrentUser } from "@/APIs/auth";
 
-export default function TopNavbar() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [user, setUser] = useState(null)
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
-  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [userId, setUserId] = useState(null)
-  const navigate = useNavigate()
-  const location = useLocation()
+export default function TopNavbar({ activeSection }) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("token");
       if (token) {
         try {
-          const currentUserId = await CurrentUser()
-          setUserId(currentUserId)
-          const storedUser = JSON.parse(localStorage.getItem("user"))
-          setUser(storedUser || { username: "Guest" })
-          setIsLoggedIn(true)
+          const currentUserId = await CurrentUser();
+          setUserId(currentUserId);
+          const storedUser = JSON.parse(localStorage.getItem("user"));
+          setUser(storedUser || { username: "Guest" });
+          setIsLoggedIn(true);
         } catch (error) {
-          console.error('Error fetching user:', error)
-          handleLogout()
+          console.error("Error fetching user:", error);
+          handleLogout();
         }
       } else {
-        setIsLoggedIn(false)
+        setIsLoggedIn(false);
       }
-    }
-    fetchUserData()
-  }, [])
+    };
+    fetchUserData();
+  }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token")
-    localStorage.removeItem("user")
-    setIsLoggedIn(false)
-    setUser(null)
-    navigate("/")
-  }
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setIsLoggedIn(false);
+    setUser(null);
+    navigate("/");
+  };
 
   const navigateAndScroll = (sectionId) => {
     if (location.pathname !== "/") {
-      navigate("/", { state: { scrollTo: sectionId } })
+      navigate("/", { state: { scrollTo: sectionId } });
     } else {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" })
+      document
+        .getElementById(sectionId)
+        ?.scrollIntoView({ behavior: "smooth" });
     }
-  }
+  };
 
   const NavItems = ({ onClick = () => {} }) => (
     <>
       <NavLink
         to="/yourTrips"
-        className="border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+        className={`cursor-pointer inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+          activeSection === "trips"
+            ? "text-black border-black"
+            : "text-gray-600 border-transparent hover:border-gray-400"
+        }`}
         onClick={onClick}
       >
         Trips
       </NavLink>
       <button
         onClick={() => {
-          navigateAndScroll("features")
-          onClick()
+          navigateAndScroll("features");
+          onClick();
         }}
-        className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium text-gray-600"
+        className={`cursor-pointer inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+          activeSection === "features"
+            ? "text-black border-black"
+            : "text-gray-600 border-transparent hover:border-gray-400"
+        }`}
       >
         Features
       </button>
       <button
         onClick={() => {
-          navigateAndScroll("pre-launch")
-          onClick()
+          navigateAndScroll("pre-launch");
+          onClick();
         }}
-        className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium text-gray-600"
+        className={`cursor-pointer inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+          activeSection === "pre-launch"
+            ? "text-black border-black"
+            : "text-gray-600 border-transparent hover:border-gray-400"
+        }`}
       >
         Pricing
       </button>
       <button
         onClick={() => {
-          navigateAndScroll("newsletter")
-          onClick()
+          navigateAndScroll("newsletter");
+          onClick();
         }}
-        className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium text-gray-600"
+        className={`cursor-pointer inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+          activeSection === "newsletter"
+            ? "text-black border-black"
+            : "text-gray-600 border-transparent hover:border-gray-400"
+        }`}
       >
         Newsletter
       </button>
     </>
-  )
+  );
 
   return (
     <>
@@ -111,7 +124,11 @@ export default function TopNavbar() {
             <div className="flex items-center">
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="mr-2 md:hidden">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="mr-2 md:hidden"
+                  >
                     <Menu className="h-6 w-6" />
                   </Button>
                 </SheetTrigger>
@@ -123,7 +140,11 @@ export default function TopNavbar() {
               </Sheet>
               <div className="flex-shrink-0 flex items-center max-w-36">
                 <NavLink to="/" className="text-2xl font-bold text-gray-800">
-                  <img src="/assets/KeepTrekNew.png" alt="KeepTrek" className="object-scale-down" />
+                  <img
+                    src="/assets/KeepTrekNew.png"
+                    alt="KeepTrek"
+                    className="object-scale-down"
+                  />
                 </NavLink>
               </div>
             </div>
@@ -141,14 +162,15 @@ export default function TopNavbar() {
                       Create a Trip
                     </NavLink>
                   </Button>
-                  <Button size="icon" variant="ghost" className="m-2 rounded-full">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="m-2 rounded-full"
+                  >
                     <Bell className="h-4 w-4" aria-hidden="true" />
                   </Button>
                   <NavLink to="/profile">
-                    <UserAvatar 
-                      userId={userId}
-                      className="h-9 w-9"
-                    />
+                    <UserAvatar userId={userId} className="h-9 w-9" />
                   </NavLink>
                   <Button
                     className="ml-4 text-sm font-semibold text-red-600 hidden sm:inline-flex"
@@ -179,20 +201,29 @@ export default function TopNavbar() {
         </div>
       </nav>
 
-      <Modal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)}>
-        <LoginForm onSwitchToRegister={() => {
-          setIsLoginModalOpen(false)
-          setIsRegisterModalOpen(true)
-        }} />
+      <Modal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      >
+        <LoginForm
+          onSwitchToRegister={() => {
+            setIsLoginModalOpen(false);
+            setIsRegisterModalOpen(true);
+          }}
+        />
       </Modal>
 
-      <Modal isOpen={isRegisterModalOpen} onClose={() => setIsRegisterModalOpen(false)}>
-        <RegisterForm onSwitchToLogin={() => {
-          setIsRegisterModalOpen(false)
-          setIsLoginModalOpen(true)
-        }} />
+      <Modal
+        isOpen={isRegisterModalOpen}
+        onClose={() => setIsRegisterModalOpen(false)}
+      >
+        <RegisterForm
+          onSwitchToLogin={() => {
+            setIsRegisterModalOpen(false);
+            setIsLoginModalOpen(true);
+          }}
+        />
       </Modal>
     </>
-  )
+  );
 }
-
