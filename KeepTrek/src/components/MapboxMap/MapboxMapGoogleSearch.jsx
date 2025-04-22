@@ -11,30 +11,37 @@ import {
 } from "@/components/ui/collapsible"
 
 import { Button } from "@/components/ui/button"
-import { Clock, Globe, Map, MapPin, Star, X } from 'lucide-react'
+import { Clock, Globe, MapPin, X, Map as MapIcon} from 'lucide-react'
 import MapSearchBar from './GoogleMapsSearchbar'
 import { fetchPlaceDetails } from '@/APIs/fetchPlaceDetails.js'
+import Map, { Marker, useMap } from 'react-map-gl/mapbox';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API_KEY
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
 const MapboxMap = ({
-    height = '750px',
-    width = '750px',
+    height = '100%',
+    width = '100%',
     initCenter = [101.6160160887531, 3.0644537753819425], // BizPod
     initZoom = 15,
     onSaveLocation,
-    onMapLoad,
     handlePanTo = null,
     disableSearchBar = false,
     disableSaveLocation = false
 }) => {
-    const mapContainer = useRef(null)
-    const mapRef = useRef(null)
-    const markerRef = useRef(null)
 
-    const [center, setCenter] = useState(initCenter)
-    const [zoom, setZoom] = useState(initZoom)
+    const { map: mapRef } = useMap()
+    const [viewState, setViewState] = useState({
+        longitude: initCenter[0] ?? 101.6160160887531,
+        latitude: initCenter[1] ?? 3.0644537753819425,
+        zoom: initZoom,
+    });
+    const [dropMarker, setDropMarker] = useState({
+        showDropMarker: false,
+        longitude: 0,
+        latitude: 0,
+    })
+
     const [place, setPlace] = useState(null)
     const [imageError, setImageError] = useState(false)
 
@@ -45,49 +52,16 @@ const MapboxMap = ({
         }
     }, [handlePanTo])
 
-    useEffect(() => {
-        if (mapContainer.current) {
-            mapRef.current = new mapboxgl.Map({
-                container: mapContainer.current,
-                style: 'mapbox://styles/mapbox/streets-v12',
-                center: center[0] ? center : [101.6160160887531, 3.0644537753819425],
-                zoom: zoom
-            })
-
-            mapRef.current.on('move', () => {
-                if (mapRef.current) {
-                    const mapCenter = mapRef.current.getCenter()
-                    const mapZoom = mapRef.current.getZoom()
-                    setCenter([mapCenter.lng, mapCenter.lat])
-                    setZoom(mapZoom)
-                }
-            })
-
-            mapRef.current.on('click', handleMapClick)
-
-            if (onMapLoad) {
-                onMapLoad(mapRef.current)
-            }
-        }
-
-        return () => {
-            if (mapRef.current) {
-                mapRef.current.remove()
-            }
-        }
-    }, [])
-
     const handlePlaceUpdate = (newPlace) => {
-        if (mapRef.current && newPlace.coordinates) {
-            if (markerRef.current) {
-                markerRef.current.remove()
-            }
+        if (mapRef && newPlace.coordinates) {
 
-            markerRef.current = new mapboxgl.Marker()
-                .setLngLat(newPlace.coordinates)
-                .addTo(mapRef.current)
+            setDropMarker({
+                showDropMarker: true,
+                longitude: newPlace.coordinates[0],
+                latitude: newPlace.coordinates[1],
+            })
 
-            mapRef.current.flyTo({
+            mapRef.flyTo({
                 center: newPlace.coordinates,
                 zoom: initZoom
             })
@@ -97,50 +71,46 @@ const MapboxMap = ({
     }
 
     const handleMapClick = async (e) => {
-        if (mapRef.current) {
-            if (markerRef.current) {
-                markerRef.current.remove()
-            }
+        setDropMarker({
+            showDropMarker: true,
+            longitude: e.lngLat.lng,
+            latitude: e.lngLat.lat,
+        })
 
-            markerRef.current = new mapboxgl.Marker()
-                .setLngLat(e.lngLat)
-                .addTo(mapRef.current)
+        try {
+            const response = await fetch(
+                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${e.lngLat.lat},${e.lngLat.lng}&key=${GOOGLE_MAPS_API_KEY}`)
+            const data = await response.json()
+            if (data.results && data.results.length > 0) {
 
-            try {
-                const response = await fetch(
-                    `https://maps.googleapis.com/maps/api/geocode/json?latlng=${e.lngLat.lat},${e.lngLat.lng}&key=${GOOGLE_MAPS_API_KEY}`)
-                const data = await response.json()
-                if (data.results && data.results.length > 0) {
-
-                    let feature = ""
-                    for (const result of data.results) {
-                        if (!result.formatted_address.includes('+')) {
-                            feature = result;
-                            break
-                        }
+                let feature = ""
+                for (const result of data.results) {
+                    if (!result.formatted_address.includes('+')) {
+                        feature = result;
+                        break
                     }
-
-                    let cardname = ""
-                    componentLoop: for (const i of feature.address_components) {
-                        for (const j of i.types) {
-                            if (!(j == "street_number")) {
-                                cardname = i.long_name
-                                break componentLoop;
-                            }
-                        }
-                    }
-                    setPlace({
-                        name: cardname,
-                        address: feature.formatted_address,
-                        coordinates: [e.lngLat.lng, e.lngLat.lat]
-                    })
-                } else {
-                    setPlace(null)
                 }
-            } catch (error) {
-                console.error('Error fetching place information:', error)
+
+                let cardname = ""
+                componentLoop: for (const i of feature.address_components) {
+                    for (const j of i.types) {
+                        if (!(j == "street_number")) {
+                            cardname = i.long_name
+                            break componentLoop;
+                        }
+                    }
+                }
+                setPlace({
+                    name: cardname,
+                    address: feature.formatted_address,
+                    coordinates: [e.lngLat.lng, e.lngLat.lat]
+                })
+            } else {
                 setPlace(null)
             }
+        } catch (error) {
+            console.error('Error fetching place information:', error)
+            setPlace(null)
         }
     }
 
@@ -153,9 +123,10 @@ const MapboxMap = ({
     const handleCloseLocation = () => {
         if (place) {
             setPlace(null)
-            if (markerRef.current) {
-                markerRef.current.remove()
-            }
+            setDropMarker(prev => ({
+                ...prev,
+                showDropMarker: false
+            }))
         }
     }
 
@@ -167,18 +138,32 @@ const MapboxMap = ({
     }
 
     return (
-        <div className="relative w-full" style={{ height: height, width: width }}>
-            <div ref={mapContainer} className="absolute inset-0" />
-            {!disableSearchBar && (
-            <div className="absolute top-4 left-4 right-4 z-10">
-                <div className="w-full max-w-md mx-auto">
-                    <MapSearchBar
-                        mapInstance={mapRef.current}
-                        onLocationSearch={handleLocationSearch}
-                        searchButton={true}
+        <>
+            <Map
+                {...viewState}
+                id="map"
+                reuseMaps
+                onMove={evt => setViewState(evt.viewState)}
+                onClick={handleMapClick}
+                style={{ width: width, height: height }}
+                mapStyle="mapbox://styles/mapbox/streets-v12"
+            >;
+                {dropMarker.showDropMarker && (
+                    <Marker
+                        latitude={dropMarker.latitude}
+                        longitude={dropMarker.longitude}
                     />
+                )}
+            </Map>
+            {!disableSearchBar && (
+                <div className="absolute top-4 left-4 right-4 z-10">
+                    <div className="w-full max-w-md mx-auto">
+                        <MapSearchBar
+                            onLocationSearch={handleLocationSearch}
+                            searchButton={true}
+                        />
+                    </div>
                 </div>
-            </div>
             )}
             {place && (
                 <div className="absolute bottom-4 left-4 right-4 z-10">
@@ -261,10 +246,10 @@ const MapboxMap = ({
                                     {place.website && (
                                         <div className="flex gap-1 md:gap-2 items-center">
                                             <Globe size={12} className="flex-shrink-0" />
-                                            <a href={place.website} 
-                                               target="_blank" 
-                                               rel="noopener noreferrer" 
-                                               className="text-blue-500 text-[10px] md:text-sm truncate">
+                                            <a href={place.website}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-500 text-[10px] md:text-sm truncate">
                                                 {place.website}
                                             </a>
                                         </div>
@@ -273,23 +258,23 @@ const MapboxMap = ({
                                     {/* Google Maps Link */}
                                     {!place.image && place.link && (
                                         <div className="flex gap-1 md:gap-2 items-center">
-                                            <Map size={12} className="flex-shrink-0" />
-                                            <a href={place.link} 
-                                               target="_blank" 
-                                               rel="noopener noreferrer" 
-                                               className="text-blue-500 text-[10px] md:text-sm">
+                                            <MapIcon size={12} className="flex-shrink-0" />
+                                            <a href={place.link}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-500 text-[10px] md:text-sm">
                                                 View on Google Maps
                                             </a>
                                         </div>
                                     )}
-                                {!disableSaveLocation && (
-                                    <Button 
-                                        onClick={handleSaveLocation} 
-                                        className="mt-1 md:mt-2 w-full md:w-auto text-[10px] md:text-sm py-1 md:py-2 h-auto"
+                                    {!disableSaveLocation && (
+                                        <Button
+                                            onClick={handleSaveLocation}
+                                            className="mt-1 md:mt-2 w-full md:w-auto text-[10px] md:text-sm py-1 md:py-2 h-auto"
                                         >
-                                        Save Location
-                                    </Button>
-                                )}
+                                            Save Location
+                                        </Button>
+                                    )}
                                 </div>
 
                                 {/* Image Container - Desktop */}
@@ -311,7 +296,7 @@ const MapboxMap = ({
                     </Card>
                 </div>
             )}
-        </div>
+        </>
     )
 }
 

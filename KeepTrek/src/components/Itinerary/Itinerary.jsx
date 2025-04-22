@@ -210,7 +210,7 @@ function Itinerary() {
             <MapboxMap
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
-              initCenter={tripDetails.coordinates}
+              initCenter={tripDetails?.coordinates}
               handlePanTo={searchedPlace}
               height="100%"
               width="100%"
@@ -325,7 +325,7 @@ function Itinerary() {
             <MapboxMap
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
-              initCenter={tripDetails.coordinates}
+              initCenter={tripDetails?.coordinates}
               handlePanTo={searchedPlace}
               height="100%"
               width="100%"
