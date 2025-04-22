@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
-const DeleteAlert = ({ isOpen, onClose, onConfirm, itemName = 'item', isLoading = false }) => {
+const DeleteAlert = ({ isOpen, onClose, onConfirm, itemName = 'item', itemType = 'item', isLoading = false }) => {
     return (
         <AlertDialog 
             open={isOpen} 
@@ -23,7 +23,7 @@ const DeleteAlert = ({ isOpen, onClose, onConfirm, itemName = 'item', isLoading 
                 <AlertDialogHeader>
                     <AlertDialogTitle>Delete {itemName}?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Are you sure you want to delete this {itemName.toLowerCase()}? 
+                        Are you sure you want to delete this {itemType.toLowerCase()}? 
                         This action cannot be undone and all associated data will be permanently lost.
                     </AlertDialogDescription>
                 </AlertDialogHeader>

@@ -166,6 +166,7 @@ const TripSettings = ({ isOpen, onClose, tripID }) => {
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={handleDelete}
         itemName="Trip"
+        itemType="trip"
       />
     </>
   );
