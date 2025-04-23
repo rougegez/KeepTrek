@@ -13,6 +13,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import GoogleMapImage from '@/components/MapboxMap/GoogleMapImage.jsx';
+
 import { useItinerary } from './useItinerarySocket.jsx';
 
 const ActivityCard = ({
@@ -160,9 +162,9 @@ const ActivityCard = ({
               {isMobile && (
                 <div className="w-full relative" onClick={e => e.stopPropagation()}>
                   <a href={activity.link} target="_blank" rel="noreferrer noopener" onClick={e => e.stopPropagation()}>
-                    <img
+                    <GoogleMapImage
+                      placeId={activity?.placeId}
                       src={activity.image}
-                      alt=""
                       className="w-full h-28 rounded-lg object-cover"
                     />
                   </a>
@@ -194,7 +196,7 @@ const ActivityCard = ({
                 {/* Address */}
                 <div className="flex items-start gap-1 text-xs md:text-sm text-muted-foreground">
                   <span>{activity.location}</span>
-              </div>
+                </div>
 
                 {/* Notes */}
                 <Textarea
@@ -211,9 +213,9 @@ const ActivityCard = ({
               {!isMobile && (
                 <div className="flex-none relative" onClick={e => e.stopPropagation()}>
                   <a href={activity.link} target="_blank" rel="noreferrer noopener" onClick={e => e.stopPropagation()}>
-                    <img
+                    <GoogleMapImage
+                      placeId={activity?.placeId}
                       src={activity.image}
-                      alt=""
                       className="w-52 h-32 rounded-lg object-cover"
                     />
                   </a>
