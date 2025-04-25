@@ -25,7 +25,7 @@ const ActivityCard = ({
   onLocationClick,
   canModify = false }) => {
 
-  const { days, updateDay, getDayAndActivity, changeActivityDay } = useItinerary();
+  const { days, updateDay, getDayAndActivity, changeActivityDay , updateActivity } = useItinerary();
   const { day: currentDay } = getDayAndActivity(activity.id);
   const activityIndex = currentDay.activities.findIndex((a) => a.id === activity.id);
 
@@ -67,6 +67,12 @@ const ActivityCard = ({
     if (activityIndex === currentDay.activities.length - 1) {
       const newDayDate = "Day " + (parseInt(currentDay.date.replace(/[A-z]+/g, "")) + 1);
       changeActivityDay(activity, newDayDate, true);
+    }
+  }
+
+  const handleNewImage = (newImage) => {
+    if (newImage) {
+      updateActivity({ ...activity, image: newImage });
     }
   }
 
@@ -165,6 +171,7 @@ const ActivityCard = ({
                     <GoogleMapImage
                       placeId={activity?.placeId}
                       src={activity.image}
+                      onNewImage={handleNewImage}
                       className="w-full h-28 rounded-lg object-cover"
                     />
                   </a>
@@ -216,6 +223,7 @@ const ActivityCard = ({
                     <GoogleMapImage
                       placeId={activity?.placeId}
                       src={activity.image}
+                      onNewImage={handleNewImage}
                       className="w-52 h-32 rounded-lg object-cover"
                     />
                   </a>

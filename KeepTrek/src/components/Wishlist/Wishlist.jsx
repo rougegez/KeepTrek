@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef ,} from "react";
 import { useNavigate } from "react-router-dom";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -33,7 +33,7 @@ export default function WishlistPage() {
   const { tripID } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   const [wishlistData, setWishlistData] = useState({ accommodation: [], activities: [], food: [] });
   const [selectedItem, setSelectedItem] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -43,11 +43,6 @@ export default function WishlistPage() {
   const [mapInstance, setMapInstance] = useState(null);
   const [searchedPlace, setSearchedPlace] = useState(null);
   const [savedLocation, setSavedLocation] = useState(null);
-  // const [category, setCategory] = useState("");
-  // const [name, setName] = useState("");
-  // const [image, setImage] = useState("");
-  // const [address, setAddress] = useState("");
-  // const [note, setNote] = useState("");
 
   // New state for add mode
   const [addMode, setAddMode] = useState(false);
@@ -75,7 +70,7 @@ export default function WishlistPage() {
     const handleScroll = () => {
       const position = window.scrollY;
       const scrollDelta = position - lastScrollPosition;
-      
+
       // Auto-expand map when scrolling to top
       if (position < 50) {
         setIsMapExpanded(true);
@@ -88,7 +83,7 @@ export default function WishlistPage() {
       //else if (scrollDelta < -50 && !isMapExpanded) {
       //  setIsMapExpanded(true);
       //}
-      
+
       setLastScrollPosition(position);
       setScrollPosition(position);
     };
@@ -99,7 +94,7 @@ export default function WishlistPage() {
 
   const fetchWishlistData = async () => {
     const allItems = await getAllItems(tripID);
-    
+
     // Sort function to calculate rank
     const sortByRank = (items) => {
       return [...items].sort((a, b) => {
@@ -112,11 +107,11 @@ export default function WishlistPage() {
     const accommodation = sortByRank(allItems.filter(item => item.category === "accommodation"));
     const activities = sortByRank(allItems.filter(item => item.category === "activities"));
     const food = sortByRank(allItems.filter(item => item.category === "food"));
-    
+
     setWishlistData({ accommodation, activities, food });
   };
 
-  const {days : itineraryDays, setDays, readyState} = useItinerary();
+  const { days: itineraryDays, setDays, readyState } = useItinerary();
 
   useEffect(() => {
     fetchWishlistData();
@@ -140,12 +135,12 @@ export default function WishlistPage() {
     const voteType = isUpvote ? 'upvotes' : 'downvotes';
     const oppositeType = isUpvote ? 'downvotes' : 'upvotes';
     const currentVotes = optimisticVotes[item.id];
-    
+
     const isVoted = currentVotes[voteType].includes(user);
-    const newVotes = isVoted 
+    const newVotes = isVoted
       ? currentVotes[voteType].filter(id => id !== user)
       : [...currentVotes[voteType], user];
-    
+
     setOptimisticVotes(prev => ({
       ...prev,
       [item.id]: {
@@ -187,7 +182,7 @@ export default function WishlistPage() {
     clickLocation.address = clickLocation.location;
     clickLocation.name = clickLocation.title;
     const random = new Date().getTime();
-    setSearchedPlace({random, clickLocation});
+    setSearchedPlace({ random, clickLocation });
     if (isMobile) {
       setIsMapExpanded(true);
     }
@@ -195,10 +190,6 @@ export default function WishlistPage() {
 
   const handleSaveLocation = (place) => {
     setSavedLocation(place);
-    setName(place.name);
-    setAddress(place.address);
-    setImage(place.image);
-    setNote(place.link);
     setIsCreateModalOpen(true);
   };
 
@@ -253,6 +244,12 @@ export default function WishlistPage() {
     await fetchWishlistData();
   };
 
+  const handleNewImage = async (editedItem) => {
+    await editItem(editedItem.tripID, editedItem.id, editedItem);
+    await fetchWishlistData();
+    console.log(editedItem)
+  }
+
   const handleAddModeToggle = () => {
     setAddMode(!addMode);
     setSelectedItems([]);
@@ -302,7 +299,7 @@ export default function WishlistPage() {
   };
 
   const getMapHeight = () => isMapExpanded ? '65vh' : '10vh';
-  
+
   const MapToggleButton = () => (
     <Button
       className="absolute right-4 -bottom-5 z-50 rounded-full p-2 bg-secondary text-muted-foreground shadow-md"
@@ -314,7 +311,7 @@ export default function WishlistPage() {
 
   return (
     <SidebarProvider>
-      <AppSidebar tripID={tripID}/>
+      <AppSidebar tripID={tripID} />
       {!isMobile && <SidebarTrigger />}
       {isMobile && <MobileHeader title="Suggest a place to Go!" />}
       <div className={`flex w-full ${!isMobile && 'grid grid-cols-2'}`}>
@@ -322,7 +319,7 @@ export default function WishlistPage() {
           <motion.div
             className="fixed w-full z-40 bg-background"
             initial={{ height: '75vh' }}
-            animate={{ 
+            animate={{
               height: getMapHeight(),
               transition: { duration: 0.3, ease: 'easeInOut' }
             }}
@@ -340,13 +337,12 @@ export default function WishlistPage() {
           </motion.div>
         ) : null}
 
-        <motion.div 
+        <motion.div
           ref={contentRef}
-          className={`${
-            isMobile 
-              ? 'w-full bg-background relative z-30' 
+          className={`${isMobile
+              ? 'w-full bg-background relative z-30'
               : 'col-span-1 h-screen'
-          }`}
+            }`}
           animate={isMobile ? {
             marginTop: `calc(${getMapHeight()} + 3.5rem)`,
             transition: { duration: 0.3, ease: 'easeInOut' }
@@ -393,12 +389,13 @@ export default function WishlistPage() {
               <WishlistSection title="Accommodation">
                 {wishlistData.accommodation.map((item) => (
                   <WishlistCard
-                    key={item.id}
+                    key={`${item.id}-${item.image}`}
                     item={item}
                     onClick={() => handleItemClick(item)}
                     onUpvote={(item) => handleVote(item, true)}
                     onDownvote={(item) => handleVote(item, false)}
                     onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                    onNewImage={handleNewImage}
                     currUser={user}
                     addMode={addMode}
                     onSelect={handleSelectItem}
@@ -420,6 +417,7 @@ export default function WishlistPage() {
                     onUpvote={(item) => handleVote(item, true)}
                     onDownvote={(item) => handleVote(item, false)}
                     onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                    onNewImage={handleNewImage}
                     currUser={user}
                     addMode={addMode}
                     onSelect={handleSelectItem}
@@ -441,6 +439,7 @@ export default function WishlistPage() {
                     onUpvote={(item) => handleVote(item, true)}
                     onDownvote={(item) => handleVote(item, false)}
                     onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                    onNewImage={handleNewImage}
                     currUser={user}
                     addMode={addMode}
                     onSelect={handleSelectItem}
@@ -488,12 +487,14 @@ export default function WishlistPage() {
         onClose={() => {
           setIsCreateModalOpen(false);
           setInitialCategory("");
+          setSavedLocation(null);
         }}
         onSubmit={handleSubmitCreateItem}
         tripId={tripID}
         initialCategory={initialCategory}
+        location={savedLocation}
       />
-    
+
       <CreateEditItemModal // Edit modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}

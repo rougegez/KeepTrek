@@ -1,24 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect, memo} from 'react';
 import Image from '@/components/ui/image.jsx';
 import { fetchPlaceDetails } from '@/APIs/fetchPlaceDetails.js';
 
-function GoogleMapImage({
+const GoogleMapImage = memo(function GoogleMapImage({
     placeId,
     src,
     alt,
-    newImage,
+    onNewImage,
     ...props }) {
     const [source, setSource] = useState(src);
+    const [refetchAttempted, setRefetchAttempted] = useState(false);
 
     const handleError = async (e) => {
-        if (placeId) {
+    if (placeId && !refetchAttempted) {
             try {
-                const data = await fetchPlaceDetails(placeId);
-                setSource(data?.image);
-                newImage(data?.image);
+                const data = await fetchPlaceDetails(placeId); 
+                if (data?.image && data?.image !== src) {
+                    setSource(data.image);
+                    onNewImage(data.image);
+                }
             } catch {
                 setSource(alt);
             }
+            setRefetchAttempted(true);
         }
         else {
             setSource(alt);
@@ -28,11 +32,10 @@ function GoogleMapImage({
     return (
         <Image
             src={source}
-            alt={alt}
             onError={handleError}
             {...props}
         />
     );
-}
+})
 
 export default GoogleMapImage;

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, memo} from 'react';
 import PropTypes from 'prop-types';
 import dummy_image from '/assets/dummy-image.jpg'
 
-function Image({ 
+const Image = memo(function Image({ 
     src, 
     alt = dummy_image, 
     onError, 
@@ -25,7 +25,7 @@ function Image({
             {...props}
         />
     );
-}
+})
 
 Image.propTypes = {
     src: PropTypes.string,

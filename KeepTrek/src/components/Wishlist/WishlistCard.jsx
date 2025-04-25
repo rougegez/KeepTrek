@@ -2,26 +2,35 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { MapPin, Notebook, ThumbsUp, ThumbsDown, Plus, CheckIcon } from 'lucide-react'
 import { motion } from "framer-motion";
+import GoogleMapImage from "@/components/MapboxMap/GoogleMapImage.jsx"
 
-export function WishlistCard({ 
-  item, 
-  onClick, 
-  onUpvote, 
-  onDownvote, 
-  onLocationClick, 
-  currUser, 
-  addMode, 
-  onSelect, 
+export function WishlistCard({
+  item,
+  onClick,
+  onUpvote,
+  onDownvote,
+  onLocationClick,
+  onNewImage,
+  currUser,
+  addMode,
+  onSelect,
   isSelected,
   optimisticVotes
 }) {
   const handleUpvote = async () => {
     await onUpvote(item);
   };
-  
+
   const handleDownvote = async () => {
     await onDownvote(item);
   };
+
+  const handleNewImage = (newImage) => {
+    console.log(item)
+    console.log(newImage)
+    const newItem = { ...item, image: newImage };
+    onNewImage(newItem);
+  }
 
   return (
     <motion.div
@@ -42,9 +51,11 @@ export function WishlistCard({
         onClick={addMode ? () => onSelect(item) : onClick}
       >
         <CardContent className="p-0 relative">
-          <img 
-            src={item.image || "./src/assets/dummy-image.jpg"} 
+          <GoogleMapImage
+            placeId={item?.placeId}
+            src={item.image}
             alt={item.title}
+            onNewImage={handleNewImage}
             className="w-full h-48 object-cover rounded-t-lg"
           />
           <div className="absolute top-2 right-2 flex gap-1">
@@ -81,15 +92,15 @@ export function WishlistCard({
                 variant="ghost"
                 className="relative h-5 w-full mb-2"
                 size="icon"
-                onClick={(e) => {e.stopPropagation(); onLocationClick(item);}}
-                {...(item.coordinates.length > 1 ? {} : {disabled: true})}
+                onClick={(e) => { e.stopPropagation(); onLocationClick(item); }}
+                {...(item.coordinates.length > 1 ? {} : { disabled: true })}
               >
                 <MapPin className="w-3 h-3" />
                 <h3 className="font-normal mt-0.5 truncate">{item.location}</h3>
-              </Button> 
+              </Button>
             </div>
             <div className="flex items-start mt-0.5 gap-2 text-sm text-muted-foreground">
-              <Notebook className="w-4 h-4" /> 
+              <Notebook className="w-4 h-4" />
               <p className="text-sm text-muted-foreground truncate">{item.notes || "Add a note..."}</p>
             </div>
           </div>
@@ -109,7 +120,7 @@ export function AddItemCard({ onClick, category }) {
       whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.2 }}
     >
-      <Card 
+      <Card
         className="cursor-pointer hover:bg-muted/50 transition-colors h-full"
         onClick={() => onClick(category)}
       >
