@@ -31,6 +31,7 @@ const GoogleMapImage = memo(function GoogleMapImage({
 
     return (
         <Image
+            key={source}
             src={source}
             onError={handleError}
             {...props}

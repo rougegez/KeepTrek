@@ -389,7 +389,7 @@ export default function WishlistPage() {
               <WishlistSection title="Accommodation">
                 {wishlistData.accommodation.map((item) => (
                   <WishlistCard
-                    key={`${item.id}-${item.image}`}
+                    key={`${item.id}`}
                     item={item}
                     onClick={() => handleItemClick(item)}
                     onUpvote={(item) => handleVote(item, true)}
