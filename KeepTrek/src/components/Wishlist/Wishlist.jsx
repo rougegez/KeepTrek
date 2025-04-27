@@ -6,7 +6,8 @@ import WishlistSection from "./WishlistSection.jsx";
 import { WishlistCard, AddItemCard } from "./WishlistCard.jsx";
 import ItemModal from "./ItemModal.jsx";
 import CreateEditItemModal from "./CreateEditItemModal.jsx";
-import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx";
+import MapboxMap from "@/components/MapboxMap/MapboxMapGoogleSearch.jsx";
+import { normalizeMarkers } from "@/components/MapboxMap/MapUtil.jsx"; 
 import { getAllItems, createItem, editItem, deleteItem, upvoteItem, downvoteItem, deleteFile } from "@/APIs/wishlist";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,7 @@ export default function WishlistPage() {
   const { tripID } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   const [wishlistData, setWishlistData] = useState({ accommodation: [], activities: [], food: [] });
   const [selectedItem, setSelectedItem] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -63,7 +64,7 @@ export default function WishlistPage() {
   const [optimisticVotes, setOptimisticVotes] = useState({});
   const [initialCategory, setInitialCategory] = useState("");
 
-  const { data: tripDetails } = useQuery(['trip', tripID], () => getTrip(tripID));
+  const { data: tripDetails } = useQuery(['trip', tripID], () => getTrip(tripID), {suspense: true});
   const userRole = tripDetails?.users.find(u => u.userID === user)?.role;
   const canModify = canEdit(userRole);
 
@@ -75,7 +76,7 @@ export default function WishlistPage() {
     const handleScroll = () => {
       const position = window.scrollY;
       const scrollDelta = position - lastScrollPosition;
-      
+
       // Auto-expand map when scrolling to top
       if (position < 50) {
         setIsMapExpanded(true);
@@ -88,7 +89,7 @@ export default function WishlistPage() {
       //else if (scrollDelta < -50 && !isMapExpanded) {
       //  setIsMapExpanded(true);
       //}
-      
+
       setLastScrollPosition(position);
       setScrollPosition(position);
     };
@@ -99,7 +100,7 @@ export default function WishlistPage() {
 
   const fetchWishlistData = async () => {
     const allItems = await getAllItems(tripID);
-    
+
     // Sort function to calculate rank
     const sortByRank = (items) => {
       return [...items].sort((a, b) => {
@@ -112,11 +113,11 @@ export default function WishlistPage() {
     const accommodation = sortByRank(allItems.filter(item => item.category === "accommodation"));
     const activities = sortByRank(allItems.filter(item => item.category === "activities"));
     const food = sortByRank(allItems.filter(item => item.category === "food"));
-    
+
     setWishlistData({ accommodation, activities, food });
   };
 
-  const {days : itineraryDays, setDays, readyState} = useItinerary();
+  const { days: itineraryDays, setDays, readyState } = useItinerary();
 
   useEffect(() => {
     fetchWishlistData();
@@ -140,12 +141,12 @@ export default function WishlistPage() {
     const voteType = isUpvote ? 'upvotes' : 'downvotes';
     const oppositeType = isUpvote ? 'downvotes' : 'upvotes';
     const currentVotes = optimisticVotes[item.id];
-    
+
     const isVoted = currentVotes[voteType].includes(user);
-    const newVotes = isVoted 
+    const newVotes = isVoted
       ? currentVotes[voteType].filter(id => id !== user)
       : [...currentVotes[voteType], user];
-    
+
     setOptimisticVotes(prev => ({
       ...prev,
       [item.id]: {
@@ -187,7 +188,7 @@ export default function WishlistPage() {
     clickLocation.address = clickLocation.location;
     clickLocation.name = clickLocation.title;
     const random = new Date().getTime();
-    setSearchedPlace({random, clickLocation});
+    setSearchedPlace({ random, clickLocation });
     if (isMobile) {
       setIsMapExpanded(true);
     }
@@ -302,7 +303,7 @@ export default function WishlistPage() {
   };
 
   const getMapHeight = () => isMapExpanded ? '65vh' : '10vh';
-  
+
   const MapToggleButton = () => (
     <Button
       className="absolute right-4 -bottom-5 z-50 rounded-full p-2 bg-secondary text-muted-foreground shadow-md"
@@ -314,7 +315,7 @@ export default function WishlistPage() {
 
   return (
     <SidebarProvider>
-      <AppSidebar tripID={tripID}/>
+      <AppSidebar tripID={tripID} />
       {!isMobile && <SidebarTrigger />}
       {isMobile && <MobileHeader title="Suggest a place to Go!" />}
       <div className={`flex w-full ${!isMobile && 'grid grid-cols-2'}`}>
@@ -322,7 +323,7 @@ export default function WishlistPage() {
           <motion.div
             className="fixed w-full z-40 bg-background"
             initial={{ height: '75vh' }}
-            animate={{ 
+            animate={{
               height: getMapHeight(),
               transition: { duration: 0.3, ease: 'easeInOut' }
             }}
@@ -335,18 +336,18 @@ export default function WishlistPage() {
               initCenter={tripDetails?.coordinates}
               height="100%"
               width="100%"
+              markers={normalizeMarkers(wishlistData)}
             />
             <MapToggleButton />
           </motion.div>
         ) : null}
 
-        <motion.div 
+        <motion.div
           ref={contentRef}
-          className={`${
-            isMobile 
-              ? 'w-full bg-background relative z-30' 
-              : 'col-span-1 h-screen'
-          }`}
+          className={`${isMobile
+            ? 'w-full bg-background relative z-30'
+            : 'col-span-1 h-screen'
+            }`}
           animate={isMobile ? {
             marginTop: `calc(${getMapHeight()} + 3.5rem)`,
             transition: { duration: 0.3, ease: 'easeInOut' }
@@ -465,6 +466,7 @@ export default function WishlistPage() {
               initCenter={tripDetails?.coordinates}
               height="100%"
               width="100%"
+              markers={normalizeMarkers(wishlistData)}
             />
           </div>
         )}
@@ -493,7 +495,7 @@ export default function WishlistPage() {
         tripId={tripID}
         initialCategory={initialCategory}
       />
-    
+
       <CreateEditItemModal // Edit modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}

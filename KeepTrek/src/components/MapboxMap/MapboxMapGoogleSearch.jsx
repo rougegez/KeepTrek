@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo, memo } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,12 +9,13 @@ import {
     CollapsibleContent,
     CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-
 import { Button } from "@/components/ui/button"
 import { Clock, Globe, MapPin, X, Map as MapIcon} from 'lucide-react'
 import MapSearchBar from './GoogleMapsSearchbar'
 import { fetchPlaceDetails } from '@/APIs/fetchPlaceDetails.js'
 import Map, { Marker, useMap } from 'react-map-gl/mapbox';
+
+import { MarkerSvg, getDayIndex , getDayColor, getMaxDay, getCategoryAppearance, getMarkerType} from '@/components/MapboxMap/MapUtil.jsx'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API_KEY
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
@@ -27,7 +28,8 @@ const MapboxMap = ({
     onSaveLocation,
     handlePanTo = null,
     disableSearchBar = false,
-    disableSaveLocation = false
+    disableSaveLocation = false,
+    markers = [],
 }) => {
 
     const { map: mapRef } = useMap()
@@ -137,6 +139,58 @@ const MapboxMap = ({
         }
     }
 
+    const handleDropMarkerClick = (e) => {
+        e.originalEvent.preventDefault()
+        e.originalEvent.stopPropagation()
+        setDropMarker(prev => ({...prev, showDropMarker : false}))
+        setPlace(null)
+    }
+
+    const memoMarkers = useMemo(() => markers.map((marker, index) => {
+        if (!marker?.latitude || !marker?.longitude) return null
+
+        // If this marker is associated with a day, parse it and get a color.
+        let color = "#4db6ac"
+        if (marker.day) { // Itinerary
+            const maxDay = getMaxDay(markers)
+            color = getDayColor(marker.day, maxDay);
+        } else if (marker.category) { // Wishlist
+            color = getCategoryAppearance(marker).color;
+        }
+
+        return (<Marker
+            key={index}
+            latitude={marker.latitude}
+            longitude={marker.longitude}
+            onClick={(e) => {
+                e.originalEvent.preventDefault()
+                e.originalEvent.stopPropagation()
+                setPlace(marker)
+            }}
+        >
+            <MarkerSvg color={color}>
+                {marker?.category ? // if has category = from wishlist, otherwise from itinerary
+                    <g transform="translate(13.5, 13.5)">
+                        <foreignObject x="-13.5" y="-13.5" width="27" height="27">
+                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                                {getMarkerType(marker.category, { size: 20, color: '#ffffff' })}
+                            </div>
+                        </foreignObject>
+                    </g> :
+                    <text
+                        x="13.5"
+                        y="13.5"
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        style={{ fontSize: '14px', fill: '#ffffff', fontWeight: 'bold' }}
+                    >
+                        {marker.order}
+                    </text>
+                }
+            </MarkerSvg>
+        </Marker>)
+    }), [markers])
+
     return (
         <>
             <Map
@@ -152,7 +206,11 @@ const MapboxMap = ({
                     <Marker
                         latitude={dropMarker.latitude}
                         longitude={dropMarker.longitude}
+                        onClick={handleDropMarkerClick}
                     />
+                )}
+                {((memoMarkers.length !== 0) && !dropMarker.showDropMarker) && (
+                    memoMarkers
                 )}
             </Map>
             {!disableSearchBar && (
@@ -171,7 +229,7 @@ const MapboxMap = ({
                         <CardHeader className="pb-0 md:pb-6 pt-2 md:pt-6">
                             <Button
                                 className="absolute top-1 right-1 bg-transparent outline-none 
-                                shadow-none rounded-full hover:bg-black/5 p-0.5"
+                                            shadow-none rounded-full hover:bg-black/5 p-0.5"
                                 size="icon"
                                 onClick={handleCloseLocation}>
                                 <X size={16} color="black" />
@@ -300,11 +358,6 @@ const MapboxMap = ({
     )
 }
 
-function getDayIndex() {
-    const today = new Date().getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
-    return today === 0 ? 6 : today - 1; // Adjusting so Monday = 0
-}
-
-
 export default MapboxMap
+
 
