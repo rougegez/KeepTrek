@@ -3,19 +3,39 @@
 import React, { useEffect, useState, useMemo, memo } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    CardFooter
+} from "@/components/ui/card"
 import {
     Collapsible,
     CollapsibleContent,
     CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { Button } from "@/components/ui/button"
-import { Clock, Globe, MapPin, X, Map as MapIcon} from 'lucide-react'
+import { Clock, Globe, MapPin, X, Map as MapIcon, Layers } from 'lucide-react'
 import MapSearchBar from './GoogleMapsSearchbar'
 import { fetchPlaceDetails } from '@/APIs/fetchPlaceDetails.js'
-import Map, { Marker, useMap } from 'react-map-gl/mapbox';
+import Map, {
+    Marker,
+    useMap,
+    ScaleControl,
+    GeolocateControl,
+    NavigationControl
+} from 'react-map-gl/mapbox';
 
-import { MarkerSvg, getDayIndex , getDayColor, getMaxDay, getCategoryAppearance, getMarkerType} from '@/components/MapboxMap/MapUtil.jsx'
+import { MarkerSvg, getDayIndex, getDayColor, getMaxDay, getCategoryAppearance, getMarkerType, getDayNumber } from '@/components/MapboxMap/MapUtil.jsx'
+import { Checkbox } from '@/components/ui/checkbox.jsx'
+import {
+    Popover,
+    PopoverTrigger,
+    PopoverContent
+} from '@/components/ui/popover'
+import PinControl from './PinControl'
+import LocationCard from './LocationCard'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API_KEY
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
@@ -142,17 +162,82 @@ const MapboxMap = ({
     const handleDropMarkerClick = (e) => {
         e.originalEvent.preventDefault()
         e.originalEvent.stopPropagation()
-        setDropMarker(prev => ({...prev, showDropMarker : false}))
+        setDropMarker(prev => ({ ...prev, showDropMarker: false }))
         setPlace(null)
+    }
+
+    const [mapControls, setMapControls] = useState(() => {
+        if (markers[0]?.day) {
+            const { maxDay, dayNumbers } = getMaxDay(markers)
+            const unique = new Set(dayNumbers)
+            const controls = Array.from(unique).map((day, index) => {
+                const color = getDayColor(`${day}`, maxDay)
+                return ({ day: day, color: color, checked: true })
+            })
+            return controls
+        }
+        else if (markers[0]?.category) {
+            const controls = [{ category: "Accommodation" }, { category: "Activities" }, { category: "Food" }]
+            return controls.map((item) => {
+                return ({ category: item.category, color: getCategoryAppearance(item).color, checked: true })
+            })
+        }
+    })
+
+    useEffect(() => {
+        setMapControls(() => {
+            if (markers[0]?.day) {
+                const { maxDay, dayNumbers } = getMaxDay(markers)
+                const unique = new Set(dayNumbers)
+                const controls = Array.from(unique).map((day, index) => {
+                    const color = getDayColor(`${day}`, maxDay)
+                    return ({ day: day, color: color, checked: true })
+                })
+                return controls
+            }
+            else if (markers[0]?.category) {
+                const controls = [{ category: "Accommodation" }, { category: "Activities" }, { category: "Food" }]
+                return controls.map((item) => {
+                    return ({ category: item.category, color: getCategoryAppearance(item).color, checked: true })
+                })
+            }
+        })
+    }, [markers]);
+
+    const handleCheckChange = (checked, marker) => {
+        const updatedMarkers = mapControls.map((item) => {
+            if (marker?.category) {
+                return item.category === marker.category ? { ...item, checked: checked } : item
+            } else {
+                return item.day === marker.day ? { ...item, checked: checked } : item
+            }
+        })
+        setMapControls(updatedMarkers)
+    }
+
+    const handleCheckChangeAll = (checked) => {
+        const updatedMarkers = mapControls.map((item) => {
+            return {...item, checked: checked}
+        })
+        setMapControls(updatedMarkers)
     }
 
     const memoMarkers = useMemo(() => markers.map((marker, index) => {
         if (!marker?.latitude || !marker?.longitude) return null
 
+        if (marker.day && mapControls) {
+            const controls = mapControls.find(({ day }) => day === getDayNumber(marker.day))
+            if (!controls?.checked) return null
+        }
+        if (marker.category && mapControls) {
+            const controls = mapControls.find(({ category }) => category.toLowerCase() === marker.category)
+            if (!controls?.checked) return null
+        }
+
         // If this marker is associated with a day, parse it and get a color.
         let color = "#4db6ac"
         if (marker.day) { // Itinerary
-            const maxDay = getMaxDay(markers)
+            const { maxDay } = getMaxDay(markers)
             color = getDayColor(marker.day, maxDay);
         } else if (marker.category) { // Wishlist
             color = getCategoryAppearance(marker).color;
@@ -167,6 +252,7 @@ const MapboxMap = ({
                 e.originalEvent.stopPropagation()
                 setPlace(marker)
             }}
+            className="cursor-pointer"
         >
             <MarkerSvg color={color}>
                 {marker?.category ? // if has category = from wishlist, otherwise from itinerary
@@ -189,8 +275,9 @@ const MapboxMap = ({
                 }
             </MarkerSvg>
         </Marker>)
-    }), [markers])
+    }), [markers, mapControls])
 
+    // console.log(markers, mapControls, memoMarkers)
     return (
         <>
             <Map
@@ -201,157 +288,53 @@ const MapboxMap = ({
                 onClick={handleMapClick}
                 style={{ width: width, height: height }}
                 mapStyle="mapbox://styles/mapbox/streets-v12"
-            >;
+            >
+
+                <GeolocateControl position="bottom-right" />
+                <NavigationControl position="bottom-right" />
+                <ScaleControl style={{ backgroundColor: "hsl(0deg 0% 100% / 0%)" }} />
+
                 {dropMarker.showDropMarker && (
                     <Marker
                         latitude={dropMarker.latitude}
                         longitude={dropMarker.longitude}
                         onClick={handleDropMarkerClick}
-                    />
+                        className="cursor-pointer"
+                    >
+                        <MarkerSvg />
+                    </Marker>
                 )}
+
                 {((memoMarkers.length !== 0) && !dropMarker.showDropMarker) && (
                     memoMarkers
                 )}
+
             </Map>
-            {!disableSearchBar && (
-                <div className="absolute top-4 left-4 right-4 z-10">
-                    <div className="w-full max-w-md mx-auto">
+
+            <div className={`absolute flex top-4 w-full px-4 gap-2 ${disableSearchBar ? 'justify-end' : 'justify-between'}`}>
+                {!disableSearchBar && (
+                    <div className="left-4 z-10 w-full max-w-md">
                         <MapSearchBar
                             onLocationSearch={handleLocationSearch}
                             searchButton={true}
                         />
                     </div>
-                </div>
-            )}
+                )}
+                <PinControl 
+                    mapControls={mapControls} 
+                    onCheckedChange={handleCheckChange}
+                    onCheckedChangeAll={handleCheckChangeAll}
+                />
+            </div>
+
             {place && (
                 <div className="absolute bottom-4 left-4 right-4 z-10">
-                    <Card className="relative bg-white bg-opacity-90">
-                        <CardHeader className="pb-0 md:pb-6 pt-2 md:pt-6">
-                            <Button
-                                className="absolute top-1 right-1 bg-transparent outline-none 
-                                            shadow-none rounded-full hover:bg-black/5 p-0.5"
-                                size="icon"
-                                onClick={handleCloseLocation}>
-                                <X size={16} color="black" />
-                            </Button>
-                            {/* Image Container - Mobile */}
-                            {place.image && !imageError && (
-                                <div className="md:hidden absolute bottom-14 right-4 w-28 h-20 overflow-hidden rounded-md flex-shrink-0">
-                                    <a href={place.link} target="_blank" rel="noopener noreferrer">
-                                        <img
-                                            src={place.image}
-                                            alt={place.name}
-                                            className="w-full h-full object-cover"
-                                            onError={() => setImageError(true)}
-                                            loading="lazy"
-                                        />
-                                    </a>
-                                </div>
-                            )}
-                            <CardTitle className="text-base md:text-lg pr-24 md:pr-8 truncate">{place.name}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-1 px-3 md:px-6 pb-3">
-                            <div className="flex flex-col md:flex-row gap-2 md:gap-4">
-                                <div className="flex-1 space-y-1.5 md:space-y-3">
-                                    {/* Address */}
-                                    <div className="flex items-start gap-1 md:gap-2 pr-28 md:pr-0">
-                                        <MapPin size={12} className="flex-shrink-0 mt-0.5" />
-                                        <p className="text-gray-500 text-[10px] md:text-sm line-clamp-3 md:line-clamp-none">{place.address}</p>
-                                    </div>
-
-                                    {/* Rating */}
-                                    {place.rating?.rating > 0 && (
-                                        <div className="flex items-center">
-                                            <span className="text-yellow-500 text-xs md:text-base">★</span>
-                                            <p className="pl-1 text-gray-500 text-[10px] md:text-sm">{place.rating.rating}</p>
-                                            <p className="pl-1 text-gray-500 text-[10px] md:text-sm">({place.rating.count})</p>
-                                        </div>
-                                    )}
-
-                                    {/* Opening Hours */}
-                                    {place.openingHours?.length > 2 && (
-                                        <div className="flex gap-1 md:gap-2">
-                                            <Clock size={12} className="flex-shrink-0 mt-0.5" />
-                                            <Collapsible className="flex gap-0.5">
-                                                <div>
-                                                    <CollapsibleContent>
-                                                        {place.openingHours.slice(0, getDayIndex()).map((day, index) => (
-                                                            <div key={`pre-${index}`}>
-                                                                <CollapsibleTrigger className="inline-block">
-                                                                    <p className="text-gray-500 text-[10px] md:text-sm leading-tight">{day}</p>
-                                                                </CollapsibleTrigger>
-                                                            </div>
-                                                        ))}
-                                                    </CollapsibleContent>
-                                                    <CollapsibleTrigger>
-                                                        <span className="text-gray-500 text-[10px] md:text-sm leading-tight">{place.openingHours[getDayIndex()]}</span>
-                                                    </CollapsibleTrigger>
-                                                    <CollapsibleContent>
-                                                        {place.openingHours.slice(getDayIndex() + 1).map((day, index) => (
-                                                            <div key={`post-${index}`}>
-                                                                <CollapsibleTrigger className="inline-block">
-                                                                    <p className="text-gray-500 text-[10px] md:text-sm leading-tight">{day}</p>
-                                                                </CollapsibleTrigger>
-                                                            </div>
-                                                        ))}
-                                                    </CollapsibleContent>
-                                                </div>
-                                            </Collapsible>
-                                        </div>
-                                    )}
-
-                                    {/* Website */}
-                                    {place.website && (
-                                        <div className="flex gap-1 md:gap-2 items-center">
-                                            <Globe size={12} className="flex-shrink-0" />
-                                            <a href={place.website}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-500 text-[10px] md:text-sm truncate">
-                                                {place.website}
-                                            </a>
-                                        </div>
-                                    )}
-
-                                    {/* Google Maps Link */}
-                                    {!place.image && place.link && (
-                                        <div className="flex gap-1 md:gap-2 items-center">
-                                            <MapIcon size={12} className="flex-shrink-0" />
-                                            <a href={place.link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-500 text-[10px] md:text-sm">
-                                                View on Google Maps
-                                            </a>
-                                        </div>
-                                    )}
-                                    {!disableSaveLocation && (
-                                        <Button
-                                            onClick={handleSaveLocation}
-                                            className="mt-1 md:mt-2 w-full md:w-auto text-[10px] md:text-sm py-1 md:py-2 h-auto"
-                                        >
-                                            Save Location
-                                        </Button>
-                                    )}
-                                </div>
-
-                                {/* Image Container - Desktop */}
-                                {place.image && !imageError && (
-                                    <div className="hidden md:block w-52 h-32 overflow-hidden rounded-lg">
-                                        <a href={place.link} target="_blank" rel="noopener noreferrer">
-                                            <img
-                                                src={place.image}
-                                                alt={place.name}
-                                                className="w-full h-full object-cover"
-                                                onError={() => setImageError(true)}
-                                                loading="lazy"
-                                            />
-                                        </a>
-                                    </div>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <LocationCard
+                        place={place}
+                        onClick={handleCloseLocation}
+                        onSaveLocation={handleSaveLocation}
+                        disableSaveLocation={disableSaveLocation}
+                    />
                 </div>
             )}
         </>

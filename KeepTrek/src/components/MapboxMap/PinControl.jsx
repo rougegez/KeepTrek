@@ -1,0 +1,89 @@
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    CardFooter
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import {
+    Popover,
+    PopoverTrigger,
+    PopoverContent
+} from '@/components/ui/popover'
+import { Checkbox } from "@/components/ui/checkbox.jsx";
+import { MarkerSvg, getMarkerType } from '@/components/MapboxMap/MapUtil.jsx'
+import { Layers } from 'lucide-react'
+
+function PinControl({ mapControls , onCheckedChange , onCheckedChangeAll}) {
+
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button size="icon" className="shrink-0">
+                    <Layers />
+                </Button>
+            </PopoverTrigger>
+            {/* Prevent closing when outside is clicked */}
+            <PopoverContent asChild onInteractOutside={(e) => e.preventDefault()}>
+                <Card className="mr-4 p-0 w-64">
+                    <CardHeader className="p-2 pl-6 pt-4">
+                        <CardTitle className="text-base truncate">Map Controls</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pb-0">
+                        {mapControls && mapControls.map((marker, index) => (
+                            <div className="items-center flex space-x-2" key={index}>
+                                {(marker?.category) ?
+                                    <>
+                                        <MarkerSvg color={marker.color} height={32} width={32}>
+                                            <g transform="translate(13.5, 13.5)">
+                                                <foreignObject x="-13.5" y="-13.5" width="27" height="27">
+                                                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                                                        {getMarkerType(marker.category, { size: 20, color: '#ffffff' })}
+                                                    </div>
+                                                </foreignObject>
+                                            </g>
+                                        </MarkerSvg>
+                                        <div className="text-sm flex justify-between w-full">
+                                            <p>{marker.category}</p>
+                                        </div>
+                                        <Checkbox checked={marker.checked} onCheckedChange={(checked) => onCheckedChange(checked, marker)} />
+                                    </> :
+                                    <>
+                                        <MarkerSvg color={marker.color} height={32} width={32}>
+                                            <text
+                                                x="13.5"
+                                                y="13.5"
+                                                textAnchor="middle"
+                                                dominantBaseline="central"
+                                                style={{ fontSize: '14px', fill: '#ffffff', fontWeight: 'bold' }}
+                                            >
+                                                {marker.day}
+                                            </text>
+                                        </MarkerSvg>
+                                        <div className="text-sm flex justify-between w-full">
+                                            <p>Day {marker.day}</p>
+                                        </div>
+                                        <Checkbox checked={marker.checked} onCheckedChange={(checked) => onCheckedChange(checked, marker)} />
+                                    </>
+                                }
+                            </div>
+                        ))}
+                    </CardContent>
+                    <CardFooter className="pb-0 justify-center">
+                        <div className="flex justify-between space-x-2">
+                            <Button variant="link" onClick={() => onCheckedChangeAll(true)}>
+                                Select All
+                            </Button>
+                            <Button variant="link" onClick={() => onCheckedChangeAll(false)}>
+                                Clear All
+                            </Button>
+                        </div>
+                    </CardFooter>
+                </Card>
+            </PopoverContent>
+        </Popover>
+    )
+}
+
+export default PinControl;

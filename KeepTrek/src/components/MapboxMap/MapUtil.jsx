@@ -7,9 +7,9 @@ function getDayIndex() {
 }
 
 // wrapper for standard map pin
-const MarkerSvg = memo(function MarkerSvg({ children, color = "#4DB6AC" }) {
+const MarkerSvg = memo(function MarkerSvg({ children, color = "#4DB6AC" , height = "41px", width = "27px"}) {
     return (
-        <svg display="block" height="41px" width="27px" viewBox="0 0 27 41">
+        <svg display="block" height={height} width={width} viewBox="0 0 27 41">
             <defs>
                 <radialGradient id="shadowGradient">
                     <stop offset="10%" stopOpacity="0.4"></stop>
@@ -80,7 +80,7 @@ function getMaxDay(markers) {
             .map(marker => getDayNumber(marker.day)) :
         []
     const maxDay = dayNumbers.length > 0 ? Math.max(...dayNumbers) : 1;
-    return maxDay
+    return {maxDay : maxDay, dayNumbers : dayNumbers};
 }
 
 // Function to calculate a color for a given day.
@@ -103,13 +103,15 @@ function getDayColor(day, totalDays) {
 }
 
 function getMarkerType(type, { ...props } = null) {
-    if (type === 'accommodation') {
+    // Normalize type to lowercase for consistency
+    const normalizedType = type.toLowerCase();
+    if (normalizedType === 'accommodation') {
         return <Bed {...props} />
     }
-    if (type === 'activities') {
+    if (normalizedType === 'activities') {
         return <Tickets {...props} />
     }
-    if (type === 'food') {
+    if (normalizedType === 'food') {
         return <Utensils {...props} />
     }
 }
@@ -121,7 +123,8 @@ const categoryPalettes = {
 };
 
 function getCategoryAppearance(marker) {
-    const { category: type } = marker;
+    const { category } = marker;
+    const type = category.toLowerCase(); // Normalize to lowercase
     // If the marker type doesn't exist in our palettes, return a default look.
     const palette = categoryPalettes[type] || { baseHue: 0, baseSaturation: 70, baseLightness: 50 };
 
