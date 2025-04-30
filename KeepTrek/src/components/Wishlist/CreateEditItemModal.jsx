@@ -35,6 +35,7 @@ export default function CreateEditItemModal({
     tripID: tripId,
     category: initialCategory,
     title: "",
+    placeId: "",
     location: "",
     coordinates: [],
     image: "",
@@ -53,6 +54,7 @@ export default function CreateEditItemModal({
         ...prev,
         category: location.category,
         title: location.title,
+        placeId: location.placeId,
         location: location.location,
         coordinates: location.coordinates,
         image: location.image,
@@ -67,6 +69,7 @@ export default function CreateEditItemModal({
         ...prev,
         category: initialCategory,
         title: location ? location.name : "",
+        placeId: location ? location.placeId : "",
         location: location ? location.address : "",
         coordinates: location ? location.coordinates : [],
         rating: location ? location.rating : "",
@@ -84,6 +87,7 @@ export default function CreateEditItemModal({
       setNewItem(prev => ({
           ...prev,
           title: suggestion?.name ?? newLocation.placePrediction.structuredFormat.mainText.text,
+          placeId: suggestion?.placeId ?? "",
           location: suggestion?.address ?? newLocation,
           coordinates: suggestion?.coordinates ?? [],
           rating: suggestion?.rating ?? "",
@@ -96,6 +100,7 @@ export default function CreateEditItemModal({
       setNewItem(prev => ({
           ...prev,
           title: newLocation,
+          placeId: "",
           location: newLocation,
           coordinates: [],
           rating: "",
@@ -122,7 +127,7 @@ export default function CreateEditItemModal({
       onClose();
     } catch (err) {
       console.error(`Error ${isEditMode ? "updating" : "creating"} wishlist item:`, err);
-      setError(err.response?.data?.detail || `Failed to ${isEditMode ? "update" : "create"} wishlist item`);
+      setError(`Failed to ${isEditMode ? "update" : "create"} wishlist item`);
     } finally {
       setIsSaving(false);
     }

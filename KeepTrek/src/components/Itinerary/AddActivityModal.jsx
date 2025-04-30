@@ -7,13 +7,14 @@ import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar";
 import { Textarea } from '@/components/ui/textarea';
 import { fetchPlaceDetails } from "@/APIs/fetchPlaceDetails.js";
 
-const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, location, days, selectedDay }) => {
+const AddActivityModal = ({ isOpen, onClose, onAddActivity, location, days, selectedDay }) => {
     const [newActivity, setNewActivity] = useState({
         day: "",
         type: "",
         time: "",
         duration: "",
         title: "",
+        placeId: "",
         location: "",
         coordinates: [],
         rating: "",
@@ -29,6 +30,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
             ...prev,
             day: selectedDay ?? "",
             title: location ? location.name : "",
+            placeId: location ? location.placeId : "",
             location: location ? location.address : "",
             coordinates: location ? location.coordinates : [],
             rating: location ? location.rating : "",
@@ -44,6 +46,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
             const suggestion = await fetchPlaceDetails(newLocation.placePrediction.placeId)
             setNewActivity(prev => ({
                 ...prev,
+                placeId: suggestion.placeId,
                 location: suggestion?.address ?? newLocation,
                 coordinates: suggestion?.coordinates ?? [],
                 rating: suggestion?.rating ?? "",
@@ -55,6 +58,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
         } else {
             setNewActivity(prev => ({
                 ...prev,
+                placeId: "",
                 location: newLocation,
                 coordinates: [],
                 rating: "",

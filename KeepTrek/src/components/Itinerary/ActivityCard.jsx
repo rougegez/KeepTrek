@@ -13,6 +13,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import GoogleMapImage from '@/components/MapboxMap/GoogleMapImage.jsx';
+
 import { useItinerary } from './useItinerarySocket.jsx';
 
 const ActivityCard = ({
@@ -23,7 +25,7 @@ const ActivityCard = ({
   onLocationClick,
   canModify = false }) => {
 
-  const { days, updateDay, getDayAndActivity, changeActivityDay } = useItinerary();
+  const { days, updateDay, getDayAndActivity, changeActivityDay , updateActivity } = useItinerary();
   const { day: currentDay } = getDayAndActivity(activity.id);
   const activityIndex = currentDay.activities.findIndex((a) => a.id === activity.id);
 
@@ -65,6 +67,12 @@ const ActivityCard = ({
     if (activityIndex === currentDay.activities.length - 1) {
       const newDayDate = "Day " + (parseInt(currentDay.date.replace(/[A-z]+/g, "")) + 1);
       changeActivityDay(activity, newDayDate, true);
+    }
+  }
+
+  const handleNewImage = (newImage) => {
+    if (newImage) {
+      updateActivity({ ...activity, image: newImage });
     }
   }
 
@@ -160,9 +168,10 @@ const ActivityCard = ({
               {isMobile && (
                 <div className="w-full relative" onClick={e => e.stopPropagation()}>
                   <a href={activity.link} target="_blank" rel="noreferrer noopener" onClick={e => e.stopPropagation()}>
-                    <img
+                    <GoogleMapImage
+                      placeId={activity?.placeId}
                       src={activity.image}
-                      alt=""
+                      onNewImage={handleNewImage}
                       className="w-full h-28 rounded-lg object-cover"
                     />
                   </a>
@@ -194,7 +203,7 @@ const ActivityCard = ({
                 {/* Address */}
                 <div className="flex items-start gap-1 text-xs md:text-sm text-muted-foreground">
                   <span>{activity.location}</span>
-              </div>
+                </div>
 
                 {/* Notes */}
                 <Textarea
@@ -211,9 +220,10 @@ const ActivityCard = ({
               {!isMobile && (
                 <div className="flex-none relative" onClick={e => e.stopPropagation()}>
                   <a href={activity.link} target="_blank" rel="noreferrer noopener" onClick={e => e.stopPropagation()}>
-                    <img
+                    <GoogleMapImage
+                      placeId={activity?.placeId}
                       src={activity.image}
-                      alt=""
+                      onNewImage={handleNewImage}
                       className="w-52 h-32 rounded-lg object-cover"
                     />
                   </a>

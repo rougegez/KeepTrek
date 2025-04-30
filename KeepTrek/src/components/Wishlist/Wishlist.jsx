@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef ,} from "react";
 import { useNavigate } from "react-router-dom";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -44,11 +44,6 @@ export default function WishlistPage() {
   const [mapInstance, setMapInstance] = useState(null);
   const [searchedPlace, setSearchedPlace] = useState(null);
   const [savedLocation, setSavedLocation] = useState(null);
-  // const [category, setCategory] = useState("");
-  // const [name, setName] = useState("");
-  // const [image, setImage] = useState("");
-  // const [address, setAddress] = useState("");
-  // const [note, setNote] = useState("");
 
   // New state for add mode
   const [addMode, setAddMode] = useState(false);
@@ -196,10 +191,6 @@ export default function WishlistPage() {
 
   const handleSaveLocation = (place) => {
     setSavedLocation(place);
-    setName(place.name);
-    setAddress(place.address);
-    setImage(place.image);
-    setNote(place.link);
     setIsCreateModalOpen(true);
   };
 
@@ -253,6 +244,12 @@ export default function WishlistPage() {
     await downvoteItem(item.tripID, item.id);
     await fetchWishlistData();
   };
+
+  const handleNewImage = async (editedItem) => {
+    await editItem(editedItem.tripID, editedItem.id, editedItem);
+    await fetchWishlistData();
+    console.log(editedItem)
+  }
 
   const handleAddModeToggle = () => {
     setAddMode(!addMode);
@@ -394,12 +391,13 @@ export default function WishlistPage() {
               <WishlistSection title="Accommodation">
                 {wishlistData.accommodation.map((item) => (
                   <WishlistCard
-                    key={item.id}
+                    key={`${item.id}`}
                     item={item}
                     onClick={() => handleItemClick(item)}
                     onUpvote={(item) => handleVote(item, true)}
                     onDownvote={(item) => handleVote(item, false)}
                     onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                    onNewImage={handleNewImage}
                     currUser={user}
                     addMode={addMode}
                     onSelect={handleSelectItem}
@@ -421,6 +419,7 @@ export default function WishlistPage() {
                     onUpvote={(item) => handleVote(item, true)}
                     onDownvote={(item) => handleVote(item, false)}
                     onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                    onNewImage={handleNewImage}
                     currUser={user}
                     addMode={addMode}
                     onSelect={handleSelectItem}
@@ -442,6 +441,7 @@ export default function WishlistPage() {
                     onUpvote={(item) => handleVote(item, true)}
                     onDownvote={(item) => handleVote(item, false)}
                     onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                    onNewImage={handleNewImage}
                     currUser={user}
                     addMode={addMode}
                     onSelect={handleSelectItem}
@@ -490,10 +490,12 @@ export default function WishlistPage() {
         onClose={() => {
           setIsCreateModalOpen(false);
           setInitialCategory("");
+          setSavedLocation(null);
         }}
         onSubmit={handleSubmitCreateItem}
         tripId={tripID}
         initialCategory={initialCategory}
+        location={savedLocation}
       />
 
       <CreateEditItemModal // Edit modal
