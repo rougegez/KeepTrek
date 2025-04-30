@@ -10,7 +10,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import ActivityCard from "./ActivityCard.jsx";
 import AddActivityModal from "./AddActivityModal.jsx";
 import EditActivityModal from "./EditActivityModal.jsx";
-import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx";
+import MapboxMap from "@/components/MapboxMap/MapboxMapGoogleSearch.jsx";
+import { normalizeMarkers } from "@/components/MapboxMap/MapUtil.jsx";
 import { dateFormatter } from "@/utils/dateFormat.jsx";
 
 import { useParams, useNavigate } from "react-router-dom";
@@ -210,12 +211,13 @@ function Itinerary() {
             <MapboxMap
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
-              initCenter={tripDetails.coordinates}
+              initCenter={tripDetails?.coordinates}
               handlePanTo={searchedPlace}
               height="100%"
               width="100%"
               disableSaveLocation={!canModify}
               disableSearchBar={!canModify}
+              markers={normalizeMarkers(days)}
             />
             <MapToggleButton />
           </motion.div>
@@ -325,12 +327,13 @@ function Itinerary() {
             <MapboxMap
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
-              initCenter={tripDetails.coordinates}
+              initCenter={tripDetails?.coordinates}
               handlePanTo={searchedPlace}
               height="100%"
               width="100%"
               disableSaveLocation={!canModify}
               disableSearchBar={!canModify}
+              markers={normalizeMarkers(days)}
             />
           </div>
         )}

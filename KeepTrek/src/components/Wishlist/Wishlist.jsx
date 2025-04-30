@@ -6,7 +6,8 @@ import WishlistSection from "./WishlistSection.jsx";
 import { WishlistCard, AddItemCard } from "./WishlistCard.jsx";
 import ItemModal from "./ItemModal.jsx";
 import CreateEditItemModal from "./CreateEditItemModal.jsx";
-import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx";
+import MapboxMap from "@/components/MapboxMap/MapboxMapGoogleSearch.jsx";
+import { normalizeMarkers } from "@/components/MapboxMap/MapUtil.jsx"; 
 import { getAllItems, createItem, editItem, deleteItem, upvoteItem, downvoteItem, deleteFile } from "@/APIs/wishlist";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -58,7 +59,7 @@ export default function WishlistPage() {
   const [optimisticVotes, setOptimisticVotes] = useState({});
   const [initialCategory, setInitialCategory] = useState("");
 
-  const { data: tripDetails } = useQuery(['trip', tripID], () => getTrip(tripID));
+  const { data: tripDetails } = useQuery(['trip', tripID], () => getTrip(tripID), {suspense: true});
   const userRole = tripDetails?.users.find(u => u.userID === user)?.role;
   const canModify = canEdit(userRole);
 
@@ -332,6 +333,7 @@ export default function WishlistPage() {
               initCenter={tripDetails?.coordinates}
               height="100%"
               width="100%"
+              markers={normalizeMarkers(wishlistData)}
             />
             <MapToggleButton />
           </motion.div>
@@ -340,8 +342,8 @@ export default function WishlistPage() {
         <motion.div
           ref={contentRef}
           className={`${isMobile
-              ? 'w-full bg-background relative z-30'
-              : 'col-span-1 h-screen'
+            ? 'w-full bg-background relative z-30'
+            : 'col-span-1 h-screen'
             }`}
           animate={isMobile ? {
             marginTop: `calc(${getMapHeight()} + 3.5rem)`,
@@ -464,6 +466,7 @@ export default function WishlistPage() {
               initCenter={tripDetails?.coordinates}
               height="100%"
               width="100%"
+              markers={normalizeMarkers(wishlistData)}
             />
           </div>
         )}
