@@ -264,7 +264,7 @@ const MapboxMap = ({
                     <g transform="translate(13.5, 13.5)">
                         <foreignObject x="-13.5" y="-13.5" width="27" height="27">
                             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                                {getMarkerType(marker.category, { size: 20, color: '#ffffff' })}
+                                {getMarkerType(marker.category, { size: 16, color: '#ffffff' , strokeWidth: 2.5})}
                             </div>
                         </foreignObject>
                     </g> :

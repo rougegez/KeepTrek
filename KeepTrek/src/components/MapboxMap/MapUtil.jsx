@@ -8,7 +8,7 @@ function getDayIndex() {
 
 // wrapper for standard map pin
 const MarkerSvg = memo(function MarkerSvg({ children, color = "#4DB6AC" , height = "41px", width = "27px"}) {
-    return (
+    return (    
         <svg display="block" height={height} width={width} viewBox="0 0 27 41">
             <defs>
                 <radialGradient id="shadowGradient">
@@ -88,8 +88,8 @@ function getMaxDay(markers) {
 // For extra days, it uses modulo to "loop" and then changes the lightness.
 function getDayColor(day, totalDays) {
     const dayNumber = getDayNumber(day);
-    // If totalDays is 1, just return the warm base.
-    if (totalDays <= 1) return 'hsl(10, 70%, 50%)';
+    // If totalDays is 1, return a pastel warm base.
+    if (totalDays <= 1) return 'hsl(10, 70%, 62%)';
     // Determine a fraction from 0 to 1 for day within totalDays.
     const dayIndex = (dayNumber - 1) % totalDays;
     const fraction = dayIndex / (totalDays - 1);
@@ -97,7 +97,7 @@ function getDayColor(day, totalDays) {
     const hue = Math.round(10 + fraction * (240 - 10));
     // If you loop (day > totalDays), adjust lightness to differentiate further.
     const extraLoops = Math.floor((dayNumber - 1) / totalDays);
-    const baseLightness = 53;
+    const baseLightness = 62;
     const lightness = Math.max(Math.min(baseLightness - extraLoops * 10, 70), 30);
     return `hsl(${hue}, 70%, ${lightness}%)`;
 }
@@ -117,30 +117,26 @@ function getMarkerType(type, { ...props } = null) {
 }
 
 const categoryPalettes = {
-    accommodation: { baseHue: 10, baseSaturation: 70, baseLightness: 53 },
-    activities: { baseHue: 120, baseSaturation: 70, baseLightness: 53 },
-    food: { baseHue: 240, baseSaturation: 70, baseLightness: 53 },
+    accommodation: { baseHue: 10, baseSaturation: 70, baseLightness: 62 },
+    activities: { baseHue: 120, baseSaturation: 70, baseLightness: 62 },
+    food: { baseHue: 240, baseSaturation: 70, baseLightness: 62 },
 };
 
 function getCategoryAppearance(marker) {
     const { category } = marker;
     const type = category.toLowerCase(); // Normalize to lowercase
     // If the marker type doesn't exist in our palettes, return a default look.
-    const palette = categoryPalettes[type] || { baseHue: 0, baseSaturation: 70, baseLightness: 50 };
+    const palette = categoryPalettes[type] || { baseHue: 0, baseSaturation: 70, baseLightness: 60 };
 
     const upCount = marker.upvotes ? marker.upvotes.length : 0;
     const downCount = marker.downvotes ? marker.downvotes.length : 0;
     const net = upCount - downCount;
 
-    // Adjust saturation: more positive net => bolder saturation; more negative net => less saturated.
-    const saturation = Math.max(Math.min(palette.baseSaturation + net * 5, 100), 30);
-    // Adjust lightness: net positive makes it a bit darker, negative makes it lighter.
-    const lightness = Math.max(Math.min(palette.baseLightness - net * 2, 70), 30);
     // For overall opacity, drop the marker’s opacity for very low (negative net) scores.
     const opacity = net >= 0 ? 1 : Math.max(1 + net / 10, 0.3);
 
     return {
-        color: `hsla(${palette.baseHue}, ${saturation}%, ${lightness}%, ${opacity})`,
+        color: `hsl(${palette.baseHue}, ${palette.baseSaturation}%, ${palette.baseLightness}%)`,
         opacity,
     };
 }
