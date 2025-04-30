@@ -12,10 +12,45 @@ import {
     PopoverContent
 } from '@/components/ui/popover'
 import { Checkbox } from "@/components/ui/checkbox.jsx";
-import { MarkerSvg, getMarkerType } from '@/components/MapboxMap/MapUtil.jsx'
+import { MarkerSvg, getMarkerType, getDayNumber } from '@/components/MapboxMap/MapUtil.jsx'
 import { Layers } from 'lucide-react'
 
-function PinControl({ mapControls , onCheckedChange , onCheckedChangeAll}) {
+import { useMap } from "react-map-gl/mapbox";
+import bbox from '@turf/bbox'
+
+function PinControl({ markers, mapControls, onCheckedChange, onCheckedChangeAll }) {
+
+    const { map: mapRef } = useMap();
+
+    const handleViewAllPins = () => {
+        if (markers) {
+            const coordinates = markers.map((marker) => {
+                if (marker.day) {
+                    const dayIndex = getDayNumber(marker.day)
+                    const markerControl = mapControls.find((m) => m.day === dayIndex)
+                    if (!markerControl.checked) return null
+                } else if (marker.category) {
+                    const markerControl = mapControls.find((m) => m.category.toLowerCase() === marker.category)
+                    if (!markerControl.checked) return null
+                }
+                return [marker.longitude, marker.latitude]
+            })
+
+            // filter out null values and convert to format for turf bbox
+            const multiPoint = { type: 'MultiPoint', coordinates: coordinates.filter((item) => item !== null) }
+
+            // calculate the bounding box of the feature
+            const [minLng, minLat, maxLng, maxLat] = bbox(multiPoint);
+
+            mapRef.fitBounds(
+                [
+                    [minLng, minLat],
+                    [maxLng, maxLat]
+                ],
+                { padding: 100, duration: 1000 , maxZoom: 15}
+            );
+        }
+    }
 
     return (
         <Popover>
@@ -71,13 +106,20 @@ function PinControl({ mapControls , onCheckedChange , onCheckedChangeAll}) {
                         ))}
                     </CardContent>
                     <CardFooter className="pb-0 justify-center">
-                        <div className="flex justify-between space-x-2">
-                            <Button variant="link" onClick={() => onCheckedChangeAll(true)}>
-                                Select All
-                            </Button>
-                            <Button variant="link" onClick={() => onCheckedChangeAll(false)}>
-                                Clear All
-                            </Button>
+                        <div className="">
+                            <div className="flex justify-center">
+                                <Button onClick={handleViewAllPins}>
+                                    Fit pins in view
+                                </Button>
+                            </div>
+                            <div className="flex justify-between space-x-2">
+                                <Button variant="link" onClick={() => onCheckedChangeAll(true)}>
+                                    Select All
+                                </Button>
+                                <Button variant="link" onClick={() => onCheckedChangeAll(false)}>
+                                    Clear All
+                                </Button>
+                            </div>
                         </div>
                     </CardFooter>
                 </Card>

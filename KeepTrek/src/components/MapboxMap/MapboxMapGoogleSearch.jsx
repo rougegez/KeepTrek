@@ -1,22 +1,8 @@
 'use client'
 
-import React, { useEffect, useState, useMemo, memo } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    CardFooter
-} from "@/components/ui/card"
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import { Button } from "@/components/ui/button"
-import { Clock, Globe, MapPin, X, Map as MapIcon, Layers } from 'lucide-react'
 import MapSearchBar from './GoogleMapsSearchbar'
 import { fetchPlaceDetails } from '@/APIs/fetchPlaceDetails.js'
 import Map, {
@@ -24,18 +10,14 @@ import Map, {
     useMap,
     ScaleControl,
     GeolocateControl,
-    NavigationControl
+    NavigationControl,
 } from 'react-map-gl/mapbox';
 
-import { MarkerSvg, getDayIndex, getDayColor, getMaxDay, getCategoryAppearance, getMarkerType, getDayNumber } from '@/components/MapboxMap/MapUtil.jsx'
-import { Checkbox } from '@/components/ui/checkbox.jsx'
-import {
-    Popover,
-    PopoverTrigger,
-    PopoverContent
-} from '@/components/ui/popover'
-import PinControl from './PinControl'
-import LocationCard from './LocationCard'
+import { MarkerSvg, getDayColor, getMaxDay, getCategoryAppearance, getMarkerType, getDayNumber } from '@/components/MapboxMap/MapUtil.jsx'
+
+import PinControl from '@/components/MapboxMap/PinControl'
+import LocationCard from '@/components/MapboxMap/LocationCard'
+import ResetMapButton from '@/componenents/MapboxMap/ResetMapButton'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API_KEY
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
@@ -58,6 +40,7 @@ const MapboxMap = ({
         latitude: initCenter[1] ?? 3.0644537753819425,
         zoom: initZoom,
     });
+
     const [dropMarker, setDropMarker] = useState({
         showDropMarker: false,
         longitude: 0,
@@ -65,14 +48,22 @@ const MapboxMap = ({
     })
 
     const [place, setPlace] = useState(null)
-    const [imageError, setImageError] = useState(false)
-
 
     useEffect(() => {
         if (handlePanTo) {
-            handlePlaceUpdate(handlePanTo?.clickLocation ?? handlePanTo)
+            goToLocation(handlePanTo?.clickLocation ?? handlePanTo)
         }
     }, [handlePanTo])
+
+    const goToLocation = (place) => {
+        if (mapRef && place.coordinates) {
+            mapRef.flyTo({
+                center: place.coordinates,
+                zoom: initZoom,
+            })
+            setPlace(place)
+        }
+    }
 
     const handlePlaceUpdate = (newPlace) => {
         if (mapRef && newPlace.coordinates) {
@@ -217,7 +208,7 @@ const MapboxMap = ({
 
     const handleCheckChangeAll = (checked) => {
         const updatedMarkers = mapControls.map((item) => {
-            return {...item, checked: checked}
+            return { ...item, checked: checked }
         })
         setMapControls(updatedMarkers)
     }
@@ -277,7 +268,6 @@ const MapboxMap = ({
         </Marker>)
     }), [markers, mapControls])
 
-    // console.log(markers, mapControls, memoMarkers)
     return (
         <>
             <Map
@@ -308,8 +298,8 @@ const MapboxMap = ({
                 {((memoMarkers.length !== 0) && !dropMarker.showDropMarker) && (
                     memoMarkers
                 )}
-
             </Map>
+
 
             <div className={`absolute flex top-4 w-full px-4 gap-2 ${disableSearchBar ? 'justify-end' : 'justify-between'}`}>
                 {!disableSearchBar && (
@@ -320,11 +310,15 @@ const MapboxMap = ({
                         />
                     </div>
                 )}
-                <PinControl 
-                    mapControls={mapControls} 
-                    onCheckedChange={handleCheckChange}
-                    onCheckedChangeAll={handleCheckChangeAll}
-                />
+                <div className="flex flex-col gap-2">
+                    <PinControl
+                        markers={markers}
+                        mapControls={mapControls}
+                        onCheckedChange={handleCheckChange}
+                        onCheckedChangeAll={handleCheckChangeAll}
+                    />
+                    <ResetMapButton initCenter={initCenter} initZoom={initZoom} />
+                </div>
             </div>
 
             {place && (
@@ -337,6 +331,9 @@ const MapboxMap = ({
                     />
                 </div>
             )}
+
+
+
         </>
     )
 }
