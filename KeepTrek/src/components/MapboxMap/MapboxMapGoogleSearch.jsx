@@ -15,9 +15,9 @@ import Map, {
 
 import { MarkerSvg, getDayColor, getMaxDay, getCategoryAppearance, getMarkerType, getDayNumber } from '@/components/MapboxMap/MapUtil.jsx'
 
-import PinControl from '@/components/MapboxMap/PinControl'
-import LocationCard from '@/components/MapboxMap/LocationCard'
-import ResetMapButton from '@/componenents/MapboxMap/ResetMapButton'
+import PinControl from '@/components/MapboxMap/PinControl.jsx'
+import LocationCard from '@/components/MapboxMap/LocationCard.jsx'
+import ResetMapButton from '@/components/MapboxMap/ResetMapButton.jsx'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API_KEY
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
@@ -74,10 +74,24 @@ const MapboxMap = ({
                 latitude: newPlace.coordinates[1],
             })
 
-            mapRef.flyTo({
-                center: newPlace.coordinates,
-                zoom: initZoom
-            })
+            if (newPlace.viewport) {
+                const { high, low  } = newPlace.viewport
+                const bounds = [
+                    [high.longitude, high.latitude],
+                    [low.longitude, low.latitude],
+                ]
+                mapRef.fitBounds(bounds, {
+                    padding: 100,
+                    // duration: 1000,
+                    maxZoom: 15,
+                })
+            }
+            else if (newPlace.coordinates) {
+                mapRef.flyTo({
+                    center: newPlace.coordinates,
+                    zoom: viewState.zoom,
+                })
+            }
 
             setPlace(newPlace)
         }

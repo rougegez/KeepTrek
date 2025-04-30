@@ -31,6 +31,7 @@ const fetchPlaceDetails = async (placeId) => {
             website: data.websiteUri ?? "",
             openingHours: data.currentOpeningHours?.weekdayDescriptions ?? [],
             link: data.googleMapsLinks.placeUri ?? "",
+            viewport: data.viewport,
             image: image
         }
         return newPlace
