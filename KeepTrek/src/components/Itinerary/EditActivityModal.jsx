@@ -20,6 +20,7 @@ const EditActivityModal = ({ isOpen, onClose, activityId}) => {
       const suggestion = await fetchPlaceDetails(newLocation.placePrediction.placeId)
       updateActivity({
         ...activity,
+        placeId : suggestion?.placeId ?? "",
         location: suggestion?.address ?? newLocation,
         coordinates: suggestion?.coordinates ?? [],
         rating: suggestion?.rating ?? "",
@@ -31,6 +32,7 @@ const EditActivityModal = ({ isOpen, onClose, activityId}) => {
     } else {
       updateActivity({
         ...activity,
+        placeId : "",
         location: newLocation,
         coordinates: [],
         rating: "",
