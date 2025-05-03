@@ -1,4 +1,5 @@
-import { X, MapPin, Clock, Globe, MapIcon } from 'lucide-react'
+import { useState , useRef} from 'react'
+import { X, MapPin, Clock, Globe, MapIcon, ChevronDown } from 'lucide-react'
 import {
     Card,
     CardContent,
@@ -11,10 +12,35 @@ import {
     CollapsibleContent,
 } from '@/components/ui/collapsible.jsx'
 import { Button } from "@/components/ui/button.jsx"
-import { getDayIndex } from './MapUtil'
+import { getDayIndex } from '@/components/MapboxMap/MapUtil.jsx'
+import { 
+    DropdownMenu, 
+    DropdownMenuContent, 
+    DropdownMenuCheckboxItem, 
+    DropdownMenuTrigger }
+from '@/components/ui/dropdown-menu.jsx'
+import { toast } from 'sonner'
 
-const LocationCard = function LocationCard({ place, onClick, onSaveLocation, disableSaveLocation }) {
-    
+function LocationCard({ place, onClick, onSaveLocation, disableSaveLocation, itineraryDays, onDaySelected , daySelected}) {
+
+    const [selectedDay, setSelectedDay] = useState(daySelected ?? null)
+    const [isDayDropdownOpen, setIsDayDropdownOpen] = useState(false)
+
+    const handleDaySelected = (checked, day) => {
+        onDaySelected(checked ? day : null)
+        setSelectedDay(checked ? day : null)
+    }
+
+    const handleSaveLocation = () => {
+        if (onSaveLocation) {
+            onSaveLocation()
+        }
+        if (!selectedDay && itineraryDays.length > 0) {
+            setIsDayDropdownOpen(true)
+            toast.info("Select a day to save the location to")
+        }
+    }
+
     return (
         <Card className="relative bg-white bg-opacity-90">
             <CardHeader className="pb-0 md:pb-6 pt-2 md:pt-6">
@@ -116,12 +142,35 @@ const LocationCard = function LocationCard({ place, onClick, onSaveLocation, dis
                             </div>
                         )}
                         {!disableSaveLocation && (
-                            <Button
-                                onClick={onSaveLocation}
-                                className="mt-1 md:mt-2 w-full md:w-auto text-[10px] md:text-sm py-1 md:py-2 h-auto"
-                            >
-                                Save Location
-                            </Button>
+                            <div className="flex">
+                                <Button
+                                    onClick={handleSaveLocation}
+                                    className={`mt-1 md:mt-2 w-full md:w-auto text-[10px] md:text-sm py-1 md:py-2 h-auto ${(itineraryDays.length > 0) ? `rounded-r-none` : ``}`}
+                                >
+                                    Save Location
+                                </Button>
+                                {(itineraryDays.length > 0) && (
+                                <DropdownMenu open={isDayDropdownOpen} onOpenChange={setIsDayDropdownOpen}>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button className="px-1 rounded-l-none mt-1 md:mt-2 w-full md:w-auto text-[10px] md:text-sm py-1 md:py-2 h-auto">
+                                            <ChevronDown />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        {itineraryDays.map((day, index) => (
+                                            <DropdownMenuCheckboxItem 
+                                                key={index} 
+                                                value={day} 
+                                                checked={day === selectedDay}
+                                                onCheckedChange={(checked) => handleDaySelected(checked, day)}
+                                                >
+                                                {day}
+                                            </DropdownMenuCheckboxItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                )}
+                            </div>
                         )}
                     </div>
 
