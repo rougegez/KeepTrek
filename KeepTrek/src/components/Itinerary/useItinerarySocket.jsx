@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect} from 'react';
 import useWebSocket from 'react-use-websocket';
 import { create } from 'zustand';
-import { useQuery} from 'react-query';
+import { useQuery } from 'react-query';
 import { getShortToken } from '@/APIs/auth';
 import { useIdleTimer } from 'react-idle-timer';
 import { useParams } from 'react-router-dom';
@@ -12,7 +12,9 @@ export const useItinerary = () => {
     const setToken = useItineraryStore((state) => state.setToken);
     const days = useItineraryStore((state) => state.days);
     const setDays = useItineraryStore((state) => state.setDays);
+    const getDays = useItineraryStore((state) => state.getDays);
     const getDayAndActivity = useItineraryStore((state) => state.getDayAndActivity);
+    const addActivity = useItineraryStore((state) => state.addActivity);
     const updateActivity = useItineraryStore((state) => state.updateActivity);
     const updateDay = useItineraryStore((state) => state.updateDay);
     const changeActivityDay = useItineraryStore((state) => state.changeActivityDay);
@@ -35,7 +37,7 @@ export const useItinerary = () => {
             onSuccess: (data) => {
                 setToken(data)
             },
-            refetchOnWindowFocus: false, 
+            refetchOnWindowFocus: false,
         }
     )
 
@@ -79,6 +81,8 @@ export const useItinerary = () => {
     return {
         days: days,
         getDayAndActivity: getDayAndActivity,
+        getDays: getDays,
+        addActivity: addActivity,
         setDays: setDays,
         sendJsonMessage: sendJsonMessage,
         lastJsonMessage: lastJsonMessage,
@@ -100,6 +104,24 @@ export const useItineraryStore = create((set, get) => ({
         if (sendJsonMessage) {
             sendJsonMessage({ tripID, days: newDays });
         }
+    },
+    addActivity: (newActivity, dayDate) => {
+        set((state) => {
+            const updatedDays = state.days.map((day) => {
+                if (day.date === dayDate) {
+                    return { ...day, activities: [...day.activities, newActivity] };
+                }
+                return day;
+            });
+            get().setDays(updatedDays);
+            return { days: updatedDays };
+        });
+    },
+    getDays: () => {
+        const { days } = get();
+        return days.map((day) => {
+            return day.date;
+        })
     },
     getDayAndActivity: (activityId) => {
         const foundDay = get().days.find((day) =>
@@ -136,12 +158,12 @@ export const useItineraryStore = create((set, get) => ({
             get().setDays(updatedDays);
             return { days: updatedDays };
         })
-    },     
+    },
     changeActivityDay: (activity, newDay, addToStart) => {
         set((state) => {
             const { date: currentDate, activity: foundActivity } = get().getDayAndActivity(activity?.id ?? activity);
             if (!currentDate || !foundActivity) return state;
-            
+
             while (true) {
                 const foundDay = state.days.find((day) => day.date === newDay);
                 if (foundDay) {
@@ -149,7 +171,7 @@ export const useItineraryStore = create((set, get) => ({
                 }
                 return state;
             }
-                
+
             const updatedDays = state.days.map((day) => {
                 if (day.date === currentDate) {
                     return {
