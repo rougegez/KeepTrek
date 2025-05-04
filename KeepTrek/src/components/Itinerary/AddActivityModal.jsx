@@ -7,13 +7,23 @@ import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar";
 import { Textarea } from '@/components/ui/textarea';
 import { fetchPlaceDetails } from "@/APIs/fetchPlaceDetails.js";
 
-const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, location, days, selectedDay }) => {
-    const [newActivity, setNewActivity] = useState({
-        day: "",
+const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, location, days }) => {
+    const [newActivity, setNewActivity] = useState(location ? {
+        title: location ? location.name : "",
+        placeId: location ? location.placeId : "",
+        location: location ? location.address : "",
+        coordinates: location ? location.coordinates : [],
+        rating: location ? location.rating : "",
+        image: location ? location.image : "../src/assets/dummy-image.jpg",
+        openingHours: location ? location.openingHours : "",
+        website: location ? location.website : "",
+        link: location ? location.link : "",
+    } : {
         type: "",
         time: "",
         duration: "",
         title: "",
+        placeId: "",
         location: "",
         coordinates: [],
         rating: "",
@@ -23,27 +33,14 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
         image: "../src/assets/dummy-image.jpg",
         notes: "",
     });
-
-    useEffect(() => {
-        setNewActivity(prev => ({
-            ...prev,
-            day: selectedDay ?? "",
-            title: location ? location.name : "",
-            location: location ? location.address : "",
-            coordinates: location ? location.coordinates : [],
-            rating: location ? location.rating : "",
-            image: location ? location.image : "../src/assets/dummy-image.jpg",
-            openingHours: location ? location.openingHours : "",
-            website: location ? location.website : "",
-            link: location ? location.link : "",
-        }));
-    }, [isOpen, location, selectedDay]);
+    const [daySelected, setDaySelected] = useState(selectedDay || null);
 
     const handleLocationChange = async (newLocation) => {
         if (newLocation?.placePrediction?.structuredFormat?.mainText?.text) {
             const suggestion = await fetchPlaceDetails(newLocation.placePrediction.placeId)
             setNewActivity(prev => ({
                 ...prev,
+                placeId: suggestion.placeId,
                 location: suggestion?.address ?? newLocation,
                 coordinates: suggestion?.coordinates ?? [],
                 rating: suggestion?.rating ?? "",
@@ -55,6 +52,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
         } else {
             setNewActivity(prev => ({
                 ...prev,
+                placeId: "",
                 location: newLocation,
                 coordinates: [],
                 rating: "",
@@ -90,20 +88,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => {
-            if (!open) {
-                setNewActivity({
-                    day: "",
-                    type: "",
-                    time: "",
-                    duration: "",
-                    title: "",
-                    location: "",
-                    image: "../src/assets/dummy-image.jpg",
-                    notes: "",
-                });
-                onClose();
-            }
+        <Dialog open={isOpen} onOpenChange={(open) => {if (!open) {onClose()}
         }}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
@@ -114,9 +99,9 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                     <div>
                         <label htmlFor="day-select" className="block text-sm font-medium text-muted-foreground mb-1">Day</label>
                         <Select
-                            value={newActivity.day}
+                            value={daySelected}
                             onValueChange={(value) =>
-                                setNewActivity((prev) => ({ ...prev, day: value }))
+                                setDaySelected(value)
                             }
                         >
                             <SelectTrigger id="day-select" className="w-full">
@@ -145,7 +130,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                                 <SelectValue placeholder="Select activity type" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="stay">Stay</SelectItem>
+                                <SelectItem value="accommodation">Accommodation</SelectItem>
                                 <SelectItem value="outdoor">Outdoor</SelectItem>
                                 <SelectItem value="indoor">Indoor</SelectItem>
                                 <SelectItem value="food">Food</SelectItem>
@@ -229,7 +214,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, mapInstance, locatio
                                 onAddActivity({
                                     ...newActivity,
                                     id: `${Date.now()}`,
-                                });
+                                }, daySelected);
                                 onClose();
                             }}
                         >

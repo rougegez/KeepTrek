@@ -4,6 +4,9 @@ import axios from "./axiosConfig";
 const userProfileCache = new Map();
 
 export const getUserProfile = async (userId) => {
+  if (!userId) {
+    throw new Error("User ID is null or undefined");
+  }
   // Check cache first
   if (userProfileCache.has(userId)) {
     return userProfileCache.get(userId);

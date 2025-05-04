@@ -24,6 +24,7 @@ const fetchPlaceDetails = async (placeId) => {
             console.error('Error fetching place image:', error)
         }
         const newPlace = {
+            placeId: placeId,
             name: data.displayName.text ?? "",
             address: data.formattedAddress ?? "",
             coordinates: [data.location.longitude, data.location.latitude],
@@ -31,6 +32,7 @@ const fetchPlaceDetails = async (placeId) => {
             website: data.websiteUri ?? "",
             openingHours: data.currentOpeningHours?.weekdayDescriptions ?? [],
             link: data.googleMapsLinks.placeUri ?? "",
+            viewport: data.viewport,
             image: image
         }
         return newPlace

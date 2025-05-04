@@ -10,7 +10,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import ActivityCard from "./ActivityCard.jsx";
 import AddActivityModal from "./AddActivityModal.jsx";
 import EditActivityModal from "./EditActivityModal.jsx";
-import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx";
+import MapboxMap from "@/components/MapboxMap/MapboxMapGoogleSearch.jsx";
+import { normalizeMarkers } from "@/components/MapboxMap/MapUtil.jsx";
 import { dateFormatter } from "@/utils/dateFormat.jsx";
 
 import { useParams, useNavigate } from "react-router-dom";
@@ -67,7 +68,7 @@ function Itinerary() {
     }
   );
 
-  const { days, setDays, readyState , getDayAndActivity} = useItinerary()
+  const { days, setDays, readyState , getDayAndActivity, getDays, addActivity} = useItinerary()
   const { whosOnline } = useWhosOnline(); 
 
   const userRole = useMemo(() => {
@@ -120,9 +121,23 @@ function Itinerary() {
     setMapInstance(map);
   };
 
-  const handleSaveLocation = (place) => {
-    setSavedLocation(place);
-    setAddModalState({ isOpen: true, selectedDay: days[days.length - 1].date });
+  const handleSaveLocation = (place, selectedDay) => {
+    // place only contains location name, adress and coordinates, requires addition of fields
+    // setSavedLocation(place);
+    // setAddModalState({ isOpen: true, selectedDay: selectedDay });
+    const newActivity = {
+    id: `${Date.now()}`,
+    title: place ? place.name : "",
+    placeId: place ? place.placeId : "",
+    location: place ? place.address : "",
+    coordinates: place ? place.coordinates : [],
+    rating: place ? place.rating : "",
+    image: place ? place.image : "/assets/dummy-image.jpg",
+    openingHours: place ? place.openingHours : "",
+    website: place ? place.website : "",
+    link: place ? place.link : "",
+    } 
+    addActivity(newActivity, selectedDay)
   };
 
   const handleNoteChange = (activityId, newNote) => {
@@ -163,9 +178,10 @@ function Itinerary() {
     setCurrentActivity(null);
   }
 
-  const handleAddActivity = (newActivity) => {
+  const handleAddActivity = (newActivity, selectedDay) => {
+    console.log(newActivity, selectedDay)
     const updatedDays = [...days];
-    const dayIndex = updatedDays.findIndex(day => day.date === newActivity.day);
+    const dayIndex = updatedDays.findIndex(day => day.date === selectedDay);
     if (dayIndex !== -1) {
       updatedDays[dayIndex].activities.push({
         ...newActivity,
@@ -191,6 +207,8 @@ function Itinerary() {
     }
   };
 
+  const itineraryDays = getDays()
+
   return (
     <SidebarProvider >
       <AppSidebar tripID={tripID} />
@@ -210,12 +228,14 @@ function Itinerary() {
             <MapboxMap
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
-              initCenter={tripDetails.coordinates}
+              initCenter={tripDetails?.coordinates}
               handlePanTo={searchedPlace}
               height="100%"
               width="100%"
               disableSaveLocation={!canModify}
               disableSearchBar={!canModify}
+              markers={normalizeMarkers(days)}
+              itineraryDays={itineraryDays}
             />
             <MapToggleButton />
           </motion.div>
@@ -325,28 +345,30 @@ function Itinerary() {
             <MapboxMap
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
-              initCenter={tripDetails.coordinates}
+              initCenter={tripDetails?.coordinates}
               handlePanTo={searchedPlace}
               height="100%"
               width="100%"
               disableSaveLocation={!canModify}
               disableSearchBar={!canModify}
+              markers={normalizeMarkers(days)}
+              itineraryDays={itineraryDays}
             />
           </div>
         )}
       </div>
 
       <AddActivityModal
+        key={`${savedLocation}${addModalState.selectedDay}`}
         isOpen={addModalState.isOpen}
+        selectedDay={addModalState.selectedDay}
         onClose={() => {
-          setAddModalState({ isOpen: false, selectedDay: null });
+          setAddModalState({ isOpen: false });
           setSavedLocation(null);
         }}
         onAddActivity={handleAddActivity}
-        mapInstance={mapInstance}
         location={savedLocation}
         days={days}
-        selectedDay={addModalState.selectedDay}
       />
 
       <EditActivityModal
