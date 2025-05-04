@@ -19,6 +19,7 @@ import InvitePage from './components/Invite/InvitePage';
 import { Toaster } from '@/components/ui/sonner';
 import { WhosOnlineWrapper } from "./components/CreateTrip/WhosOnlineWrapper";
 import { MapProvider } from 'react-map-gl/mapbox'
+import { Analytics } from '@vercel/analytics/react';
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ function App() {
 
   return (
     <>
+    <Analytics />
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <MapProvider>
