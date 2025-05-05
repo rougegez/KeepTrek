@@ -19,6 +19,7 @@ import InvitePage from './components/Invite/InvitePage';
 import { Toaster } from '@/components/ui/sonner';
 import { WhosOnlineWrapper } from "./components/CreateTrip/WhosOnlineWrapper";
 import { MapProvider } from 'react-map-gl/mapbox'
+import ItinerarySocketWrapper from "@/components/Itinerary/ItinerarySocketWrapper";
 
 const queryClient = new QueryClient();
 
@@ -46,11 +47,13 @@ function App() {
                     >
                       <Route path="/yourTrips" element={<YourTrips />} />
                       <Route element={<WhosOnlineWrapper />}>
-                        <Route path="/expenses/:tripID" element={<MainExpensePage />} />
-                        <Route path="/itinerary/:tripID" element={<Itinerary />} />
-                        {/* <Route path="/trip-details" element={<TripDetailsPage />} /> */}
-                        <Route path="/schedule/:tripID" element={<GrpSchedule />} />
-                        <Route path="/wishlist/:tripID" element={<Wishlist />} />
+                        <Route element={<ItinerarySocketWrapper />}>
+                          <Route path="/expenses/:tripID" element={<MainExpensePage />} />
+                          <Route path="/itinerary/:tripID" element={<Itinerary />} />
+                          {/* <Route path="/trip-details" element={<TripDetailsPage />} /> */}
+                          <Route path="/schedule/:tripID" element={<GrpSchedule />} />
+                          <Route path="/wishlist/:tripID" element={<Wishlist />} />
+                        </Route>
                       </Route>
                       <Route path="/create-trip" element={<CreateTrip />} />
                       <Route path="/profile" element={<ProfilePage />} />
@@ -61,7 +64,7 @@ function App() {
             </Router>
           </MapProvider>
         </AuthProvider>
-      </QueryClientProvider>
+      </QueryClientProvider >
       <Toaster
         position='top-center' closeButton />
     </>

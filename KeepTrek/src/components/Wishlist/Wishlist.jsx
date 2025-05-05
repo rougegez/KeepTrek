@@ -27,8 +27,9 @@ import { canEdit } from "@/utils/permissions";
 import { useQuery } from 'react-query';
 import { getTrip } from '@/APIs/trip';
 import { useAuth } from "@/contexts/AuthProvider.jsx";
-import { useItinerary } from "../Itinerary/useItinerarySocket.jsx";
+import { useItinerary } from "@/hooks/useItinerary.jsx";
 import DeleteAlert from "../ui/DeleteAlert.jsx";
+import { toast } from "sonner";
 
 export default function WishlistPage() {
   const { tripID } = useParams();
@@ -273,7 +274,6 @@ export default function WishlistPage() {
             ...day.activities,
             ...selectedItems.map((item, index) => ({
               id: `${Date.now()}-${index}`,
-              day: selectedDay,
               type: item.category,
               time: "",
               duration: "",
@@ -296,7 +296,12 @@ export default function WishlistPage() {
     setDays(updatedDays);
     setAddMode(false);
     setSelectedItems([]);
-    navigate(`/itinerary/${tripID}`);
+    toast.success("Successfully added to itinerary", {
+      action: {
+        label: "View Itinerary",
+        onClick: () => navigate(`/itinerary/${tripID}`)
+      }
+    });
   };
 
   const getMapHeight = () => isMapExpanded ? '65vh' : '10vh';

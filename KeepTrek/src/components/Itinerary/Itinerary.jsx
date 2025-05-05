@@ -29,7 +29,7 @@ import { canEdit, UserRole } from "@/utils/permissions";
 import LeaveAlert from '@/components/ui/LeaveAlert';
 import TripSettings from '../TripSettings/TripSettings.jsx';
 
-import { useItinerary } from './useItinerarySocket.jsx';
+import { useItinerary } from '@/hooks/useItinerary.jsx';
 import { Skeleton } from "@/components/ui/skeleton.jsx";
 import { ReadyState } from "react-use-websocket";
 import { useAuth } from "@/contexts/AuthProvider.jsx";
