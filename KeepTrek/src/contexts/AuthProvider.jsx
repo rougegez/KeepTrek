@@ -62,6 +62,7 @@ export function AuthProvider({ children }) {
         setState((prev) => ({ ...prev, token: event.data.token, isLoggedIn: true, error: null }));
         localStorage.setItem("token", event.data.token);
         checkStatus();
+        closeModals();
         if (onLoginSuccess) onLoginSuccess();
         window.removeEventListener("message", handleMessage);
         if (authWindow) authWindow.close();
