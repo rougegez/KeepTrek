@@ -44,7 +44,7 @@ export function AuthProvider({ children }) {
 
   const googleLogin = useCallback(() => {
     // URL of your backend endpoint that starts the Google OAuth flow
-    const googleLoginUrl = "https://keeptrek-backend.onrender.com/auth/google-login"; //http://localhost:8000/auth/google-login https://keeptrek-backend.onrender.com/auth/google-login
+    const googleLoginUrl = "http://localhost:8000/auth/google-login"; //http://localhost:8000/auth/google-login https://keeptrek-backend.onrender.com/auth/google-login
     const width = 500;
     const height = 600;
     const left = (window.innerWidth - width) / 2;
@@ -62,6 +62,7 @@ export function AuthProvider({ children }) {
         setState((prev) => ({ ...prev, token: event.data.token, isLoggedIn: true, error: null }));
         localStorage.setItem("token", event.data.token);
         checkStatus();
+        closeModals();
         if (onLoginSuccess) onLoginSuccess();
         window.removeEventListener("message", handleMessage);
         if (authWindow) authWindow.close();
