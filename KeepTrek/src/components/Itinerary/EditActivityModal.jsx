@@ -7,7 +7,7 @@ import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar.jsx";
 import { Textarea } from '@/components/ui/textarea';
 import { fetchPlaceDetails } from '@/APIs/fetchPlaceDetails.js';
 
-import { useItinerary } from './useItinerarySocket.jsx';
+import { useItinerary } from '../../hooks/useItinerary.jsx';
 
 const EditActivityModal = ({ isOpen, onClose, activityId}) => {
   const {days, getDayAndActivity: getActivity , updateActivity, changeActivityDay} = useItinerary();
