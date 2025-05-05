@@ -235,7 +235,7 @@ export default function TripCard({ trip, onDelete }) {
                 </span>
               </div>
               <div className="flex items-center gap-1">
-                <Button
+                {/* <Button
                   variant="ghost"
                   size="icon"
                   onClick={(e) => {
@@ -244,7 +244,7 @@ export default function TripCard({ trip, onDelete }) {
                   }}
                 >
                   <Share2 className="h-4 w-4" />
-                </Button>
+                </Button> */}
 
                 {currentUser && (
                   <DropdownMenu>

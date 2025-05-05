@@ -15,7 +15,7 @@ import {
 
 import GoogleMapImage from '@/components/MapboxMap/GoogleMapImage.jsx';
 
-import { useItinerary } from './useItinerarySocket.jsx';
+import { useItinerary } from '@/hooks/useItinerary.jsx';
 
 const ActivityCard = ({
   activity,
