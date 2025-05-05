@@ -7,9 +7,18 @@ import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar";
 import { Textarea } from '@/components/ui/textarea';
 import { fetchPlaceDetails } from "@/APIs/fetchPlaceDetails.js";
 
-const AddActivityModal = ({ isOpen, onClose, onAddActivity, location, days, selectedDay }) => {
-    const [newActivity, setNewActivity] = useState({
-        day: "",
+const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, location, days }) => {
+    const [newActivity, setNewActivity] = useState(location ? {
+        title: location ? location.name : "",
+        placeId: location ? location.placeId : "",
+        location: location ? location.address : "",
+        coordinates: location ? location.coordinates : [],
+        rating: location ? location.rating : "",
+        image: location ? location.image : "../src/assets/dummy-image.jpg",
+        openingHours: location ? location.openingHours : "",
+        website: location ? location.website : "",
+        link: location ? location.link : "",
+    } : {
         type: "",
         time: "",
         duration: "",
@@ -24,22 +33,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, location, days, sele
         image: "../src/assets/dummy-image.jpg",
         notes: "",
     });
-
-    useEffect(() => {
-        setNewActivity(prev => ({
-            ...prev,
-            day: selectedDay ?? "",
-            title: location ? location.name : "",
-            placeId: location ? location.placeId : "",
-            location: location ? location.address : "",
-            coordinates: location ? location.coordinates : [],
-            rating: location ? location.rating : "",
-            image: location ? location.image : "../src/assets/dummy-image.jpg",
-            openingHours: location ? location.openingHours : "",
-            website: location ? location.website : "",
-            link: location ? location.link : "",
-        }));
-    }, [isOpen, location, selectedDay]);
+    const [daySelected, setDaySelected] = useState(selectedDay || null);
 
     const handleLocationChange = async (newLocation) => {
         if (newLocation?.placePrediction?.structuredFormat?.mainText?.text) {
@@ -94,20 +88,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, location, days, sele
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => {
-            if (!open) {
-                setNewActivity({
-                    day: "",
-                    type: "",
-                    time: "",
-                    duration: "",
-                    title: "",
-                    location: "",
-                    image: "../src/assets/dummy-image.jpg",
-                    notes: "",
-                });
-                onClose();
-            }
+        <Dialog open={isOpen} onOpenChange={(open) => {if (!open) {onClose()}
         }}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
@@ -118,9 +99,9 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, location, days, sele
                     <div>
                         <label htmlFor="day-select" className="block text-sm font-medium text-muted-foreground mb-1">Day</label>
                         <Select
-                            value={newActivity.day}
+                            value={daySelected}
                             onValueChange={(value) =>
-                                setNewActivity((prev) => ({ ...prev, day: value }))
+                                setDaySelected(value)
                             }
                         >
                             <SelectTrigger id="day-select" className="w-full">
@@ -149,7 +130,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, location, days, sele
                                 <SelectValue placeholder="Select activity type" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="stay">Stay</SelectItem>
+                                <SelectItem value="accommodation">Accommodation</SelectItem>
                                 <SelectItem value="outdoor">Outdoor</SelectItem>
                                 <SelectItem value="indoor">Indoor</SelectItem>
                                 <SelectItem value="food">Food</SelectItem>
@@ -233,7 +214,7 @@ const AddActivityModal = ({ isOpen, onClose, onAddActivity, location, days, sele
                                 onAddActivity({
                                     ...newActivity,
                                     id: `${Date.now()}`,
-                                });
+                                }, daySelected);
                                 onClose();
                             }}
                         >

@@ -3,7 +3,9 @@ import { create } from 'zustand';
 export const useItinerary = () => {
     const days = useItineraryStore((state) => state.days);
     const setDays = useItineraryStore((state) => state.setDays);
+    const getDays = useItineraryStore((state) => state.getDays);
     const getDayAndActivity = useItineraryStore((state) => state.getDayAndActivity);
+    const addActivity = useItineraryStore((state) => state.addActivity);
     const updateActivity = useItineraryStore((state) => state.updateActivity);
     const updateDay = useItineraryStore((state) => state.updateDay);
     const changeActivityDay = useItineraryStore((state) => state.changeActivityDay);
@@ -14,6 +16,8 @@ export const useItinerary = () => {
     return {
         days: days,
         getDayAndActivity: getDayAndActivity,
+        getDays: getDays,
+        addActivity: addActivity,
         setDays: setDays,
         sendJsonMessage: sendJsonMessage,
         updateActivity: updateActivity,
@@ -31,6 +35,24 @@ export const useItineraryStore = create((set, get) => ({
         if (sendJsonMessage) {
             sendJsonMessage({days: newDays });
         }
+    },
+    addActivity: (newActivity, dayDate) => {
+        set((state) => {
+            const updatedDays = state.days.map((day) => {
+                if (day.date === dayDate) {
+                    return { ...day, activities: [...day.activities, newActivity] };
+                }
+                return day;
+            });
+            get().setDays(updatedDays);
+            return { days: updatedDays };
+        });
+    },
+    getDays: () => {
+        const { days } = get();
+        return days.map((day) => {
+            return day.date;
+        })
     },
     getDayAndActivity: (activityId) => {
         const foundDay = get().days.find((day) =>

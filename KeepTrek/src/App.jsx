@@ -20,6 +20,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { WhosOnlineWrapper } from "./components/CreateTrip/WhosOnlineWrapper";
 import { MapProvider } from 'react-map-gl/mapbox'
 import ItinerarySocketWrapper from "@/components/Itinerary/ItinerarySocketWrapper";
+import { Analytics } from '@vercel/analytics/react';
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ function App() {
 
   return (
     <>
+    <Analytics />
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <MapProvider>

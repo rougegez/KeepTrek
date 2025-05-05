@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo , useRef} from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import MapSearchBar from './GoogleMapsSearchbar'
@@ -32,9 +32,11 @@ const MapboxMap = ({
     disableSearchBar = false,
     disableSaveLocation = false,
     markers = [],
+    itineraryDays = [],
 }) => {
 
     const { map: mapRef } = useMap()
+
     const [viewState, setViewState] = useState({
         longitude: initCenter[0] ?? 101.6160160887531,
         latitude: initCenter[1] ?? 3.0644537753819425,
@@ -48,6 +50,8 @@ const MapboxMap = ({
     })
 
     const [place, setPlace] = useState(null)
+
+    const selectedDay = useRef(null);
 
     useEffect(() => {
         if (handlePanTo) {
@@ -143,7 +147,7 @@ const MapboxMap = ({
 
     const handleSaveLocation = () => {
         if (place) {
-            onSaveLocation(place)
+            onSaveLocation(place, selectedDay.current)
         }
     }
 
@@ -342,11 +346,12 @@ const MapboxMap = ({
                         onClick={handleCloseLocation}
                         onSaveLocation={handleSaveLocation}
                         disableSaveLocation={disableSaveLocation}
+                        itineraryDays={itineraryDays}
+                        onDaySelected={(day) => {selectedDay.current = day}}
+                        daySelected={selectedDay.current}
                     />
                 </div>
             )}
-
-
 
         </>
     )

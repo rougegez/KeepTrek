@@ -68,7 +68,7 @@ function Itinerary() {
     }
   );
 
-  const { days, setDays, readyState , getDayAndActivity} = useItinerary()
+  const { days, setDays, readyState , getDayAndActivity, getDays, addActivity} = useItinerary()
   const { whosOnline } = useWhosOnline(); 
 
   const userRole = useMemo(() => {
@@ -121,9 +121,23 @@ function Itinerary() {
     setMapInstance(map);
   };
 
-  const handleSaveLocation = (place) => {
-    setSavedLocation(place);
-    setAddModalState({ isOpen: true, selectedDay: days[days.length - 1].date });
+  const handleSaveLocation = (place, selectedDay) => {
+    // place only contains location name, adress and coordinates, requires addition of fields
+    // setSavedLocation(place);
+    // setAddModalState({ isOpen: true, selectedDay: selectedDay });
+    const newActivity = {
+    id: `${Date.now()}`,
+    title: place ? place.name : "",
+    placeId: place ? place.placeId : "",
+    location: place ? place.address : "",
+    coordinates: place ? place.coordinates : [],
+    rating: place ? place.rating : "",
+    image: place ? place.image : "/assets/dummy-image.jpg",
+    openingHours: place ? place.openingHours : "",
+    website: place ? place.website : "",
+    link: place ? place.link : "",
+    } 
+    addActivity(newActivity, selectedDay)
   };
 
   const handleNoteChange = (activityId, newNote) => {
@@ -164,9 +178,10 @@ function Itinerary() {
     setCurrentActivity(null);
   }
 
-  const handleAddActivity = (newActivity) => {
+  const handleAddActivity = (newActivity, selectedDay) => {
+    console.log(newActivity, selectedDay)
     const updatedDays = [...days];
-    const dayIndex = updatedDays.findIndex(day => day.date === newActivity.day);
+    const dayIndex = updatedDays.findIndex(day => day.date === selectedDay);
     if (dayIndex !== -1) {
       updatedDays[dayIndex].activities.push({
         ...newActivity,
@@ -191,6 +206,8 @@ function Itinerary() {
       console.error('Error leaving trip:', error);
     }
   };
+
+  const itineraryDays = getDays()
 
   return (
     <SidebarProvider >
@@ -218,6 +235,7 @@ function Itinerary() {
               disableSaveLocation={!canModify}
               disableSearchBar={!canModify}
               markers={normalizeMarkers(days)}
+              itineraryDays={itineraryDays}
             />
             <MapToggleButton />
           </motion.div>
@@ -334,22 +352,23 @@ function Itinerary() {
               disableSaveLocation={!canModify}
               disableSearchBar={!canModify}
               markers={normalizeMarkers(days)}
+              itineraryDays={itineraryDays}
             />
           </div>
         )}
       </div>
 
       <AddActivityModal
+        key={`${savedLocation}${addModalState.selectedDay}`}
         isOpen={addModalState.isOpen}
+        selectedDay={addModalState.selectedDay}
         onClose={() => {
-          setAddModalState({ isOpen: false, selectedDay: null });
+          setAddModalState({ isOpen: false });
           setSavedLocation(null);
         }}
         onAddActivity={handleAddActivity}
-        mapInstance={mapInstance}
         location={savedLocation}
         days={days}
-        selectedDay={addModalState.selectedDay}
       />
 
       <EditActivityModal
