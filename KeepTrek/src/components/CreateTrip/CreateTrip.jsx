@@ -16,6 +16,7 @@ import { createItinerary } from "@/APIs/itinerary.js";
 import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar.jsx";
 import { fetchPlaceDetails } from "@/APIs/fetchPlaceDetails.js";
 import { toast } from "sonner";
+import { LoadingSpinner } from "../ui/loading-spinner.jsx";
 
 export default function CreateTrip() {
   const [dateRange, setDateRange] = useState({ from: undefined, to: undefined });
@@ -26,6 +27,7 @@ export default function CreateTrip() {
   const [error, setError] = useState(null);
   const [placeId, setPlaceId] = useState("");
   const navigate = useNavigate();
+  const [isCreating, setIsCreating] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,6 +37,8 @@ export default function CreateTrip() {
       setError("All fields are required.");
       return;
     }
+
+    setIsCreating(true);
 
     // Prepare data for the API
     const startDate = new Date(dateRange.from).toISOString().split("T")[0]; // Format as YYYY-MM-DD
@@ -56,6 +60,7 @@ export default function CreateTrip() {
       console.error("Error creating trip:", err);
       setError(err.response?.data?.detail || "Failed to create trip");
     }
+    setIsCreating(false);
   }
 
   const handleLocationChange = async (location) => {
@@ -133,8 +138,9 @@ export default function CreateTrip() {
               <Button
                 className="w-full bg-[#4DB6AC] hover:bg-[#37827a] text-white"
                 type="submit"
+                disabled={isCreating}
               >
-                Create Trip
+                { isCreating ? <LoadingSpinner className="mr-2 h-4 w-4" /> : "Create Trip"  }
               </Button>
             </form>
           </CardContent>
