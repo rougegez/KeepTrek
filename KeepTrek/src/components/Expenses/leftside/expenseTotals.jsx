@@ -25,9 +25,7 @@ export const ExpensesTotals = () => {
   const totalOwedToYou = usersOweYou.reduce((sum, [_, amount]) => sum + amount, 0);
   const totalYouOwe = youOweUsers.reduce((sum, [_, amount]) => sum + amount, 0);
 
-  if (error) {
-    return <div className="text-center">Error: {error}</div>;
-  }
+ 
 
   if (isLoadingMain) {
     return <LoadingSkeleton />;

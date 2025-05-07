@@ -69,6 +69,7 @@ export function ExpensesProvider({ children }) {
 
     try {
       setIsLoadingMain(true);
+      setError(null); // Clear any previous errors
 
       const [userData, members, tripData] = await Promise.all([
         user,
@@ -103,23 +104,36 @@ export function ExpensesProvider({ children }) {
         newUsernames[member.userID] = member.username;
       });
 
-      // Batch state updates with exact field names
+      // Batch state updates
       setTripMembers(members);
       setUsernames(newUsernames);
       setExpenses(mappedData.expenses);
       setSettledDebts(mappedData.settledDebts);
-      setBalances({ ...mappedData.balances }); // Ensure new object reference
+      setBalances(mappedData.balances);
       setTotals(mappedData.totals);
       setUserBudgets(mappedData.budgets);
 
-      console.log('Fetched balances:', mappedData.balances); // Debugging log
+      console.log('Fetched and updated data:', {
+        balances: mappedData.balances,
+        settledDebts: mappedData.settledDebts,
+        expenses: mappedData.expenses
+      });
     } catch (error) {
       console.error('Error fetching data:', error);
       setError(error.message);
+      // Clear potentially stale data
+      setExpenses([]);
+      setSettledDebts([]);
+      setBalances({});
+      setTotals({
+        totalTrip: 0,
+        totalUser: 0,
+        userBalance: 0,
+      });
     } finally {
       setIsLoadingMain(false);
     }
-  }, [tripID]);
+  }, [tripID, user]);
 
   // Use cached data or fetch fresh data
   useEffect(() => {
@@ -358,12 +372,11 @@ export function ExpensesProvider({ children }) {
       isLoadingTotals,
       error,
       balances,
-      JSON.stringify(settledDebts),
+      settledDebts,
       createExpense,
       refreshData,
       removeExpense,
       editExpense,
-      settledDebts,
       settleUp,
       isSettlingUp,
       editDebt,
