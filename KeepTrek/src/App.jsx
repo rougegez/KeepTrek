@@ -21,6 +21,7 @@ import { WhosOnlineWrapper } from "./components/CreateTrip/WhosOnlineWrapper";
 import { MapProvider } from 'react-map-gl/mapbox'
 import ItinerarySocketWrapper from "@/components/Itinerary/ItinerarySocketWrapper";
 import { Analytics } from '@vercel/analytics/react';
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const queryClient = new QueryClient();
 
@@ -28,42 +29,44 @@ function App() {
 
   return (
     <>
-    <Analytics />
+      <Analytics />
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <MapProvider>
-            <Router>
-              <div className="min-h-screen flex flex-col">
-                <div className="flex-grow">
-                  <Routes>
-                    {/* Public Routes */}
-                    <Route path="/" element={<LandingPage />} />
-                    <Route path="/join/:inviteCode" element={<InvitePage />} />
+            <TooltipProvider>
+              <Router>
+                <div className="min-h-screen flex flex-col">
+                  <div className="flex-grow">
+                    <Routes>
+                      {/* Public Routes */}
+                      <Route path="/" element={<LandingPage />} />
+                      <Route path="/join/:inviteCode" element={<InvitePage />} />
 
-                    {/* Protected Routes */}
-                    <Route
-                      element={
-                        <PrivateRoute
-                        />
-                      }
-                    >
-                      <Route path="/yourTrips" element={<YourTrips />} />
-                      <Route element={<WhosOnlineWrapper />}>
-                        <Route element={<ItinerarySocketWrapper />}>
-                          <Route path="/expenses/:tripID" element={<MainExpensePage />} />
-                          <Route path="/itinerary/:tripID" element={<Itinerary />} />
-                          {/* <Route path="/trip-details" element={<TripDetailsPage />} /> */}
-                          <Route path="/schedule/:tripID" element={<GrpSchedule />} />
-                          <Route path="/wishlist/:tripID" element={<Wishlist />} />
+                      {/* Protected Routes */}
+                      <Route
+                        element={
+                          <PrivateRoute
+                          />
+                        }
+                      >
+                        <Route path="/yourTrips" element={<YourTrips />} />
+                        <Route element={<WhosOnlineWrapper />}>
+                          <Route element={<ItinerarySocketWrapper />}>
+                            <Route path="/expenses/:tripID" element={<MainExpensePage />} />
+                            <Route path="/itinerary/:tripID" element={<Itinerary />} />
+                            {/* <Route path="/trip-details" element={<TripDetailsPage />} /> */}
+                            <Route path="/schedule/:tripID" element={<GrpSchedule />} />
+                            <Route path="/wishlist/:tripID" element={<Wishlist />} />
+                          </Route>
                         </Route>
+                        <Route path="/create-trip" element={<CreateTrip />} />
+                        <Route path="/profile" element={<ProfilePage />} />
                       </Route>
-                      <Route path="/create-trip" element={<CreateTrip />} />
-                      <Route path="/profile" element={<ProfilePage />} />
-                    </Route>
-                  </Routes>
+                    </Routes>
+                  </div>
                 </div>
-              </div>
-            </Router>
+              </Router>
+            </TooltipProvider>
           </MapProvider>
         </AuthProvider>
       </QueryClientProvider >

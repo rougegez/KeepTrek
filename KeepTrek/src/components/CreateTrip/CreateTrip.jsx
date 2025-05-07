@@ -17,6 +17,7 @@ import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar.jsx";
 import { fetchPlaceDetails } from "@/APIs/fetchPlaceDetails.js";
 import { toast } from "sonner";
 import { LoadingSpinner } from "../ui/loading-spinner.jsx";
+import InfoTip from "@/components/Tooltip/InfoTip.jsx";
 
 export default function CreateTrip() {
   const [dateRange, setDateRange] = useState({ from: undefined, to: undefined });
@@ -45,7 +46,7 @@ export default function CreateTrip() {
     const endDate = new Date(dateRange.to).toISOString().split("T")[0];
 
     try {
-      const response = await createTrip({ tripName, placeId, location, coordinates, startDate, endDate, image});
+      const response = await createTrip({ tripName, placeId, location, coordinates, startDate, endDate, image });
       const tripID = response.tripID;
       // Create itinerary
       const dayCount = Math.ceil((new Date(dateRange.to) - new Date(dateRange.from)) / (1000 * 60 * 60 * 24)) + 1;
@@ -53,7 +54,7 @@ export default function CreateTrip() {
         date: `Day ${i + 1}`,
         activities: []
       }));
-      await createItinerary({ tripID, days});      
+      await createItinerary({ tripID, days });
       toast.success("Trip created successfully!");
       navigate("/yourTrips"); // Redirect to homepage or trips page
     } catch (err) {
@@ -73,7 +74,7 @@ export default function CreateTrip() {
     } else {
       setLocation(location);
       setImage("../src/assets/dummy-image.jpg");
-      setPlaceId(""); 
+      setPlaceId("");
       setCoordinates([]);
     }
   }
@@ -123,9 +124,14 @@ export default function CreateTrip() {
 
               {/* Trip Dates */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Trip Dates
-                </label>
+                <div className="flex">
+                  <label className="text-sm font-medium text-gray-700">
+                    Trip Dates
+                  </label>
+                  <InfoTip tooltipProps={{ root: { defaultOpen: true } }}>
+                    Select a range of dates
+                  </InfoTip>
+                </div>
                 <DateRangePicker
                   value={dateRange}
                   onValueChange={setDateRange}
@@ -140,7 +146,7 @@ export default function CreateTrip() {
                 type="submit"
                 disabled={isCreating}
               >
-                { isCreating ? <LoadingSpinner className="mr-2 h-4 w-4" /> : "Create Trip"  }
+                {isCreating ? <LoadingSpinner className="mr-2 h-4 w-4" /> : "Create Trip"}
               </Button>
             </form>
           </CardContent>
