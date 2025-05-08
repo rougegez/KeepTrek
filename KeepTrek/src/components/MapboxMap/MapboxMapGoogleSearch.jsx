@@ -291,6 +291,7 @@ const MapboxMap = ({
                     <div className="left-4 z-10 w-full max-w-md">
                         <MapSearchBar
                             onLocationSearch={handleLocationSearch}
+                            isSearchbar={true}
                             searchButton={true}
                         />
                     </div>
