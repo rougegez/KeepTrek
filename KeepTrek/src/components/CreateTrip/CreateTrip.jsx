@@ -112,7 +112,7 @@ export default function CreateTrip() {
                 <MapSearchBar
                   id="location"
                   searchButton={false}
-                  onChange={handleLocationChange}
+                  onInputChange={handleLocationChange}
                 />
               </div>
 
