@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useMemo , useRef} from 'react'
+import React, { useEffect, useState, useMemo, useRef } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import MapSearchBar from './GoogleMapsSearchbar'
@@ -79,7 +79,7 @@ const MapboxMap = ({
             })
 
             if (newPlace.viewport) {
-                const { high, low  } = newPlace.viewport
+                const { high, low } = newPlace.viewport
                 const bounds = [
                     [high.longitude, high.latitude],
                     [low.longitude, low.latitude],
@@ -98,50 +98,6 @@ const MapboxMap = ({
             }
 
             setPlace(newPlace)
-        }
-    }
-
-    const handleMapClick = async (e) => {
-        setDropMarker({
-            showDropMarker: true,
-            longitude: e.lngLat.lng,
-            latitude: e.lngLat.lat,
-        })
-
-        try {
-            const response = await fetch(
-                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${e.lngLat.lat},${e.lngLat.lng}&key=${GOOGLE_MAPS_API_KEY}`)
-            const data = await response.json()
-            if (data.results && data.results.length > 0) {
-
-                let feature = ""
-                for (const result of data.results) {
-                    if (!result.formatted_address.includes('+')) {
-                        feature = result;
-                        break
-                    }
-                }
-
-                let cardname = ""
-                componentLoop: for (const i of feature.address_components) {
-                    for (const j of i.types) {
-                        if (!(j == "street_number")) {
-                            cardname = i.long_name
-                            break componentLoop;
-                        }
-                    }
-                }
-                setPlace({
-                    name: cardname,
-                    address: feature.formatted_address,
-                    coordinates: [e.lngLat.lng, e.lngLat.lat]
-                })
-            } else {
-                setPlace(null)
-            }
-        } catch (error) {
-            console.error('Error fetching place information:', error)
-            setPlace(null)
         }
     }
 
@@ -194,24 +150,36 @@ const MapboxMap = ({
     })
 
     useEffect(() => {
-        setMapControls(() => {
+        setMapControls((prevControls = []) => {
             if (markers[0]?.day) {
                 const { maxDay, dayNumbers } = getMaxDay(markers)
                 const unique = new Set(dayNumbers)
-                const controls = Array.from(unique).map((day, index) => {
+                const controls = Array.from(unique).map((day) => {
+                    const prevControl = prevControls.find(c => c.day === day)
+                    const checked = prevControl ? prevControl.checked : true
                     const color = getDayColor(`${day}`, maxDay)
-                    return ({ day: day, color: color, checked: true })
+                    return { day, color, checked }
                 })
                 return controls
             }
             else if (markers[0]?.category) {
-                const controls = [{ category: "Accommodation" }, { category: "Activities" }, { category: "Food" }]
-                return controls.map((item) => {
-                    return ({ category: item.category, color: getCategoryAppearance(item).color, checked: true })
+                const defaultControls = [
+                    { category: "Accommodation" },
+                    { category: "Activities" },
+                    { category: "Food" }
+                ]
+                return defaultControls.map((item) => {
+                    const prevControl = prevControls.find(c => c.category === item.category)
+                    const checked = prevControl ? prevControl.checked : true
+                    return {
+                        category: item.category,
+                        color: getCategoryAppearance(item).color,
+                        checked
+                    }
                 })
             }
         })
-    }, [markers]);
+    }, [markers])
 
     const handleCheckChange = (checked, marker) => {
         const updatedMarkers = mapControls.map((item) => {
@@ -268,7 +236,7 @@ const MapboxMap = ({
                     <g transform="translate(13.5, 13.5)">
                         <foreignObject x="-13.5" y="-13.5" width="27" height="27">
                             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                                {getMarkerType(marker.category, { size: 16, color: '#ffffff' , strokeWidth: 2.5})}
+                                {getMarkerType(marker.category, { size: 16, color: '#ffffff', strokeWidth: 2.5 })}
                             </div>
                         </foreignObject>
                     </g> :
@@ -293,7 +261,6 @@ const MapboxMap = ({
                 id="map"
                 reuseMaps
                 onMove={evt => setViewState(evt.viewState)}
-                onClick={handleMapClick}
                 style={{ width: width, height: height }}
                 mapStyle="mapbox://styles/mapbox/streets-v12"
             >
@@ -313,7 +280,7 @@ const MapboxMap = ({
                     </Marker>
                 )}
 
-                {((memoMarkers.length !== 0) && !dropMarker.showDropMarker) && (
+                {((memoMarkers.length !== 0)) && (
                     memoMarkers
                 )}
             </Map>
@@ -324,6 +291,7 @@ const MapboxMap = ({
                     <div className="left-4 z-10 w-full max-w-md">
                         <MapSearchBar
                             onLocationSearch={handleLocationSearch}
+                            isSearchbar={true}
                             searchButton={true}
                         />
                     </div>
@@ -347,7 +315,7 @@ const MapboxMap = ({
                         onSaveLocation={handleSaveLocation}
                         disableSaveLocation={disableSaveLocation}
                         itineraryDays={itineraryDays}
-                        onDaySelected={(day) => {selectedDay.current = day}}
+                        onDaySelected={(day) => { selectedDay.current = day }}
                         daySelected={selectedDay.current}
                     />
                 </div>
