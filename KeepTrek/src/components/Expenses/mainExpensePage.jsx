@@ -3,7 +3,7 @@ import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import {ExpensesLeftside} from "./leftside/ExpensesLeftside.jsx";
 import ExpenseRightSide from "./rightside/expenseRightside.jsx";
-import { ExpensesProvider } from "./expenseContext.jsx";
+import { ExpensesProvider, useExpenses } from "./expenseContext.jsx";
 import { useParams } from "react-router-dom";
 import MobileHeader from "../MobileHeader";
 import { useMediaQuery } from 'react-responsive';
@@ -13,6 +13,46 @@ import { canEdit } from "@/utils/permissions";
 import { useQuery } from 'react-query';
 import { getTrip } from "@/APIs/trip";
 import { useAuth } from "@/contexts/AuthProvider.jsx";
+import { LoadingSkeleton } from '@/components/ui/loadingAnimation';
+
+function MainExpenseContent({ tripID, isMobile, isRightSideOpen, setIsRightSideOpen, canModify }) {
+  const { isLoadingMain } = useExpenses();
+
+  if (isLoadingMain) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center">
+        <LoadingSkeleton className="w-full h-96" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-screen w-screen">
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden">
+          <ExpensesLeftside tripID={tripID}/>
+          {isMobile ? (
+            <Sheet open={isRightSideOpen} onOpenChange={setIsRightSideOpen}>
+              <SheetTrigger asChild>
+                <Button 
+                  className="fixed bottom-4 right-4 z-50"
+                  variant="outline"
+                >
+                  Show Details
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[90%] sm:w-[85%]">
+                <ExpenseRightSide tripID={tripID}/>
+              </SheetContent>
+            </Sheet>
+          ) : (
+            <ExpenseRightSide tripID={tripID}/>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function MainExpensePage() {
   const { tripID } = useParams();
@@ -29,30 +69,13 @@ export default function MainExpensePage() {
         <AppSidebar tripID={tripID} />
         {!isMobile && <SidebarTrigger />}
         {isMobile && <MobileHeader title="Expenses" />}
-        <div className="flex h-screen w-screen">
-          <div className="flex flex-col flex-1 overflow-hidden">
-            <div className="flex flex-1 overflow-hidden">
-              <ExpensesLeftside tripID={tripID}/>
-              {isMobile ? (
-                <Sheet open={isRightSideOpen} onOpenChange={setIsRightSideOpen}>
-                  <SheetTrigger asChild>
-                    <Button 
-                      className="fixed bottom-4 right-4 z-50"
-                      variant="outline"
-                    >
-                      Show Details
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="right" className="w-[90%] sm:w-[85%]">
-                    <ExpenseRightSide tripID={tripID}/>
-                  </SheetContent>
-                </Sheet>
-              ) : (
-                <ExpenseRightSide tripID={tripID}/>
-              )}
-            </div>
-          </div>
-        </div>
+        <MainExpenseContent 
+          tripID={tripID} 
+          isMobile={isMobile} 
+          isRightSideOpen={isRightSideOpen} 
+          setIsRightSideOpen={setIsRightSideOpen} 
+          canModify={canModify}
+        />
       </ExpensesProvider>
     </SidebarProvider>
   );
