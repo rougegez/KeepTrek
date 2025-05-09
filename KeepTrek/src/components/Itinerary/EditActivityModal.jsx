@@ -166,7 +166,7 @@ const EditActivityModal = ({ isOpen, onClose, activityId}) => {
             <MapSearchBar
               id="address"
               searchButton={false}
-              onChange={handleLocationChange}
+              onInputChange={handleLocationChange}
               initialPlace={activity.location}
             />
           </div>
