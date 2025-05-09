@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 import { useExpenses } from '@/components/Expenses/expenseContext';
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 export const ModalExpense = ({ isOpen, onClose, selectedExpense, setSelectedExpense }) => {
     const { tripID } = useParams();
@@ -15,7 +16,8 @@ export const ModalExpense = ({ isOpen, onClose, selectedExpense, setSelectedExpe
         user,
         removeExpense,
         editExpense,
-        } = useExpenses();
+        isButtonLoading
+    } = useExpenses();
 
     const handleExpenseClick = (expense) => {
         setSelectedExpense(expense);
@@ -100,7 +102,7 @@ export const ModalExpense = ({ isOpen, onClose, selectedExpense, setSelectedExpe
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-          <DialogContent>
+          <DialogContent className="max-h-[80vh] w-full max-w-md sm:max-w-lg overflow-y-auto rounded-lg p-4">
             <DialogHeader>
               <DialogTitle>Expense Details</DialogTitle>
             </DialogHeader>
@@ -286,19 +288,23 @@ export const ModalExpense = ({ isOpen, onClose, selectedExpense, setSelectedExpe
                     }`}
                     onClick={() => handleEditExpense(selectedExpense)}
                     disabled={
+                      isButtonLoading?.edit ||
                       (selectedExpense.splitMethod === "custom" &&
                         selectedExpense.amount - selectedExpense.splits.reduce((sum, split) => sum + (split.amount || 0), 0) !== 0) ||
                       (selectedExpense.splitMethod === "percentage" &&
                         100 - selectedExpense.splits.reduce((sum, split) => sum + (split.percentage || 0), 0) !== 0)
                     }
                   >
+                    {isButtonLoading?.edit ? <Loader2 className="w-4 h-4 animate-spin mr-2 inline" /> : null}
                     Save Changes
                   </Button>
                   <Button
                     className="bg-red-500 hover:bg-red-600 text-white"
                     variant="destructive" 
                     onClick={handleDeleteExpense}
+                    disabled={isButtonLoading?.delete}
                   >
+                    {isButtonLoading?.delete ? <Loader2 className="w-4 h-4 animate-spin mr-2 inline" /> : null}
                     Delete
                   </Button>
                 </div>

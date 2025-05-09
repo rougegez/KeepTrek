@@ -19,6 +19,7 @@ export function useExpenses() {
 
 export function ExpensesProvider({ children }) {
   const { tripID } = useParams();
+  const { user } = useAuth();
 
   const [expenses, setExpenses] = useState([]);
   const [tripMembers, setTripMembers] = useState([]);
@@ -43,10 +44,9 @@ export function ExpensesProvider({ children }) {
   const [isCreatingBudget, setIsCreatingBudget] = useState(false);
   const [isEditingBudget, setIsEditingBudget] = useState(false);
   const [isDeletingBudget, setIsDeletingBudget] = useState(false);
-  const [isLoadingMain, setIsLoadingMain] = useState(false);
+  const [isLoadingMain, setIsLoadingMain] = useState(true);
   const [isLoadingDependent, setIsLoadingDependent] = useState(false);
-
-  const { user } = useAuth();
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Enhanced cache with more data
   const cache = useRef({
@@ -64,12 +64,12 @@ export function ExpensesProvider({ children }) {
   }, []);
 
   // Batch all initial data fetching into one call
-  const fetchAllData = useCallback(async () => {
+  const fetchAllData = useCallback(async (showSkeleton = true) => {
     if (!tripID) return;
 
     try {
-      setIsLoadingMain(true);
-      setError(null); // Clear any previous errors
+      if (showSkeleton) setIsLoadingMain(true);
+      setError(null);
 
       const [userData, members, tripData] = await Promise.all([
         user,
@@ -112,6 +112,7 @@ export function ExpensesProvider({ children }) {
       setBalances(mappedData.balances);
       setTotals(mappedData.totals);
       setUserBudgets(mappedData.budgets);
+      setIsInitialized(true);
 
       console.log('Fetched and updated data:', {
         balances: mappedData.balances,
@@ -131,7 +132,7 @@ export function ExpensesProvider({ children }) {
         userBalance: 0,
       });
     } finally {
-      setIsLoadingMain(false);
+      if (showSkeleton) setIsLoadingMain(false);
     }
   }, [tripID, user]);
 
@@ -150,14 +151,15 @@ export function ExpensesProvider({ children }) {
         setTripMembers(mainData.members);
         setExpenses(expenses || []);
         setSettledDebts(settledDebts || []);
-        setBalances(balances || {}); // Ensure new object reference
+        setBalances(balances || {});
         setTotals(totals);
+        setIsInitialized(true);
         return;
       }
 
       // Fetch fresh data if not cancelled
       if (!isCancelled) {
-        await fetchAllData();
+        await fetchAllData(true); // Only show skeleton on initial load
       }
     };
 
@@ -169,84 +171,83 @@ export function ExpensesProvider({ children }) {
   }, [tripID, fetchAllData]);
 
   // Optimized refresh function
-  const refreshData = useCallback(async () => {
+  const refreshData = useCallback(async (showSkeleton = false) => {
     // Clear cache
     cache.current = {
       ...cache.current,
       lastFetch: null,
     };
-
-    await fetchAllData();
+    await fetchAllData(showSkeleton);
   }, [fetchAllData]);
+
+  // Button-level loading states
+  const [isButtonLoading, setIsButtonLoading] = useState({
+    create: false,
+    edit: false,
+    delete: false,
+    settle: false,
+  });
 
   // Replace individual refresh functions with the optimized one
   const createExpense = async (expenseData) => {
+    setIsButtonLoading((prev) => ({ ...prev, create: true }));
     try {
       const newExpense = await addExpense(expenseData);
-      await refreshData(); // Refresh all data in one go
+      await refreshData(false); // No skeleton after mutation
       return newExpense;
     } catch (error) {
       setError(error.message);
       throw error;
+    } finally {
+      setIsButtonLoading((prev) => ({ ...prev, create: false }));
     }
   };
 
   const removeExpense = async (expenseId, tripID) => {
+    setIsButtonLoading((prev) => ({ ...prev, delete: true }));
     try {
       // Optimistically update UI
       setExpenses((prevExpenses) => prevExpenses.filter((expense) => expense.id !== expenseId));
-
-      // Make API call
       await deleteExpense(expenseId, tripID);
-
-      // Only fetch totals, skip fetching expenses again
-      await refreshData();
+      await refreshData(false);
     } catch (error) {
-      // Rollback on error
-      console.error('Error deleting expense:', error);
-      await fetchAllData(); // Restore correct state
+      await fetchAllData(false);
       throw error;
+    } finally {
+      setIsButtonLoading((prev) => ({ ...prev, delete: false }));
     }
   };
 
   const editExpense = async (expenseToUpdate) => {
+    setIsButtonLoading((prev) => ({ ...prev, edit: true }));
     setLoading(true);
     try {
-      // Update the expense
       const updatedExpense = await updateExpense(expenseToUpdate);
-
-      // Refresh the expense list and totals
-      await refreshData();
-
+      await refreshData(false);
       return updatedExpense;
     } catch (error) {
-      console.error('Error updating expense:', error);
       setError(error.message);
       throw error;
     } finally {
       setLoading(false);
+      setIsButtonLoading((prev) => ({ ...prev, edit: false }));
     }
   };
 
   const settleUp = async (debtData) => {
+    setIsButtonLoading((prev) => ({ ...prev, settle: true }));
     setIsSettlingUp(true);
     try {
-      if (!tripID) {
-        throw new Error('Trip ID is required');
-      }
-
-      // Call the API
+      if (!tripID) throw new Error('Trip ID is required');
       const result = await settleDebt(tripID, debtData);
-
-      await refreshData();
-
+      await refreshData(false);
       return result;
     } catch (error) {
-      console.error('Error settling up:', error);
       setError(error.message);
       throw error;
     } finally {
       setIsSettlingUp(false);
+      setIsButtonLoading((prev) => ({ ...prev, settle: false }));
     }
   };
 
@@ -337,6 +338,8 @@ export function ExpensesProvider({ children }) {
       totals,
       usernames,
       isLoading: loading || isLoadingUser || isLoadingExpenses || isLoadingTotals,
+      isLoadingMain,
+      isInitialized,
       error,
       balances,
       settledDebts,
@@ -360,6 +363,7 @@ export function ExpensesProvider({ children }) {
       handleEditBudget,
       handleDeleteBudget,
       isLoadingDependent,
+      isButtonLoading,
     }),
     [
       user,
@@ -370,6 +374,8 @@ export function ExpensesProvider({ children }) {
       isLoadingUser,
       isLoadingExpenses,
       isLoadingTotals,
+      isLoadingMain,
+      isInitialized,
       error,
       balances,
       settledDebts,
@@ -391,6 +397,7 @@ export function ExpensesProvider({ children }) {
       handleEditBudget,
       handleDeleteBudget,
       isLoadingDependent,
+      isButtonLoading,
     ]
   );
 
