@@ -89,11 +89,8 @@ export const AddExpense = () => {
             console.log('Expense data being sent to createExpense:', expenseData);
             await createExpense(expenseData);
             setShowAddExpense(false); // Close the modal
-            toast.success("Expense added successfully!"); // Show success feedback
-
         } catch (error) {
             console.error('Error:', error);
-            toast.error("Failed to add expense", {description: `${error.message}`});
         }
     };
 
