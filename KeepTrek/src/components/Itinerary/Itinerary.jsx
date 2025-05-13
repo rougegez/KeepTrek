@@ -35,6 +35,7 @@ import { ReadyState } from "react-use-websocket";
 import { useAuth } from "@/contexts/AuthProvider.jsx";
 import { useWhosOnline } from "../CreateTrip/WhosOnlineWrapper.jsx";
 import DeleteAlert from "../ui/DeleteAlert.jsx";
+import { toast } from "sonner";
 
 function Itinerary() {
   const navigate = useNavigate();
@@ -122,9 +123,6 @@ function Itinerary() {
   };
 
   const handleSaveLocation = (place, selectedDay) => {
-    // place only contains location name, adress and coordinates, requires addition of fields
-    // setSavedLocation(place);
-    // setAddModalState({ isOpen: true, selectedDay: selectedDay });
     const newActivity = {
     id: `${Date.now()}`,
     title: place ? place.name : "",
@@ -138,6 +136,7 @@ function Itinerary() {
     link: place ? place.link : "",
     } 
     addActivity(newActivity, selectedDay)
+    toast.success("Activity added successfully!");
   };
 
   const handleNoteChange = (activityId, newNote) => {
@@ -189,6 +188,7 @@ function Itinerary() {
       });
       setDays(updatedDays);
     }
+    toast.success("Activity added successfully!");
   };
 
   const handleLocationClick = (clickLocation) => {

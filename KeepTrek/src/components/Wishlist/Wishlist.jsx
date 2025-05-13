@@ -170,7 +170,13 @@ export default function WishlistPage() {
   };
 
   const handleSubmitCreateItem = async (newItem) => {
-    await createItem(tripID, newItem);
+    await createItem(tripID, newItem).then((res) => {
+      if (res.status === 200) {
+        toast.success("Item created successfully");
+      } else {
+        toast.error("Failed to create item");
+      }
+    });
     await fetchWishlistData();
     setIsCreateModalOpen(false);
   };
@@ -201,12 +207,13 @@ export default function WishlistPage() {
   };
 
   const handleSubmitEditItem = async (updatedItem) => {
-    if (selectedItem.image && selectedItem.image !== updatedItem.image) {
-      const imageUrlParts = selectedItem.image.split('/');
-      const imageFileName = imageUrlParts[imageUrlParts.length - 1];
-      await deleteFile(selectedItem.tripID, imageFileName);
-    }
-    await editItem(selectedItem.tripID, selectedItem.id, updatedItem);
+    await editItem(selectedItem.tripID, selectedItem.id, updatedItem).then((res) => {
+      if (res.status === 200) {
+        toast.success("Item updated successfully");
+      } else {
+        toast.error("Failed to update item");
+      }
+    });
     await fetchWishlistData();
     const allItems = await getAllItems(selectedItem.tripID);
     const newSelectedItem = allItems.find(i => i.id === selectedItem.id);
@@ -223,12 +230,13 @@ export default function WishlistPage() {
   // New: Confirm delete handler
   const handleDeleteConfirm = async () => {
     if (itemToDelete) {
-      if (itemToDelete.image) {
-        const imageUrlParts = itemToDelete.image.split('/');
-        const imageFileName = imageUrlParts[imageUrlParts.length - 1];
-        await deleteFile(itemToDelete.tripID, imageFileName);
-      }
-      await deleteItem(itemToDelete.tripID, itemToDelete.id);
+      await deleteItem(itemToDelete.tripID, itemToDelete.id).then((res) => {
+        if (res.status === 200) {
+          toast.success("Item deleted successfully");
+        } else {
+          toast.error("Failed to delete item");
+        }
+      })
       await fetchWishlistData();
       setSelectedItem(null);
     }
