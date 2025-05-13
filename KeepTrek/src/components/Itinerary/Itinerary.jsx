@@ -39,7 +39,7 @@ import { toast } from "sonner";
 
 function Itinerary() {
   const navigate = useNavigate();
-  const { user : currentUser } = useAuth();
+  const { user: currentUser } = useAuth();
   const { tripID } = useParams();
 
   const [addModalState, setAddModalState] = useState({ isOpen: false, selectedDay: null });
@@ -69,8 +69,8 @@ function Itinerary() {
     }
   );
 
-  const { days, setDays, readyState , getDayAndActivity, getDays, addActivity} = useItinerary()
-  const { whosOnline } = useWhosOnline(); 
+  const { days, setDays, readyState, getDayAndActivity, getDays, addActivity } = useItinerary()
+  const { whosOnline } = useWhosOnline();
 
   const userRole = useMemo(() => {
     if (!currentUser || !tripDetails?.users) return null;
@@ -124,19 +124,21 @@ function Itinerary() {
 
   const handleSaveLocation = (place, selectedDay) => {
     const newActivity = {
-    id: `${Date.now()}`,
-    title: place ? place.name : "",
-    placeId: place ? place.placeId : "",
-    location: place ? place.address : "",
-    coordinates: place ? place.coordinates : [],
-    rating: place ? place.rating : "",
-    image: place ? place.image : "/assets/dummy-image.jpg",
-    openingHours: place ? place.openingHours : "",
-    website: place ? place.website : "",
-    link: place ? place.link : "",
-    } 
+      id: `${Date.now()}`,
+      title: place ? place.name : "",
+      placeId: place ? place.placeId : "",
+      location: place ? place.address : "",
+      coordinates: place ? place.coordinates : [],
+      rating: place ? place.rating : "",
+      image: place ? place.image : "/assets/dummy-image.jpg",
+      openingHours: place ? place.openingHours : "",
+      website: place ? place.website : "",
+      link: place ? place.link : "",
+    }
     addActivity(newActivity, selectedDay)
-    toast.success("Activity added successfully!");
+    if (readyState === ReadyState.OPEN) {
+      toast.success("Activity added successfully!");
+    }
   };
 
   const handleNoteChange = (activityId, newNote) => {
@@ -162,12 +164,12 @@ function Itinerary() {
 
   const handleDeleteClick = (dayIndex, activityId) => {
     const { activity } = getDayAndActivity(activityId);
-    setCurrentActivity({dayIndex : dayIndex, activity: activity});
+    setCurrentActivity({ dayIndex: dayIndex, activity: activity });
     setIsDeleteConfirmOpen(true);
   };
 
   const handleDeleteConfirm = () => {
-    const { activity : deleteActivity, dayIndex } = currentActivity;  
+    const { activity: deleteActivity, dayIndex } = currentActivity;
     const updatedDays = [...days];
     updatedDays[dayIndex].activities = updatedDays[dayIndex].activities.filter(
       (activity) => activity.id !== deleteActivity.id
@@ -188,7 +190,9 @@ function Itinerary() {
       });
       setDays(updatedDays);
     }
-    toast.success("Activity added successfully!");
+    if (readyState === ReadyState.OPEN) {
+      toast.success("Activity added successfully!");
+    }
   };
 
   const handleLocationClick = (clickLocation) => {
@@ -263,7 +267,7 @@ function Itinerary() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <UserAvatarStack userIds={tripDetails.users} isIdle={whosOnline}/>
+                  <UserAvatarStack userIds={tripDetails.users} isIdle={whosOnline} />
                   {canModify && (
                     <>
                       <InviteButton tripID={tripID} userRole={userRole} />

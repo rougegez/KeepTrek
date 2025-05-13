@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef ,} from "react";
+import React, { useState, useEffect, useCallback, useRef, } from "react";
 import { useNavigate } from "react-router-dom";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -7,7 +7,7 @@ import { WishlistCard, AddItemCard } from "./WishlistCard.jsx";
 import ItemModal from "./ItemModal.jsx";
 import CreateEditItemModal from "./CreateEditItemModal.jsx";
 import MapboxMap from "@/components/MapboxMap/MapboxMapGoogleSearch.jsx";
-import { normalizeMarkers } from "@/components/MapboxMap/MapUtil.jsx"; 
+import { normalizeMarkers } from "@/components/MapboxMap/MapUtil.jsx";
 import { getAllItems, createItem, editItem, deleteItem, upvoteItem, downvoteItem, deleteFile } from "@/APIs/wishlist";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -60,7 +60,7 @@ export default function WishlistPage() {
   const [optimisticVotes, setOptimisticVotes] = useState({});
   const [initialCategory, setInitialCategory] = useState("");
 
-  const { data: tripDetails } = useQuery(['trip', tripID], () => getTrip(tripID), {suspense: true});
+  const { data: tripDetails } = useQuery(['trip', tripID], () => getTrip(tripID), { suspense: true });
   const userRole = tripDetails?.users.find(u => u.userID === user)?.role;
   const canModify = canEdit(userRole);
 
@@ -173,9 +173,11 @@ export default function WishlistPage() {
     await createItem(tripID, newItem).then((res) => {
       if (res.status === 200) {
         toast.success("Item created successfully");
-      } else {
-        toast.error("Failed to create item");
       }
+    }).catch((err) => {
+      toast.error("Failed to create item", {
+        description: <p>{err.message}</p>,
+      })
     });
     await fetchWishlistData();
     setIsCreateModalOpen(false);
@@ -210,9 +212,11 @@ export default function WishlistPage() {
     await editItem(selectedItem.tripID, selectedItem.id, updatedItem).then((res) => {
       if (res.status === 200) {
         toast.success("Item updated successfully");
-      } else {
-        toast.error("Failed to update item");
       }
+    }).catch((err) => {
+      toast.error("Failed to update item", {
+        description: <p>{err.message}</p>,
+      })
     });
     await fetchWishlistData();
     const allItems = await getAllItems(selectedItem.tripID);
@@ -233,10 +237,12 @@ export default function WishlistPage() {
       await deleteItem(itemToDelete.tripID, itemToDelete.id).then((res) => {
         if (res.status === 200) {
           toast.success("Item deleted successfully");
-        } else {
-          toast.error("Failed to delete item");
         }
-      })
+      }).catch((err) => {
+        toast.error("Failed to delete item", {
+          description: <p>{err.message}</p>,
+        })
+      });
       await fetchWishlistData();
       setSelectedItem(null);
     }
