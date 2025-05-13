@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from 'sonner';
 
 export const BudgetProgress = () => {
-  const { totals, user, userBudgets, handleCreateBudget, handleEditBudget, handleDeleteBudget } = useExpenses();
+  const { totals, user, userBudgets, handleCreateBudget, handleEditBudget, handleDeleteBudget, isCreatingBudget, isEditingBudget, isDeletingBudget } = useExpenses();
   const [showModal, setShowModal] = useState(false);
   const [budgetAmount, setBudgetAmount] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
@@ -104,14 +104,16 @@ export const BudgetProgress = () => {
             </div>
             <div className="flex justify-end space-x-3">
               {isEditMode && (
-                <Button variant="destructive" onClick={handleDelete}>
+                <Button variant="destructive" onClick={handleDelete} disabled={isDeletingBudget}>
+                  {isDeletingBudget ? <svg className="animate-spin h-4 w-4 mr-2 inline" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg> : null}
                   Delete
                 </Button>
               )}
               <Button variant="outline" onClick={() => setShowModal(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleSaveBudget}>
+              <Button onClick={handleSaveBudget} disabled={isCreatingBudget || isEditingBudget}>
+                {(isCreatingBudget || isEditingBudget) ? <svg className="animate-spin h-4 w-4 mr-2 inline" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg> : null}
                 Save
               </Button>
             </div>

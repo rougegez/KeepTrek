@@ -25,6 +25,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 const queryClient = new QueryClient();
 
+function AgodaVerificationPage() {
+  return (
+    <div>
+      agoda-partner-site-verification: AgodaPartnerVerification.html
+    </div>
+  );
+}
+
 function App() {
 
   return (
@@ -41,7 +49,7 @@ function App() {
                       {/* Public Routes */}
                       <Route path="/" element={<LandingPage />} />
                       <Route path="/join/:inviteCode" element={<InvitePage />} />
-
+                      <Route path="/AgodaPartnerVerification.html" element={<AgodaVerificationPage />} />
                       {/* Protected Routes */}
                       <Route
                         element={

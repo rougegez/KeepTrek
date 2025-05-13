@@ -4,7 +4,6 @@ import { useExpenses } from "@/components/Expenses/expenseContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import LoadingSkeleton from "@/components/ui/loadingAnimation";
 import { Loader2 } from "lucide-react";
 import { UserAvatar } from "@/components/profilePage/avatar";
 
@@ -20,13 +19,16 @@ export default function DebtsSummary() {
     totalUser,
     tripMembers,
     balances,
-    isLoadingMain,
     settledDebts,
     settleUp,
     editDebt,
     deleteDebt,
     isSettlingUp,
-    usernames
+    isEditingDebt,
+    isDeletingDebt,
+    usernames,
+    error,
+    isButtonLoading
   } = useExpenses();
 
   const { tripID } = useParams();
@@ -38,8 +40,6 @@ export default function DebtsSummary() {
   const [selectedDebt, setSelectedDebt] = useState(null);
   const [editAmount, setEditAmount] = useState("");
   const [editError, setEditError] = useState("");
-
-
 
   const handleSettleUp = async (paidBy, paidTo, amount) => {
     try {
@@ -91,16 +91,10 @@ export default function DebtsSummary() {
         return;
       }
 
-      console.log('Sending edit request:', {
-        debtId: selectedDebt.id,
-        amount: amount
-      });
-      
       await editDebt(selectedDebt.id, amount);
       setShowEditModal(false);
       setEditError("");
     } catch (error) {
-      console.error('Error in handleEditDebt:', error);
       setEditError(error.message);
     }
   };
@@ -114,36 +108,21 @@ export default function DebtsSummary() {
     }
   };
 
-  const [error, setError] = useState(null);
-
-  // Show skeleton loader during initial load
-  if (isLoadingMain) {
-    return (
-      <div className="space-y-6 p-1">
-        <LoadingSkeleton />
-        <LoadingSkeleton />
-        <LoadingSkeleton />
-      </div>
-    );
-  }
-
   // Ensure settledDebts is always an array
   const debts = settledDebts || [];
 
-  // Check for required data
-  if (!user || !balances) {
-    return <LoadingSkeleton />;
+  if (error) {
+    return <div className="text-red-500 p-4">Error: {error}</div>;
   }
 
-  // Check for errors
-  if (error) {
-    return <div>Error: {error}</div>;
+  if (!balances || !user || !tripMembers) {
+    return null;
   }
 
   // Safely access balances with null checks
-  const userBalances = (balances && balances[user]) || {};
-  const usersOweYou = Object.entries(userBalances || {}).filter(([_, amount]) => amount > 0) || [];
-  const youOweUsers = Object.entries(userBalances || {}).filter(([_, amount]) => amount < 0) || [];
+  const userBalances = balances[user] || {};
+  const usersOweYou = Object.entries(userBalances).filter(([_, amount]) => amount > 0);
+  const youOweUsers = Object.entries(userBalances).filter(([_, amount]) => amount < 0);
 
   const getUserName = (userID) => {
     if (!userID) return 'Unknown User';
@@ -155,93 +134,78 @@ export default function DebtsSummary() {
   const totalUsersOweYou = usersOweYou.reduce((sum, [_, amount]) => sum + amount, 0);
   const totalYouOweUsers = youOweUsers.reduce((sum, [_, amount]) => sum + amount, 0);
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', { 
-      day: 'numeric',
-      month: 'short'
-    });
-  };
-
-  console.log('Balances:', balances); // Debugging log
-
   return (
     <div className="space-y-6 p-1">
       {/* Section: Users Who Owe You */}
-      
-        <h2 className="text-xl font-bold mb-4 text-gray-800">Users Who Owe You</h2>
-        {usersOweYou.length === 0 ? (
-          <p className="text-gray-600">No users owe you money.</p>
-        ) : (
-          <ul className="space-y-4">
-            {usersOweYou.map(([userID, amount]) => (
-              <li
-                key={userID}
-                className="flex justify-between items-center border-b border-gray-200 pb-2 last:border-b-0"
-              >
-                <div className="flex items-center gap-4">
-                  <UserAvatar 
-                    userId={userID}
-                    className="h-8 w-8"
-                  />
-                  <span className="text-gray-800">
-                    <span className="font-medium">{getUserName(userID)}</span> owes you
-                  </span>
-                </div>
-                <span className="text-gray-800 font-semibold">
-                  RM {amount.toFixed(2)}
+      <h2 className="text-xl font-bold mb-4 text-gray-800">Users Who Owe You</h2>
+      {usersOweYou.length === 0 ? (
+        <p className="text-gray-600">No users owe you money.</p>
+      ) : (
+        <ul className="space-y-4">
+          {usersOweYou.map(([userID, amount]) => (
+            <li
+              key={userID}
+              className="flex justify-between items-center border-b border-gray-200 pb-2 last:border-b-0"
+            >
+              <div className="flex items-center gap-4">
+                <UserAvatar 
+                  userId={userID}
+                  className="h-8 w-8"
+                />
+                <span className="text-gray-800">
+                  <span className="font-medium">{getUserName(userID)}</span> owes you
                 </span>
-              </li>
-            ))}
-          </ul>
-        )}
-        <div className="mt-4 flex justify-between items-center border-t border-gray-200 pt-4">
-          <span className="text-lg font-semibold text-gray-800">Total</span>
-          <span className="text-xl font-bold text-gray-900">
-            RM {totalUsersOweYou.toFixed(2)}
-          </span>
-        </div>
-     
+              </div>
+              <span className="text-gray-800 font-semibold">
+                RM {amount.toFixed(2)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="mt-4 flex justify-between items-center border-t border-gray-200 pt-4">
+        <span className="text-lg font-semibold text-gray-800">Total</span>
+        <span className="text-xl font-bold text-gray-900">
+          RM {totalUsersOweYou.toFixed(2)}
+        </span>
+      </div>
 
       {/* Section: Users You Owe */}
-      
-        <h2 className="text-xl font-bold mb-4 text-gray-800">Users You Owe</h2>
-        {youOweUsers.length === 0 ? (
-          <p className="text-gray-600">You don't owe any users money.</p>
-        ) : (
-          <ul className="space-y-4">
-            {youOweUsers.map(([userID, amount]) => (
-              <li
-                key={userID}
-                className="flex justify-between items-center p-3 hover:bg-gray-300 cursor-pointer transition-colors duration-200 rounded-lg"
-                onClick={() => handlePayClick(userID, amount)}
-              >
-                <div className="flex items-center gap-4">
-                  <UserAvatar 
-                    userId={userID}
-                    className="h-8 w-8"
-                  />
-                  <span className="text-gray-800">
-                    You owe <span className="font-medium">{getUserName(userID)}</span>
-                  </span>
-                </div>
-                <span className="text-gray-800 font-semibold">
-                  RM {Math.abs(amount).toFixed(2)}
+      <h2 className="text-xl font-bold mb-4 text-gray-800">Users You Owe</h2>
+      {youOweUsers.length === 0 ? (
+        <p className="text-gray-600">You don't owe any users money.</p>
+      ) : (
+        <ul className="space-y-4">
+          {youOweUsers.map(([userID, amount]) => (
+            <li
+              key={userID}
+              className="flex justify-between items-center p-3 hover:bg-gray-300 cursor-pointer transition-colors duration-200 rounded-lg"
+              onClick={() => handlePayClick(userID, amount)}
+            >
+              <div className="flex items-center gap-4">
+                <UserAvatar 
+                  userId={userID}
+                  className="h-8 w-8"
+                />
+                <span className="text-gray-800">
+                  You owe <span className="font-medium">{getUserName(userID)}</span>
                 </span>
-              </li>
-            ))}
-          </ul>
-        )}
-        <div className="mt-4 flex justify-between items-center border-t border-gray-200 pt-4">
-          <span className="text-lg font-semibold text-gray-800">Total</span>
-          <span className="text-xl font-bold text-gray-900">
-            RM {Math.abs(totalYouOweUsers).toFixed(2)}
-          </span>
-        </div>
-      
+              </div>
+              <span className="text-gray-800 font-semibold">
+                RM {Math.abs(amount).toFixed(2)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="mt-4 flex justify-between items-center border-t border-gray-200 pt-4">
+        <span className="text-lg font-semibold text-gray-800">Total</span>
+        <span className="text-xl font-bold text-gray-900">
+          RM {Math.abs(totalYouOweUsers).toFixed(2)}
+        </span>
+      </div>
 
       {/* Settled Debts Card */}
-    
       <h2 className="text-xl font-bold mb-4 text-gray-800">Settled Debts</h2>
       {debts.length === 0 ? (
         <p className="text-gray-600">No settled debts yet.</p>
@@ -276,7 +240,6 @@ export default function DebtsSummary() {
           ))}
         </ul>
       )}
-    
     <Dialog open={showPayModal} onOpenChange={setShowPayModal}>
         <DialogContent>
           <DialogHeader>
@@ -303,8 +266,8 @@ export default function DebtsSummary() {
               <Button variant="outline" onClick={() => setShowPayModal(false)}>
                 Cancel
               </Button>
-              <Button onClick={handlePay} disabled={isSettlingUp}>
-              {isSettlingUp ? <LoadingSpinner /> : 'Pay'}
+              <Button onClick={handlePay} disabled={isButtonLoading?.settle}>
+              {isButtonLoading?.settle ? <Loader2 className="h-4 w-4 animate-spin mr-2 inline" /> : 'Pay'}
               </Button>
             </div>
           </div>
@@ -337,10 +300,13 @@ export default function DebtsSummary() {
         <Button
           variant="destructive"
           onClick={handleDeleteDebt}
+          disabled={isDeletingDebt}
         >
+          {isDeletingDebt ? <Loader2 className="h-4 w-4 animate-spin mr-2 inline" /> : null}
           Delete
         </Button>
-        <Button onClick={handleEditDebt}>
+        <Button onClick={handleEditDebt} disabled={isEditingDebt}>
+          {isEditingDebt ? <Loader2 className="h-4 w-4 animate-spin mr-2 inline" /> : null}
           Save Changes
         </Button>
       </div>

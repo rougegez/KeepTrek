@@ -182,7 +182,7 @@ export default function CreateEditItemModal({
             <MapSearchBar
                 id="location"
                 searchButton={false}
-                onChange={handleLocationChange}
+                onInputChange={handleLocationChange}
                 initialPlace={newItem.title}
             />
           </div>

@@ -182,8 +182,7 @@ const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, locatio
                         <label htmlFor="address" className="block text-sm font-medium text-muted-foreground mb-1">Address</label>
                         <MapSearchBar
                             id="address"
-                            searchButton={false}
-                            onChange={handleLocationChange}
+                            onInputChange={handleLocationChange}
                             initialPlace={newActivity.location}
                         />
                     </div>
