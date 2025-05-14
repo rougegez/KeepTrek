@@ -119,10 +119,17 @@ function Itinerary() {
 
   const MapToggleButton = () => (
     <Button
-      className="absolute right-4 -bottom-5 z-50 rounded-full p-2 bg-secondary text-muted-foreground shadow-md"
+      className="absolute right-4 -bottom-5 z-50 rounded-full p-2 bg-white border border-gray-200 text-muted-foreground shadow-lg"
       onClick={() => setIsMapExpanded(!isMapExpanded)}
+      style={{ 
+        width: isMobile ? '44px' : '36px', 
+        height: isMobile ? '44px' : '36px',
+        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)'
+      }}
+      aria-label={isMapExpanded ? 'Collapse Map' : 'Expand Map'}
+      title={isMapExpanded ? 'Collapse Map' : 'Expand Map'}
     >
-      {isMapExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+      {isMapExpanded ? <ChevronUp size={isMobile ? 24 : 20} /> : <ChevronDown size={isMobile ? 24 : 20} />}
     </Button>
   );
 
@@ -241,6 +248,18 @@ function Itinerary() {
 
   const itineraryDays = getDays();
 
+  // Prevent background scroll when map is expanded on mobile
+  useEffect(() => {
+    if (isMobile && isMapExpanded) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isMobile, isMapExpanded]);
+
   return (
     <SidebarProvider>
       <AppSidebar tripID={tripID} />
@@ -298,25 +317,27 @@ function Itinerary() {
           }
           style={{ flexShrink: 0 }}
         >
-          <ScrollArea className="h-full px-2 pt-6">
+          <ScrollArea className="h-full px-2 pt-6 ">
             <div className="space-y-6">
-              <div className="flex justify-between space-y-2 mr-5">
-                <div>
-                  <h1 className="text-3xl font-bold truncate">
-                    {tripDetails.tripName}
-                  </h1>
+              <div className={`flex flex-col gap-y-2 sm:flex-row sm:items-center sm:gap-x-4 py-2 mr-5 w-[98%]`}>
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-2xl sm:text-3xl font-bold truncate">{tripDetails.tripName}</h1>
                   <p className="text-sm text-muted-foreground">
                     {dateFormatter(tripDetails.startDate)} to{" "}
                     {dateFormatter(tripDetails.endDate)}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
-
-                  <UserAvatarStack
-                    userIds={tripDetails.users}
+                <div
+                  className={`flex items-center gap-2 ${isMobile ? 'flexitems-center gap-4' : ''}`}
+                  style={{ minWidth: 0, height: 'auto' }}
+                >
+                  <UserAvatarStack 
+                    userIds={tripDetails.users} 
                     isIdle={whosOnline}
+                    size={isMobile ? 8 : 10} 
+                    maxUsers={isMobile ? 3 : 5}
+                    className={isMobile ? "scale-90" : ""}
                   />
-
                   {canModify && (
                     <>
                       <InviteButton tripID={tripID} userRole={userRole} />
@@ -326,77 +347,55 @@ function Itinerary() {
                   {userRole === UserRole.ADMIN && (
                     <Button
                       variant="outline"
-                      size="icon"
                       onClick={() => setShowSettingsModal(true)}
                       title="Trip Settings"
+                      aria-label="Trip Settings"
                     >
-                      <Settings className="h-4 w-4" />
+                      <Settings className={`${isMobile ? 'h-4 w-4' : 'h-4 w-4'}`} />
                     </Button>
                   )}
                   {currentUser && currentUser !== tripDetails.creatorID && (
                     <Button
                       variant="outline"
-                      size="icon"
+                      size={isMobile ? "sm" : "icon"}
                       onClick={() => setShowLeaveAlert(true)}
                       title="Leave Trip"
+                      aria-label="Leave Trip"
+                      className="min-w-[40px]"
                     >
-                      <LogOut className="h-4 w-4" />
+                      <LogOut className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
                     </Button>
                   )}
                 </div>
               </div>
-              {readyState === ReadyState.OPEN && days && days.length > 0 ? (
-                days.map((day, dayIndex) => (
-                  <div key={day.date} className="space-y-4">
-                    <h2
-                      className={`text-xl font-semibold ${
-                        !isMapVisible && !isMobile ? "text-2xl" : ""
-                      }`}
+              {readyState === ReadyState.OPEN && (days && days.length > 0) ? (days.map((day, dayIndex) => (
+                <div key={day.date} className="space-y-4">
+                  <h2 className="text-xl font-semibold">{day.date}</h2>
+                  <Reorder.Group
+                    axis="y"
+                    values={day.activities}
+                    onReorder={(newActivities) => updateActivities(newActivities, dayIndex)}
+                    className={`space-y-4 ${isMobile ? 'w-full px-2' : 'w-[90%] ml-14'}`}>
+                    {day.activities.map((activity) => (
+                      <ActivityCard
+                        key={activity.id}
+                        activity={activity}
+                        onNoteChange={handleNoteChange}
+                        onEditClick={() => handleEditClick(dayIndex, activity)}
+                        onDeleteClick={() => handleDeleteClick(dayIndex, activity.id)}
+                        onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                        canModify={canModify}
+                      />
+                    ))}
+                  </Reorder.Group>
+                  {canModify && (
+                    <Button
+                      variant="outline"
+                      className={`${isMobile ? 'w-full mt-2 mb-2 rounded-lg shadow' : 'w-[92%] ml-8 mt-2 mb-2 rounded-lg shadow'}`}
+                      onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date })}
+                      aria-label="Add Activity"
                     >
-                      {day.date}
-                    </h2>
-                    <Reorder.Group
-                      axis="y"
-                      values={day.activities}
-                      onReorder={(newActivities) =>
-                        updateActivities(newActivities, dayIndex)
-                      }
-                      className={`space-y-4 w-[98%] md:w-[90%] ml-0 md:ml-14 ${
-                        !isMapVisible && !isMobile ? "space-y-6" : ""
-                      }`}
-                    >
-                      {day.activities.map((activity) => (
-                        <ActivityCard
-                          key={activity.id}
-                          activity={activity}
-                          onNoteChange={handleNoteChange}
-                          onEditClick={() =>
-                            handleEditClick(dayIndex, activity)
-                          }
-                          onDeleteClick={() =>
-                            handleDeleteClick(dayIndex, activity.id)
-                          }
-                          onLocationClick={(clickLocation) =>
-                            handleLocationClick(clickLocation)
-                          }
-                          canModify={canModify}
-                          largeMode={!isMapVisible && !isMobile}
-                        />
-                      ))}
-                    </Reorder.Group>
-                    {canModify && (
-                      <Button
-                        variant="outline"
-                        className={`w-[98%] md:w-[92%] ml-0 md:ml-8 ${
-                          !isMapVisible && !isMobile ? "text-lg py-6" : ""
-                        }`}
-                        onClick={() =>
-                          setAddModalState({
-                            isOpen: true,
-                            selectedDay: day.date,
-                          })
-                        }
-                      >
+                     
                         <Plus className="w-4 h-4 mr-2" />
                         Add Activity
                       </Button>
@@ -409,15 +408,9 @@ function Itinerary() {
               {canModify && (
                 <Button
                   variant="outline"
-                  className={`w-full ${
-                    !isMapVisible && !isMobile ? "text-lg py-6" : ""
-                  }`}
-                  onClick={() =>
-                    setDays([
-                      ...days,
-                      { date: `Day ${days.length + 1}`, activities: [] },
-                    ])
-                  }
+                  className={`w-full mt-4 mb-6 rounded-lg shadow ${isMobile ? 'mx-auto' : ''}`}
+                  onClick={() => setDays([...days, { date: `Day ${days.length + 1}`, activities: [] }])}
+                  aria-label="Add Day"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Day
