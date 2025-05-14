@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef ,} from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -7,8 +7,16 @@ import { WishlistCard, AddItemCard } from "./WishlistCard.jsx";
 import ItemModal from "./ItemModal.jsx";
 import CreateEditItemModal from "./CreateEditItemModal.jsx";
 import MapboxMap from "@/components/MapboxMap/MapboxMapGoogleSearch.jsx";
-import { normalizeMarkers } from "@/components/MapboxMap/MapUtil.jsx"; 
-import { getAllItems, createItem, editItem, deleteItem, upvoteItem, downvoteItem, deleteFile } from "@/APIs/wishlist";
+import { normalizeMarkers } from "@/components/MapboxMap/MapUtil.jsx";
+import {
+  getAllItems,
+  createItem,
+  editItem,
+  deleteItem,
+  upvoteItem,
+  downvoteItem,
+  deleteFile,
+} from "@/APIs/wishlist";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,16 +24,16 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
-import { useMediaQuery } from 'react-responsive';
+import { useMediaQuery } from "react-responsive";
 import { motion } from "framer-motion";
 import { ChevronUp, ChevronDown, Menu } from "lucide-react";
 import MobileHeader from "../MobileHeader";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { canEdit } from "@/utils/permissions";
-import { useQuery } from 'react-query';
-import { getTrip } from '@/APIs/trip';
+import { useQuery } from "react-query";
+import { getTrip } from "@/APIs/trip";
 import { useAuth } from "@/contexts/AuthProvider.jsx";
 import { useItinerary } from "@/hooks/useItinerary.jsx";
 import DeleteAlert from "../ui/DeleteAlert.jsx";
@@ -36,7 +44,11 @@ export default function WishlistPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [wishlistData, setWishlistData] = useState({ accommodation: [], activities: [], food: [] });
+  const [wishlistData, setWishlistData] = useState({
+    accommodation: [],
+    activities: [],
+    food: [],
+  });
   const [selectedItem, setSelectedItem] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -51,7 +63,7 @@ export default function WishlistPage() {
   const [selectedItems, setSelectedItems] = useState([]);
   const [selectedDay, setSelectedDay] = useState("");
 
-  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
+  const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
   const [isMapExpanded, setIsMapExpanded] = useState(true);
   const [scrollPosition, setScrollPosition] = useState(0);
   const contentRef = useRef(null);
@@ -60,8 +72,12 @@ export default function WishlistPage() {
   const [optimisticVotes, setOptimisticVotes] = useState({});
   const [initialCategory, setInitialCategory] = useState("");
 
-  const { data: tripDetails } = useQuery(['trip', tripID], () => getTrip(tripID), {suspense: true});
-  const userRole = tripDetails?.users.find(u => u.userID === user)?.role;
+  const { data: tripDetails } = useQuery(
+    ["trip", tripID],
+    () => getTrip(tripID),
+    { suspense: true }
+  );
+  const userRole = tripDetails?.users.find((u) => u.userID === user)?.role;
   const canModify = canEdit(userRole);
 
   // Add state for delete alert
@@ -73,8 +89,8 @@ export default function WishlistPage() {
       const position = window.scrollY;
       const scrollDelta = position - lastScrollPosition;
 
-      // Auto-expand map when scrolling to top
-      if (position < 50) {
+      // Auto-expand map when scrolling to top (desktop only)
+      if (!isMobile && position < 50) {
         setIsMapExpanded(true);
       }
       // Auto-collapse map when scrolling down past threshold
@@ -90,9 +106,9 @@ export default function WishlistPage() {
       setScrollPosition(position);
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isMapExpanded, lastScrollPosition]);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isMapExpanded, lastScrollPosition, isMobile]);
 
   const fetchWishlistData = async () => {
     const allItems = await getAllItems(tripID);
@@ -106,9 +122,15 @@ export default function WishlistPage() {
       });
     };
 
-    const accommodation = sortByRank(allItems.filter(item => item.category === "accommodation"));
-    const activities = sortByRank(allItems.filter(item => item.category === "activities"));
-    const food = sortByRank(allItems.filter(item => item.category === "food"));
+    const accommodation = sortByRank(
+      allItems.filter((item) => item.category === "accommodation")
+    );
+    const activities = sortByRank(
+      allItems.filter((item) => item.category === "activities")
+    );
+    const food = sortByRank(
+      allItems.filter((item) => item.category === "food")
+    );
 
     setWishlistData({ accommodation, activities, food });
   };
@@ -122,34 +144,36 @@ export default function WishlistPage() {
   useEffect(() => {
     // Initialize optimistic votes from items
     const initialVotes = {};
-    wishlistData.accommodation.concat(wishlistData.activities, wishlistData.food).forEach(item => {
-      initialVotes[item.id] = {
-        upvotes: item.upvotes,
-        downvotes: item.downvotes,
-        upvoterNames: [], // Will be populated when modal opens
-        downvoterNames: [] // Will be populated when modal opens
-      };
-    });
+    wishlistData.accommodation
+      .concat(wishlistData.activities, wishlistData.food)
+      .forEach((item) => {
+        initialVotes[item.id] = {
+          upvotes: item.upvotes,
+          downvotes: item.downvotes,
+          upvoterNames: [], // Will be populated when modal opens
+          downvoterNames: [], // Will be populated when modal opens
+        };
+      });
     setOptimisticVotes(initialVotes);
   }, [wishlistData]);
 
   const handleVote = async (item, isUpvote) => {
-    const voteType = isUpvote ? 'upvotes' : 'downvotes';
-    const oppositeType = isUpvote ? 'downvotes' : 'upvotes';
+    const voteType = isUpvote ? "upvotes" : "downvotes";
+    const oppositeType = isUpvote ? "downvotes" : "upvotes";
     const currentVotes = optimisticVotes[item.id];
 
     const isVoted = currentVotes[voteType].includes(user);
     const newVotes = isVoted
-      ? currentVotes[voteType].filter(id => id !== user)
+      ? currentVotes[voteType].filter((id) => id !== user)
       : [...currentVotes[voteType], user];
 
-    setOptimisticVotes(prev => ({
+    setOptimisticVotes((prev) => ({
       ...prev,
       [item.id]: {
         ...prev[item.id],
         [voteType]: newVotes,
-        [oppositeType]: currentVotes[oppositeType].filter(id => id !== user)
-      }
+        [oppositeType]: currentVotes[oppositeType].filter((id) => id !== user),
+      },
     }));
 
     if (isUpvote) {
@@ -170,7 +194,15 @@ export default function WishlistPage() {
   };
 
   const handleSubmitCreateItem = async (newItem) => {
-    await createItem(tripID, newItem);
+    await createItem(tripID, newItem).then((res) => {
+      if (res.status === 200) {
+        toast.success("Item created successfully");
+      }
+    }).catch((err) => {
+      toast.error("Failed to create item", {
+        description: <p>{err.message}</p>,
+      })
+    });
     await fetchWishlistData();
     setIsCreateModalOpen(false);
   };
@@ -201,15 +233,18 @@ export default function WishlistPage() {
   };
 
   const handleSubmitEditItem = async (updatedItem) => {
-    if (selectedItem.image && selectedItem.image !== updatedItem.image) {
-      const imageUrlParts = selectedItem.image.split('/');
-      const imageFileName = imageUrlParts[imageUrlParts.length - 1];
-      await deleteFile(selectedItem.tripID, imageFileName);
-    }
-    await editItem(selectedItem.tripID, selectedItem.id, updatedItem);
+    await editItem(selectedItem.tripID, selectedItem.id, updatedItem).then((res) => {
+      if (res.status === 200) {
+        toast.success("Item updated successfully");
+      }
+    }).catch((err) => {
+      toast.error("Failed to update item", {
+        description: <p>{err.message}</p>,
+      })
+    });
     await fetchWishlistData();
     const allItems = await getAllItems(selectedItem.tripID);
-    const newSelectedItem = allItems.find(i => i.id === selectedItem.id);
+    const newSelectedItem = allItems.find((i) => i.id === selectedItem.id);
     setSelectedItem(newSelectedItem);
     setIsEditModalOpen(false);
   };
@@ -223,12 +258,15 @@ export default function WishlistPage() {
   // New: Confirm delete handler
   const handleDeleteConfirm = async () => {
     if (itemToDelete) {
-      if (itemToDelete.image) {
-        const imageUrlParts = itemToDelete.image.split('/');
-        const imageFileName = imageUrlParts[imageUrlParts.length - 1];
-        await deleteFile(itemToDelete.tripID, imageFileName);
-      }
-      await deleteItem(itemToDelete.tripID, itemToDelete.id);
+      await deleteItem(itemToDelete.tripID, itemToDelete.id).then((res) => {
+        if (res.status === 200) {
+          toast.success("Item deleted successfully");
+        }
+      }).catch((err) => {
+        toast.error("Failed to delete item", {
+          description: <p>{err.message}</p>,
+        })
+      });
       await fetchWishlistData();
       setSelectedItem(null);
     }
@@ -249,8 +287,8 @@ export default function WishlistPage() {
   const handleNewImage = async (editedItem) => {
     await editItem(editedItem.tripID, editedItem.id, editedItem);
     await fetchWishlistData();
-    console.log(editedItem)
-  }
+    console.log(editedItem);
+  };
 
   const handleAddModeToggle = () => {
     setAddMode(!addMode);
@@ -259,14 +297,14 @@ export default function WishlistPage() {
 
   const handleSelectItem = (item) => {
     if (selectedItems.includes(item)) {
-      setSelectedItems(selectedItems.filter(i => i !== item));
+      setSelectedItems(selectedItems.filter((i) => i !== item));
     } else {
       setSelectedItems([...selectedItems, item]);
     }
   };
 
   const handleAddToItinerary = async () => {
-    const updatedDays = itineraryDays.map(day => {
+    const updatedDays = itineraryDays.map((day) => {
       if (day.date === selectedDay) {
         return {
           ...day,
@@ -286,8 +324,8 @@ export default function WishlistPage() {
               link: item.link || "",
               image: item.image || "../src/assets/dummy-image.jpg",
               notes: item.notes || "",
-            }))
-          ]
+            })),
+          ],
         };
       }
       return day;
@@ -299,12 +337,12 @@ export default function WishlistPage() {
     toast.success("Successfully added to itinerary", {
       action: {
         label: "View Itinerary",
-        onClick: () => navigate(`/itinerary/${tripID}`)
-      }
+        onClick: () => navigate(`/itinerary/${tripID}`),
+      },
     });
   };
 
-  const getMapHeight = () => isMapExpanded ? '65vh' : '10vh';
+  const getMapHeight = () => (isMapExpanded ? "65vh" : "10vh");
 
   const MapToggleButton = () => (
     <Button
@@ -320,16 +358,16 @@ export default function WishlistPage() {
       <AppSidebar tripID={tripID} />
       {!isMobile && <SidebarTrigger />}
       {isMobile && <MobileHeader title="Suggest a place to Go!" />}
-      <div className={`flex w-full ${!isMobile && 'grid grid-cols-2'}`}>
+      <div className={`flex w-full ${!isMobile && "grid grid-cols-2"}`}>
         {isMobile ? (
           <motion.div
             className="fixed w-full z-40 bg-background"
-            initial={{ height: '75vh' }}
+            initial={{ height: "75vh" }}
             animate={{
               height: getMapHeight(),
-              transition: { duration: 0.3, ease: 'easeInOut' }
+              transition: { duration: 0.3, ease: "easeInOut" },
             }}
-            style={{ top: '3.5rem' }}
+            style={{ top: "3.5rem" }}
           >
             <MapboxMap
               onSaveLocation={handleSaveLocation}
@@ -346,21 +384,31 @@ export default function WishlistPage() {
 
         <motion.div
           ref={contentRef}
-          className={`${isMobile
-            ? 'w-full bg-background relative z-30'
-            : 'col-span-1 h-screen'
-            }`}
-          animate={isMobile ? {
-            marginTop: `calc(${getMapHeight()} + 3.5rem)`,
-            transition: { duration: 0.3, ease: 'easeInOut' }
-          } : {}}
+          className={`${
+            isMobile
+              ? "w-full bg-background relative z-30"
+              : "col-span-1 h-screen"
+          }`}
+          animate={
+            isMobile
+              ? {
+                  marginTop: `calc(${getMapHeight()} + 3.5rem)`,
+                  transition: { duration: 0.3, ease: "easeInOut" },
+                }
+              : {}
+          }
         >
-          <ScrollArea className={`${isMobile ? 'p-6' : 'h-full px-6 pt-6'}`}>
+          <ScrollArea className={`${isMobile ? "p-6" : "h-full px-6 pt-6"}`}>
             <div className="space-y-4">
-              {!isMobile && <h1 className="text-3xl font-bold">Suggest a place to Go!</h1>}
+              {!isMobile && (
+                <h1 className="text-3xl font-bold">Suggest a place to Go!</h1>
+              )}
               <div className="flex justify-between items-center">
                 {canModify && (
-                  <Button variant={addMode ? "outline" : "default"} onClick={handleAddModeToggle}>
+                  <Button
+                    variant={addMode ? "outline" : "default"}
+                    onClick={handleAddModeToggle}
+                  >
                     {addMode ? "Cancel" : "Add Items to Itinerary"}
                   </Button>
                 )}
@@ -381,7 +429,10 @@ export default function WishlistPage() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <Button onClick={handleAddToItinerary} disabled={!selectedDay || selectedItems.length === 0}>
+                    <Button
+                      onClick={handleAddToItinerary}
+                      disabled={!selectedDay || selectedItems.length === 0}
+                    >
                       Add to Itinerary
                     </Button>
                   </div>
@@ -389,7 +440,9 @@ export default function WishlistPage() {
               </div>
               {addMode && (
                 <p className="text-sm font-normal text-muted-foreground">
-                  {selectedItems.length > 0 ? `${selectedItems.length} items selected.` : "Select at least 1 wishlist item to add to your itinerary."}
+                  {selectedItems.length > 0
+                    ? `${selectedItems.length} items selected.`
+                    : "Select at least 1 wishlist item to add to your itinerary."}
                 </p>
               )}
 
@@ -401,7 +454,9 @@ export default function WishlistPage() {
                     onClick={() => handleItemClick(item)}
                     onUpvote={(item) => handleVote(item, true)}
                     onDownvote={(item) => handleVote(item, false)}
-                    onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                    onLocationClick={(clickLocation) =>
+                      handleLocationClick(clickLocation)
+                    }
                     onNewImage={handleNewImage}
                     currUser={user}
                     addMode={addMode}
@@ -411,7 +466,10 @@ export default function WishlistPage() {
                   />
                 ))}
                 {canModify && (
-                  <AddItemCard onClick={handleCreateItem} category="accommodation" />
+                  <AddItemCard
+                    onClick={handleCreateItem}
+                    category="accommodation"
+                  />
                 )}
               </WishlistSection>
 
@@ -423,7 +481,9 @@ export default function WishlistPage() {
                     onClick={() => handleItemClick(item)}
                     onUpvote={(item) => handleVote(item, true)}
                     onDownvote={(item) => handleVote(item, false)}
-                    onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                    onLocationClick={(clickLocation) =>
+                      handleLocationClick(clickLocation)
+                    }
                     onNewImage={handleNewImage}
                     currUser={user}
                     addMode={addMode}
@@ -433,7 +493,10 @@ export default function WishlistPage() {
                   />
                 ))}
                 {canModify && (
-                  <AddItemCard onClick={handleCreateItem} category="activities" />
+                  <AddItemCard
+                    onClick={handleCreateItem}
+                    category="activities"
+                  />
                 )}
               </WishlistSection>
 
@@ -445,7 +508,9 @@ export default function WishlistPage() {
                     onClick={() => handleItemClick(item)}
                     onUpvote={(item) => handleVote(item, true)}
                     onDownvote={(item) => handleVote(item, false)}
-                    onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                    onLocationClick={(clickLocation) =>
+                      handleLocationClick(clickLocation)
+                    }
                     onNewImage={handleNewImage}
                     currUser={user}
                     addMode={addMode}
@@ -523,4 +588,3 @@ export default function WishlistPage() {
     </SidebarProvider>
   );
 }
-

@@ -19,6 +19,7 @@ import { fetchPlaceDetails } from "@/APIs/fetchPlaceDetails.js";
 import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar";
 import { Textarea } from '@/components/ui/textarea';
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { toast } from "sonner";
 
 export default function CreateEditItemModal({ 
   isOpen,
@@ -45,7 +46,6 @@ export default function CreateEditItemModal({
     link: "",
     notes: "",
   });
-  const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -117,7 +117,7 @@ export default function CreateEditItemModal({
     setIsSaving(true);
 
     if (!newItem.category || !newItem.title || !newItem.location) {
-      setError("All fields with * are required.");
+      toast.info(<>All fields with <span className='text-red-500'>*</span> are required.</>);
       setIsSaving(false);
       return;
     }
@@ -127,7 +127,6 @@ export default function CreateEditItemModal({
       onClose();
     } catch (err) {
       console.error(`Error ${isEditMode ? "updating" : "creating"} wishlist item:`, err);
-      setError(`Failed to ${isEditMode ? "update" : "create"} wishlist item`);
     } finally {
       setIsSaving(false);
     }
@@ -215,9 +214,6 @@ export default function CreateEditItemModal({
           </div>
 
           <DialogFooter className="pt-4 flex justify-between items-center">
-            <div className="flex-1">
-              {error && <p className="text-red-500 text-sm">{error}</p>}
-            </div>
             <div className="flex space-x-2">
               <Button onClick={handleCancel} variant="outline">Cancel</Button>
               <Button type="submit" disabled={isSaving}>

@@ -4,7 +4,15 @@ import { withSuspense } from "@/utils/withSuspense.jsx";
 
 import { Button } from "@/components/ui/button";
 import { Reorder } from "framer-motion";
-import { Plus, ChevronUp, ChevronDown, LogOut, Settings } from 'lucide-react'
+import {
+  Plus,
+  ChevronUp,
+  ChevronDown,
+  LogOut,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import ActivityCard from "./ActivityCard.jsx";
@@ -17,31 +25,35 @@ import { dateFormatter } from "@/utils/dateFormat.jsx";
 import { useParams, useNavigate } from "react-router-dom";
 import { getTrip, removeMember } from "@/APIs/trip.js";
 
-import { useMediaQuery } from 'react-responsive';
+import { useMediaQuery } from "react-responsive";
 import { motion } from "framer-motion";
 import MobileHeader from "../MobileHeader.jsx";
 import InviteButton from "../Invite/InviteButton.jsx";
 import BrowseActivity from "../BrowseActivity/BrowseActivity.jsx";
-import { UserAvatarStack } from '../profilePage/avatar.jsx';
+import { UserAvatarStack } from "../profilePage/avatar.jsx";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { canEdit, UserRole } from "@/utils/permissions";
-import LeaveAlert from '@/components/ui/LeaveAlert';
-import TripSettings from '../TripSettings/TripSettings.jsx';
+import LeaveAlert from "@/components/ui/LeaveAlert";
+import TripSettings from "../TripSettings/TripSettings.jsx";
 
-import { useItinerary } from '@/hooks/useItinerary.jsx';
+import { useItinerary } from "@/hooks/useItinerary.jsx";
 import { Skeleton } from "@/components/ui/skeleton.jsx";
 import { ReadyState } from "react-use-websocket";
 import { useAuth } from "@/contexts/AuthProvider.jsx";
 import { useWhosOnline } from "../CreateTrip/WhosOnlineWrapper.jsx";
 import DeleteAlert from "../ui/DeleteAlert.jsx";
+import { toast } from "sonner";
 
 function Itinerary() {
   const navigate = useNavigate();
-  const { user : currentUser } = useAuth();
+  const { user: currentUser } = useAuth();
   const { tripID } = useParams();
 
-  const [addModalState, setAddModalState] = useState({ isOpen: false, selectedDay: null });
+  const [addModalState, setAddModalState] = useState({
+    isOpen: false,
+    selectedDay: null,
+  });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const [currentActivity, setCurrentActivity] = useState(null);
@@ -49,8 +61,9 @@ function Itinerary() {
   const [searchedPlace, setSearchedPlace] = useState(null);
   const [savedLocation, setSavedLocation] = useState(null);
 
-  const isMobile = useMediaQuery({ query: '(max-width: 1170px)' });
+  const isMobile = useMediaQuery({ query: "(max-width: 1170px)" });
   const [isMapExpanded, setIsMapExpanded] = useState(true);
+  const [isMapVisible, setIsMapVisible] = useState(true);
   const [scrollPosition, setScrollPosition] = useState(0);
   const contentRef = useRef(null);
   const [lastScrollPosition, setLastScrollPosition] = useState(0);
@@ -60,7 +73,7 @@ function Itinerary() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   const { data: tripDetails } = useQuery(
-    ['trip', tripID],
+    ["trip", tripID],
     () => getTrip(tripID),
     {
       suspense: true,
@@ -68,19 +81,41 @@ function Itinerary() {
     }
   );
 
-  const { days, setDays, readyState , getDayAndActivity, getDays, addActivity} = useItinerary()
-  const { whosOnline } = useWhosOnline(); 
+  const { days, setDays, readyState, getDayAndActivity, getDays, addActivity } = useItinerary()
+  const { whosOnline } = useWhosOnline();
 
   const userRole = useMemo(() => {
     if (!currentUser || !tripDetails?.users) return null;
-    const userInTrip = tripDetails.users.find(u => u.userID === currentUser);
-    console.log('User lookup:', { currentUser, userInTrip });
+    const userInTrip = tripDetails.users.find((u) => u.userID === currentUser);
+    console.log("User lookup:", { currentUser, userInTrip });
     return userInTrip?.role;
   }, [currentUser, tripDetails]);
 
   const canModify = canEdit(userRole);
 
-  const getMapHeight = () => isMapExpanded ? '65vh' : '10vh';
+  useEffect(() => {
+    const handleScroll = () => {
+      const position = window.scrollY;
+      const scrollDelta = position - lastScrollPosition;
+
+      // Auto-expand map when scrolling to top (desktop only)
+      if (!isMobile && position < 50) {
+        setIsMapExpanded(true);
+      }
+      // Auto-collapse map when scrolling down past threshold
+      else if (scrollDelta > 10 && position > 10 && isMapExpanded) {
+        setIsMapExpanded(false);
+      }
+
+      setLastScrollPosition(position);
+      setScrollPosition(position);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isMapExpanded, lastScrollPosition, isMobile]);
+
+  const getMapHeight = () => (isMapExpanded ? "65vh" : "10vh");
 
   const MapToggleButton = () => (
     <Button
@@ -98,35 +133,55 @@ function Itinerary() {
     </Button>
   );
 
+  const HideMapButton = () => (
+    <Button
+      className="absolute left-4 top-1/2 -translate-y-1/2 z-50 rounded-full w-10 h-10 p-0 flex items-center justify-center bg-secondary text-muted-foreground shadow-md"
+      onClick={() => setIsMapVisible(false)}
+      title="Hide Map"
+    >
+      <ChevronRight size={20} />
+    </Button>
+  );
+
+  const ShowMapButton = () => (
+    <Button
+      className="fixed right-4 top-1/2 -translate-y-1/2 z-50 rounded-full w-10 h-10 p-0 flex items-center justify-center bg-secondary text-muted-foreground shadow-md"
+      onClick={() => setIsMapVisible(true)}
+      title="Show Map"
+    >
+      <ChevronLeft size={20} />
+    </Button>
+  );
+
   const handleMapLoad = (map) => {
     setMapInstance(map);
   };
 
   const handleSaveLocation = (place, selectedDay) => {
-    // place only contains location name, adress and coordinates, requires addition of fields
-    // setSavedLocation(place);
-    // setAddModalState({ isOpen: true, selectedDay: selectedDay });
     const newActivity = {
-    id: `${Date.now()}`,
-    title: place ? place.name : "",
-    placeId: place ? place.placeId : "",
-    location: place ? place.address : "",
-    coordinates: place ? place.coordinates : [],
-    rating: place ? place.rating : "",
-    image: place ? place.image : "/assets/dummy-image.jpg",
-    openingHours: place ? place.openingHours : "",
-    website: place ? place.website : "",
-    link: place ? place.link : "",
-    } 
+      id: `${Date.now()}`,
+      title: place ? place.name : "",
+      placeId: place ? place.placeId : "",
+      location: place ? place.address : "",
+      coordinates: place ? place.coordinates : [],
+      rating: place ? place.rating : "",
+      image: place ? place.image : "/assets/dummy-image.jpg",
+      openingHours: place ? place.openingHours : "",
+      website: place ? place.website : "",
+      link: place ? place.link : "",
+    }
     addActivity(newActivity, selectedDay)
+    if (readyState === ReadyState.OPEN) {
+      toast.success("Activity added successfully!");
+    }
   };
 
   const handleNoteChange = (activityId, newNote) => {
-    const updatedDays = days.map(day => ({
+    const updatedDays = days.map((day) => ({
       ...day,
-      activities: day.activities.map(activity =>
+      activities: day.activities.map((activity) =>
         activity.id === activityId ? { ...activity, notes: newNote } : activity
-      )
+      ),
     }));
     setDays(updatedDays);
   };
@@ -144,12 +199,12 @@ function Itinerary() {
 
   const handleDeleteClick = (dayIndex, activityId) => {
     const { activity } = getDayAndActivity(activityId);
-    setCurrentActivity({dayIndex : dayIndex, activity: activity});
+    setCurrentActivity({ dayIndex: dayIndex, activity: activity });
     setIsDeleteConfirmOpen(true);
   };
 
   const handleDeleteConfirm = () => {
-    const { activity : deleteActivity, dayIndex } = currentActivity;  
+    const { activity: deleteActivity, dayIndex } = currentActivity;
     const updatedDays = [...days];
     updatedDays[dayIndex].activities = updatedDays[dayIndex].activities.filter(
       (activity) => activity.id !== deleteActivity.id
@@ -157,38 +212,41 @@ function Itinerary() {
     setDays(updatedDays);
     setIsDeleteConfirmOpen(false);
     setCurrentActivity(null);
-  }
+  };
 
   const handleAddActivity = (newActivity, selectedDay) => {
-    console.log(newActivity, selectedDay)
+    console.log(newActivity, selectedDay);
     const updatedDays = [...days];
-    const dayIndex = updatedDays.findIndex(day => day.date === selectedDay);
+    const dayIndex = updatedDays.findIndex((day) => day.date === selectedDay);
     if (dayIndex !== -1) {
       updatedDays[dayIndex].activities.push({
         ...newActivity,
-        id: `${Date.now()}`
+        id: `${Date.now()}`,
       });
       setDays(updatedDays);
+    }
+    if (readyState === ReadyState.OPEN) {
+      toast.success("Activity added successfully!");
     }
   };
 
   const handleLocationClick = (clickLocation) => {
-    clickLocation.address = clickLocation.location
-    clickLocation.name = clickLocation.title
-    const random = new Date().getTime()
-    setSearchedPlace({ random, clickLocation })
-  }
+    clickLocation.address = clickLocation.location;
+    clickLocation.name = clickLocation.title;
+    const random = new Date().getTime();
+    setSearchedPlace({ random, clickLocation });
+  };
 
   const handleLeave = async () => {
     try {
       await removeMember(tripID, currentUser);
-      navigate('/yourTrips', { replace: true });
+      navigate("/yourTrips", { replace: true });
     } catch (error) {
-      console.error('Error leaving trip:', error);
+      console.error("Error leaving trip:", error);
     }
   };
 
-  const itineraryDays = getDays()
+  const itineraryDays = getDays();
 
   // Prevent background scroll when map is expanded on mobile
   useEffect(() => {
@@ -203,23 +261,26 @@ function Itinerary() {
   }, [isMobile, isMapExpanded]);
 
   return (
-    <SidebarProvider >
+    <SidebarProvider>
       <AppSidebar tripID={tripID} />
       {!isMobile && <SidebarTrigger />}
       {isMobile && <MobileHeader title="Itinerary" />}
-      <div className={`flex w-full ${!isMobile && 'grid grid-cols-2'}`}>
-        {isMobile && isMapExpanded && (
-          <div className="fixed inset-0 z-30 bg-black bg-opacity-30 transition-opacity" />
-        )}
+      <div
+        className={`flex w-full ${
+          !isMobile && isMapVisible && "grid grid-cols-2"
+        }`}
+      >
+        {!isMobile && !isMapVisible && <ShowMapButton />}
+
         {isMobile ? (
           <motion.div
-            className="fixed w-full z-40 bg-background rounded-b-2xl shadow-lg pointer-events-auto"
-            initial={{ height: '75vh' }}
+            className="fixed w-full z-40 bg-background"
+            initial={{ height: "75vh" }}
             animate={{
               height: getMapHeight(),
-              transition: { duration: 0.3, ease: 'easeInOut' }
+              transition: { duration: 0.3, ease: "easeInOut" },
             }}
-            style={{ top: '3.5rem', flexShrink: 1 }}
+            style={{ top: "3.5rem", flexShrink: 1 }}
           >
             <MapboxMap
               onSaveLocation={handleSaveLocation}
@@ -239,14 +300,21 @@ function Itinerary() {
 
         <motion.div
           ref={contentRef}
-          className={`${isMobile
-            ? 'w-full bg-background relative z-30'
-            : 'col-span-1 h-screen'
-            }`}
-          animate={isMobile ? {
-            marginTop: `calc(${getMapHeight()} + 3.5rem)`, // Add header height to margin
-            transition: { duration: 0.3, ease: 'easeInOut' }
-          } : {}}
+          className={`${
+            isMobile
+              ? "w-full bg-background relative z-30"
+              : isMapVisible
+              ? "col-span-1 h-screen"
+              : "col-span-2 h-screen mx-auto max-w-4xl large-mode"
+          }`}
+          animate={
+            isMobile
+              ? {
+                  marginTop: `calc(${getMapHeight()} + 3.5rem)`, // Add header height to margin
+                  transition: { duration: 0.3, ease: "easeInOut" },
+                }
+              : {}
+          }
           style={{ flexShrink: 0 }}
         >
           <ScrollArea className="h-full px-2 pt-6 ">
@@ -255,7 +323,8 @@ function Itinerary() {
                 <div className="flex-1 min-w-0">
                   <h1 className="text-2xl sm:text-3xl font-bold truncate">{tripDetails.tripName}</h1>
                   <p className="text-sm text-muted-foreground">
-                    {dateFormatter(tripDetails.startDate)} to {dateFormatter(tripDetails.endDate)}
+                    {dateFormatter(tripDetails.startDate)} to{" "}
+                    {dateFormatter(tripDetails.endDate)}
                   </p>
                 </div>
                 <div
@@ -326,12 +395,14 @@ function Itinerary() {
                       onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date })}
                       aria-label="Add Activity"
                     >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Activity
-                    </Button>
-                  )}
-                </div>
-              ))) : (
+                     
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Activity
+                      </Button>
+                    )}
+                  </div>
+                ))
+              ) : (
                 <ItinerarySkeleton />
               )}
               {canModify && (
@@ -349,8 +420,8 @@ function Itinerary() {
           </ScrollArea>
         </motion.div>
 
-        {!isMobile && (
-          <div className="col-span-1 h-screen sticky top-0">
+        {!isMobile && isMapVisible && (
+          <div className="col-span-1 h-screen sticky top-0 relative">
             <MapboxMap
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
@@ -363,6 +434,8 @@ function Itinerary() {
               markers={normalizeMarkers(days)}
               itineraryDays={itineraryDays}
             />
+            <HideMapButton />
+            <MapToggleButton />
           </div>
         )}
       </div>
@@ -412,7 +485,7 @@ function Itinerary() {
 }
 
 function ItinerarySkeleton() {
-  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
+  const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
 
   return (
     <div className="animate-pulse space-y-4">
@@ -421,7 +494,10 @@ function ItinerarySkeleton() {
 
       {/* Activity card skeletons */}
       {[1, 2, 3].map((index) => (
-        <div key={index} className="bg-white rounded-xl shadow-sm w-full max-w-4xl p-4">
+        <div
+          key={index}
+          className="bg-white rounded-xl shadow-sm w-full max-w-4xl p-4"
+        >
           {isMobile ? (
             /* Mobile layout: image on top, then text */
             <div className="w-full relative space-y-2">
@@ -456,4 +532,3 @@ function ItinerarySkeleton() {
 }
 
 export default withSuspense(Itinerary);
-

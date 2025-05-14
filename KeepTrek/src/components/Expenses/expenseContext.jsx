@@ -5,6 +5,7 @@ import { viewBudgets, editBudget, createBudget, deleteBudget } from '@/APIs/user
 import { useParams } from 'react-router-dom';
 import { getTripMembers } from '@/APIs/trip';
 import { useAuth } from '@/contexts/AuthProvider';
+import { toast } from 'sonner';
 
 const ExpensesContext = createContext(null);
 
@@ -190,12 +191,16 @@ export function ExpensesProvider({ children }) {
 
   // Replace individual refresh functions with the optimized one
   const createExpense = async (expenseData) => {
-    setIsButtonLoading((prev) => ({ ...prev, create: true }));
+    setIsButtonLoading((prev) => ({ ...prev, create: true }))
     try {
       const newExpense = await addExpense(expenseData);
+      toast.success('Expense created successfully');
       await refreshData(false); // No skeleton after mutation
       return newExpense;
     } catch (error) {
+      toast.error('Failed to create expense', {
+        description: <p>{error.message}</p>,
+      });
       setError(error.message);
       throw error;
     } finally {
@@ -209,9 +214,13 @@ export function ExpensesProvider({ children }) {
       // Optimistically update UI
       setExpenses((prevExpenses) => prevExpenses.filter((expense) => expense.id !== expenseId));
       await deleteExpense(expenseId, tripID);
+      toast.success('Expense deleted successfully');
       await refreshData(false);
     } catch (error) {
       await fetchAllData(false);
+      toast.error('Failed to delete expense', {
+        description: <p>{error.message}</p>,
+      });
       throw error;
     } finally {
       setIsButtonLoading((prev) => ({ ...prev, delete: false }));
@@ -223,10 +232,14 @@ export function ExpensesProvider({ children }) {
     setLoading(true);
     try {
       const updatedExpense = await updateExpense(expenseToUpdate);
+      toast.success('Expense updated successfully');
       await refreshData(false);
       return updatedExpense;
     } catch (error) {
       setError(error.message);
+      toast.error('Failed to update expense', {
+        description: <p>{error.message}</p>,
+      });
       throw error;
     } finally {
       setLoading(false);
@@ -240,10 +253,14 @@ export function ExpensesProvider({ children }) {
     try {
       if (!tripID) throw new Error('Trip ID is required');
       const result = await settleDebt(tripID, debtData);
+      toast.success('Settled up successfully');
       await refreshData(false);
       return result;
     } catch (error) {
       setError(error.message);
+      toast.error('Failed to settle up', {
+        description: <p>{error.message}</p>,
+      });
       throw error;
     } finally {
       setIsSettlingUp(false);
@@ -263,9 +280,13 @@ export function ExpensesProvider({ children }) {
         throw new Error('Invalid amount');
       }
       await editSettledDebt(tripID, debtID, amount);
+      toast.success('Debt updated successfully');
       await refreshData();
     } catch (error) {
       console.error('Error editing debt:', error);
+      toast.error('Failed to edit debt', {
+        description: <p>{error.message}</p>,
+      });
       setError(error.message);
       throw error;
     } finally {
@@ -278,9 +299,13 @@ export function ExpensesProvider({ children }) {
     setIsDeletingDebt(true);
     try {
       await deleteSettledDebt(tripID, debtID);
+      toast.success('Debt deleted successfully');
       await refreshData();
     } catch (error) {
       console.error('Error deleting debt:', error);
+      toast.error('Failed to delete debt', {
+        description: <p>{error.message}</p>,
+      });
       setError(error.message);
       throw error;
     } finally {
@@ -292,9 +317,13 @@ export function ExpensesProvider({ children }) {
     setIsCreatingBudget(true);
     try {
       await createBudget(tripID, userID, amount);
+      toast.success('Budget created successfully');
       await refreshData();
     } catch (error) {
       console.error('Error creating budget:', error);
+      toast.error('Failed to create budget', {
+        description: <p>{error.message}</p>,
+      });
       setError(error.message);
       throw error;
     } finally {
@@ -306,9 +335,13 @@ export function ExpensesProvider({ children }) {
     setIsEditingBudget(true);
     try {
       await editBudget(tripID, userID, updatedAmount);
+      toast.success('Budget updated successfully');
       await refreshData();
     } catch (error) {
       console.error('Error editing budget:', error);
+      toast.error('Failed to edit budget', {
+        description: <p>{error.message}</p>,
+      });
       setError(error.message);
       throw error;
     } finally {
@@ -320,9 +353,13 @@ export function ExpensesProvider({ children }) {
     setIsDeletingBudget(true);
     try {
       await deleteBudget(tripID, userID);
+      toast.success('Budget deleted successfully');
       await refreshData();
     } catch (error) {
       console.error('Error deleting budget:', error);
+      toast.error('Failed to delete budget', {
+        description: <p>{error.message}</p>,
+      });
       setError(error.message);
       throw error;
     } finally {
