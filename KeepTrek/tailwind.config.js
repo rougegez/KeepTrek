@@ -70,7 +70,8 @@ export default {
 		// font-baloo changes the font of text to baloo
 		// Add other fonts here
 		fontFamily: {
-			baloo: ['Baloo 2', 'sans-serif']
+			baloo: ['Baloo 2', 'sans-serif'],
+			'league-spartan': ['League Spartan', 'sans-serif']
 		},
 		// Set default transition for collapsible to be ease-in/out
 		// https://github.com/shadcn-ui/ui/issues/2053 - Converted to JS code using Claude

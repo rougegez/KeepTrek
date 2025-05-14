@@ -151,7 +151,7 @@ const ActivityCard = ({
       <Card
         className={`bg-white rounded-xl shadow-sm w-full max-w-4xl ${
           largeMode ? "p-1" : ""
-        }`}
+        } ${isMobile ? 'px-2 mb-2' : ''}`}
       >
         <CardContent className={`py-4 pr-4 pl-0 ${largeMode ? "py-6" : ""}`}>
           <div className="flex w-full gap-x-0 gap-y-4">
@@ -188,7 +188,7 @@ const ActivityCard = ({
                         currentDay.date === "Day 1" && activityIndex === 0
                       }
                     >
-                      <ArrowBigUp className="text-[#439f96]" />
+                      <ArrowBigUp className="text-[#439f96] w-6 h-6" />
                     </Button>
                     <Button
                       variant="ghost"
@@ -199,7 +199,7 @@ const ActivityCard = ({
                         activityIndex === currentDay.activities.length - 1
                       }
                     >
-                      <ArrowBigDown className="text-red-500" />
+                      <ArrowBigDown className="text-red-500 w-6 h-6" />
                     </Button>
                   </div>
                 )}
@@ -234,7 +234,7 @@ const ActivityCard = ({
                       placeId={activity?.placeId}
                       src={activity.image}
                       onNewImage={handleNewImage}
-                      className="w-full h-28 rounded-lg object-cover"
+                      className="w-full h-28 rounded-lg object-cover shadow"
                     />
                   </a>
                   {/* Menu positioned over the image */}
@@ -301,6 +301,7 @@ const ActivityCard = ({
                   onChange={(e) => onNoteChange(activity.id, e.target.value)}
                   onClick={(e) => e.stopPropagation()}
                   readOnly={!canModify}
+                  aria-label="Activity Notes"
                 />
               </div>
 
