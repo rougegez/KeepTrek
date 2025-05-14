@@ -94,9 +94,9 @@ const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, locatio
                 <DialogHeader>
                     <DialogTitle>Add Activity</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4">
+                <div className="space-y-4 max-h-[80vh] overflow-y-auto px-2 sm:px-0">
                     {/* Select Day */}
-                    <div>
+                    <div className="mb-3">
                         <label htmlFor="day-select" className="block text-sm font-medium text-muted-foreground mb-1">Day</label>
                         <Select
                             value={daySelected}
@@ -104,12 +104,12 @@ const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, locatio
                                 setDaySelected(value)
                             }
                         >
-                            <SelectTrigger id="day-select" className="w-full">
+                            <SelectTrigger id="day-select" className="w-full min-h-[44px]">
                                 <SelectValue placeholder="Select a day" />
                             </SelectTrigger>
                             <SelectContent>
                                 {days.map((day, index) => (
-                                    <SelectItem key={index} value={day.date}>
+                                    <SelectItem key={index} value={day.date} className="min-h-[44px]">
                                         {day.date}
                                     </SelectItem>
                                 ))}
@@ -118,7 +118,7 @@ const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, locatio
                     </div>
 
                     {/* Select Activity Type */}
-                    <div>
+                    <div className="mb-3">
                         <label htmlFor="activity-type" className="block text-sm font-medium text-muted-foreground mb-1">Activity Type</label>
                         <Select
                             value={newActivity.type}
@@ -126,20 +126,20 @@ const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, locatio
                                 setNewActivity((prev) => ({ ...prev, type: value }))
                             }
                         >
-                            <SelectTrigger id="activity-type" className="w-full">
+                            <SelectTrigger id="activity-type" className="w-full min-h-[44px]">
                                 <SelectValue placeholder="Select activity type" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="accommodation">Accommodation</SelectItem>
-                                <SelectItem value="outdoor">Outdoor</SelectItem>
-                                <SelectItem value="indoor">Indoor</SelectItem>
-                                <SelectItem value="food">Food</SelectItem>
+                                <SelectItem value="accommodation" className="min-h-[44px]">Accommodation</SelectItem>
+                                <SelectItem value="outdoor" className="min-h-[44px]">Outdoor</SelectItem>
+                                <SelectItem value="indoor" className="min-h-[44px]">Indoor</SelectItem>
+                                <SelectItem value="food" className="min-h-[44px]">Food</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
 
                     {/* Select Time */}
-                    <div>
+                    <div className="mb-3">
                         <label htmlFor="activity-time" className="block text-sm font-medium text-muted-foreground mb-1">Time</label>
                         <Input
                             id="activity-time"
@@ -148,11 +148,12 @@ const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, locatio
                             onChange={(e) =>
                                 setNewActivity((prev) => ({ ...prev, time: e.target.value }))
                             }
+                            className="min-h-[44px]"
                         />
                     </div>
 
                     {/* Input Duration */}
-                    <div>
+                    <div className="mb-3">
                         <label htmlFor="activity-duration" className="block text-sm font-medium text-muted-foreground mb-1">Duration (in hours)</label>
                         <Input
                             id="activity-duration"
@@ -160,11 +161,12 @@ const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, locatio
                             placeholder="e.g. 0.5, 1, 1.5"
                             value={newActivity.duration}
                             onChange={handleDurationChange}
+                            className="min-h-[44px]"
                         />
                     </div>
 
                     {/* Input Title */}
-                    <div>
+                    <div className="mb-3">
                         <label htmlFor="activity-name" className="block text-sm font-medium text-muted-foreground mb-1">Activity Name</label>
                         <Input
                             id="activity-name"
@@ -174,11 +176,12 @@ const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, locatio
                             onChange={(e) =>
                                 setNewActivity((prev) => ({ ...prev, title: e.target.value }))
                             }
+                            className="min-h-[44px]"
                         />
                     </div>
 
                     {/* Search address */}
-                    <div>
+                    <div className="mb-3">
                         <label htmlFor="address" className="block text-sm font-medium text-muted-foreground mb-1">Address</label>
                         <MapSearchBar
                             id="address"
@@ -188,7 +191,7 @@ const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, locatio
                     </div>
 
                     {/* Input Notes */}
-                    <div>
+                    <div className="mb-3">
                         <label htmlFor="notes" className="block text-sm font-medium text-muted-foreground mb-1">Notes</label>
                         <Textarea
                             id="notes"
@@ -198,17 +201,20 @@ const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, locatio
                             onChange={(e) =>
                                 setNewActivity((prev) => ({ ...prev, notes: e.target.value }))
                             }
+                            style={{ minHeight: 44 }}
                         />
                     </div>
 
-                    <div className="flex justify-end gap-2">
+                    <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4">
                         {/* Cancel Button */}
-                        <Button variant="outline" onClick={onClose}>
+                        <Button variant="outline" onClick={onClose} className="w-full sm:w-auto min-h-[44px]" aria-label="Cancel">
                             Cancel
                         </Button>
 
                         {/* Add Button */}
                         <Button
+                            className="w-full sm:w-auto min-h-[44px]"
+                            aria-label="Add Activity"
                             onClick={() => {
                                 onAddActivity({
                                     ...newActivity,

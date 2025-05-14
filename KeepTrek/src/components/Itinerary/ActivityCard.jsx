@@ -117,7 +117,7 @@ const ActivityCard = ({
       )}
 
       <Card
-        className="bg-white rounded-xl shadow-sm w-full max-w-4xl"
+        className={`bg-white rounded-xl shadow-md w-full max-w-4xl ${isMobile ? 'px-2 mb-2' : ''}`}
       >
         <CardContent className="py-4 pr-4 pl-0">
           <div className="flex w-full gap-x-0 gap-y-4">
@@ -139,23 +139,26 @@ const ActivityCard = ({
                       controls.start(event)
                       event.preventDefault()
                     }}
+                    aria-label="Drag Activity"
                   />) : (
-                  <div className="flex flex-col gap-y-1 w-9">
+                  <div className="flex flex-col gap-y-1 w-12">
                     <Button
                       variant="ghost"
                       onClick={handleUpButtonClick}
-                      className="h-28"
+                      className="h-12 w-12"
                       disabled={currentDay.date === "Day 1" && activityIndex === 0}
+                      aria-label="Move Activity Up"
                     >
-                      <ArrowBigUp className="text-[#439f96]" />
+                      <ArrowBigUp className="text-[#439f96] w-6 h-6" />
                     </Button>
                     <Button
                       variant="ghost"
                       onClick={handleDownButtonClick}
-                      className="h-28"
+                      className="h-12 w-12"
                       disabled={days[days.length - 1].date === currentDay.date && activityIndex === currentDay.activities.length - 1}
+                      aria-label="Move Activity Down"
                     >
-                      <ArrowBigDown className="text-red-500" />
+                      <ArrowBigDown className="text-red-500 w-6 h-6" />
                     </Button>
                   </div>
                 )}
@@ -172,7 +175,7 @@ const ActivityCard = ({
                       placeId={activity?.placeId}
                       src={activity.image}
                       onNewImage={handleNewImage}
-                      className="w-full h-28 rounded-lg object-cover"
+                      className="w-full h-28 rounded-lg object-cover shadow"
                     />
                   </a>
                   {/* Menu positioned over the image */}
@@ -180,8 +183,8 @@ const ActivityCard = ({
                     <div className="absolute top-2 right-2 dropdown-menu">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0 bg-white/80 hover:bg-white rounded-full cursor-pointer">
-                            <MoreHorizontal className="h-3 w-3" />
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 bg-white/80 hover:bg-white rounded-full cursor-pointer" aria-label="Activity Menu">
+                            <MoreHorizontal className="h-5 w-5" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -213,6 +216,7 @@ const ActivityCard = ({
                   onChange={(e) => onNoteChange(activity.id, e.target.value)}
                   onClick={e => e.stopPropagation()}
                   readOnly={!canModify}
+                  aria-label="Activity Notes"
                 />
               </div>
 
@@ -224,7 +228,7 @@ const ActivityCard = ({
                       placeId={activity?.placeId}
                       src={activity.image}
                       onNewImage={handleNewImage}
-                      className="w-52 h-32 rounded-lg object-cover"
+                      className="w-52 h-32 rounded-lg object-cover shadow"
                     />
                   </a>
                   {/* Menu positioned over the image */}
@@ -232,8 +236,8 @@ const ActivityCard = ({
                     <div className="absolute top-2 right-2 dropdown-menu">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0 bg-white/80 rounded-full cursor-pointer">
-                            <MoreHorizontal className="h-3 w-3" />
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0 bg-white/80 rounded-full cursor-pointer" aria-label="Activity Menu">
+                            <MoreHorizontal className="h-5 w-5" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
