@@ -43,6 +43,7 @@ import { ReadyState } from "react-use-websocket";
 import { useAuth } from "@/contexts/AuthProvider.jsx";
 import { useWhosOnline } from "../CreateTrip/WhosOnlineWrapper.jsx";
 import DeleteAlert from "../ui/DeleteAlert.jsx";
+import { toast } from "sonner";
 
 function Itinerary() {
   const navigate = useNavigate();
@@ -80,8 +81,7 @@ function Itinerary() {
     }
   );
 
-  const { days, setDays, readyState, getDayAndActivity, getDays, addActivity } =
-    useItinerary();
+  const { days, setDays, readyState, getDayAndActivity, getDays, addActivity } = useItinerary()
   const { whosOnline } = useWhosOnline();
 
   const userRole = useMemo(() => {
@@ -151,9 +151,6 @@ function Itinerary() {
   };
 
   const handleSaveLocation = (place, selectedDay) => {
-    // place only contains location name, adress and coordinates, requires addition of fields
-    // setSavedLocation(place);
-    // setAddModalState({ isOpen: true, selectedDay: selectedDay });
     const newActivity = {
       id: `${Date.now()}`,
       title: place ? place.name : "",
@@ -165,8 +162,11 @@ function Itinerary() {
       openingHours: place ? place.openingHours : "",
       website: place ? place.website : "",
       link: place ? place.link : "",
-    };
-    addActivity(newActivity, selectedDay);
+    }
+    addActivity(newActivity, selectedDay)
+    if (readyState === ReadyState.OPEN) {
+      toast.success("Activity added successfully!");
+    }
   };
 
   const handleNoteChange = (activityId, newNote) => {
@@ -217,6 +217,9 @@ function Itinerary() {
         id: `${Date.now()}`,
       });
       setDays(updatedDays);
+    }
+    if (readyState === ReadyState.OPEN) {
+      toast.success("Activity added successfully!");
     }
   };
 
@@ -308,10 +311,12 @@ function Itinerary() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
+
                   <UserAvatarStack
                     userIds={tripDetails.users}
                     isIdle={whosOnline}
                   />
+
                   {canModify && (
                     <>
                       <InviteButton tripID={tripID} userRole={userRole} />

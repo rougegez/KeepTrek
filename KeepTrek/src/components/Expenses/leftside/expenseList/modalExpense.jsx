@@ -80,7 +80,6 @@ export const ModalExpense = ({ isOpen, onClose, selectedExpense, setSelectedExpe
           handleCloseExpenseModal(); // Assuming you have this function defined to close the modal
         } catch (error) {
           console.error("Failed to edit expense:", error);
-          toast.error("Failed to edit expense", {description : "Please try again"});
         }
       };
       const handleDeleteExpense = async () => {
@@ -93,7 +92,6 @@ export const ModalExpense = ({ isOpen, onClose, selectedExpense, setSelectedExpe
             handleCloseExpenseModal();
         } catch (error) {
             console.error("Failed to delete expense:", error);
-            toast.error("Failed to delete expense", {description : "Please try again"});
         }
     };
     if (!selectedExpense) return null;
