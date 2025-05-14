@@ -11,7 +11,7 @@ export const ExpensesLeftside = () => {
         <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold">Expenses</h1>
         </div>
-        <Card className="mb-8 bg-transparent shadow-none border-none">
+        <Card className="mb-8">
             <ExpensesTotals tripID={tripID} />
         </Card>
             <div className="space-y-4">
