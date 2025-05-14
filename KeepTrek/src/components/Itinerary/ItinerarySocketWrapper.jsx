@@ -55,8 +55,8 @@ export default function ItinerarySocketWrapper() {
             },
             reconnectAttempts: 5,
             reconnectInterval: (attemptNumber) => {
-                const interval = Math.min(Math.pow(3, attemptNumber) * 1000, 1000);
-                toast.error(`Reconnecting in ${interval / 1000} seconds...`, { duration: interval });
+                const interval = Math.min(Math.pow(3, attemptNumber) * 1000, 30000);
+                toast.error(`Itinerary reconnecting in ${interval / 1000} seconds...`, { duration: interval });
                 return interval;
             },
             onReconnectStop: () => {

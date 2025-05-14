@@ -3,7 +3,7 @@ import axios from "./axiosConfig"; // Base Axios instance
 // Create Item
 export const createItem = async (tripID, itemData) => {    
     const response = await axios.post(`/wishlist/${tripID}/new-item`, itemData);
-    return response.data;
+    return response;
 };
 
 // Get All Items
@@ -15,13 +15,13 @@ export const getAllItems = async (tripID) => {
 // Edit Item
 export const editItem = async (tripID, itemID, editData) => {
     const response = await axios.put(`/wishlist/${tripID}/${itemID}/edit`, editData);
-    return response.data;
+    return response;
 };
 
 // Delete Item
 export const deleteItem = async (tripID, itemID) => {
     const response = await axios.delete(`/wishlist/${tripID}/${itemID}/delete-item`);
-    return response.data;
+    return response;
 };
 
 // Upvote Item

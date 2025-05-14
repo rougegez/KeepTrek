@@ -43,7 +43,7 @@ export default function TopNavbar() {
           navigateAndScroll("features")
           onClick()
         }}
-        className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium text-gray-600"
+        className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
       >
         Features
       </button>
@@ -52,7 +52,7 @@ export default function TopNavbar() {
           navigateAndScroll("pre-launch")
           onClick()
         }}
-        className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium text-gray-600"
+        className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
       >
         Pricing
       </button>
@@ -61,7 +61,7 @@ export default function TopNavbar() {
           navigateAndScroll("newsletter")
           onClick()
         }}
-        className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium text-gray-600"
+        className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
       >
         Newsletter
       </button>

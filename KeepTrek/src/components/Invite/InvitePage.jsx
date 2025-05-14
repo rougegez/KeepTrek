@@ -54,7 +54,9 @@ const InvitePage = () => {
             } else if (err.response?.status === 404) {
                 toast.error('Trip not found');
             } else {
-                toast.error('Failed to load trip preview');
+                toast.error('Failed to load trip preview', {
+                    description: <p>{err.message}</p>
+                });
             }
         } finally {
             setLoading(false);
@@ -80,7 +82,9 @@ const InvitePage = () => {
             toast.success('Successfully joined trip!');
             navigate(`/itinerary/${result.tripID}`);
         } catch (err) {
-            toast.error('Failed to join trip');
+            toast.error('Failed to join trip', {
+                description: <p>{err.message}</p>
+            });
             setJoining(false);
         }
     };
