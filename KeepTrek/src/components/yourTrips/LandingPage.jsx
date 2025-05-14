@@ -178,7 +178,10 @@ export default function LandingPage() {
       {/* Hero Section */}
 <section ref={heroRef} id="home" className="relative h-screen flex items-center overflow-hidden snap-start bg-hero" // Add a class for background
   style={{ 
-    backgroundImage: window.innerWidth > 768 ? "url('/assets/heroBG.png')" : 'none', // Conditional background
+    backgroundImage: window.innerWidth > 768 ? "url('/assets/heroBG.png')" : 'none',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
   }}>
   <motion.div 
     className="absolute inset-0"
