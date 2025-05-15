@@ -45,10 +45,10 @@ const AnimatedSection = ({ children, delay = 0, threshold = 0.2 }) => {
   });
 
   return (
-    <motion.div
-      ref={ref}
-      initial="hidden"
-      animate={inView ? "visible" : "hidden"}
+    <motion.div 
+      ref={ref} 
+      initial="hidden" 
+      animate={inView ? "visible" : "hidden"} 
       variants={staggerChildren}
       transition={{ delay }}
     >
@@ -67,7 +67,7 @@ const ScrollToNextSection = ({ targetId }) => {
   };
 
   return (
-    <motion.div
+    <motion.div 
       className="absolute bottom-10 left-1/2 transform -translate-x-1/2 cursor-pointer"
       animate={{ y: [0, 10, 0] }}
       transition={{ repeat: Infinity, duration: 2 }}
@@ -84,12 +84,12 @@ export default function LandingPage() {
   const popupRef = useRef(null);
   const heroRef = useRef(null);
   const { scrollY } = useScroll();
-
+  
   // Parallax and scroll effects
   const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
   const heroScale = useTransform(scrollY, [0, 300], [1, 0.9]);
   const heroY = useTransform(scrollY, [0, 300], [0, 50]);
-
+  
   // Scroll indicator visibility
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   useEffect(() => {
@@ -100,7 +100,7 @@ export default function LandingPage() {
         setShowScrollIndicator(true);
       }
     };
-
+    
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -171,119 +171,122 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white overflow-x-hidden snap-y snap-mandatory">
       {/* Fixed navbar wrapper */}
-      <div className="fixed top-0 left-0 right-0 z-50">
-        <TopNavbar className="bg-white shadow-sm" />
-      </div>
+  <div className="fixed top-0 left-0 right-0 z-50">
+    <TopNavbar className="bg-white shadow-sm" />
+  </div>
 
       {/* Hero Section */}
-      <section ref={heroRef} id="home" className="relative h-screen flex items-center overflow-hidden snap-start bg-hero" // Add a class for background
-        style={{
-          backgroundImage: window.innerWidth > 768 ? "url('/assets/heroBG.png')" : 'none', // Conditional background
-        }}>
-        <motion.div
-          className="absolute inset-0"
-          style={{ opacity: heroOpacity }}
+<section ref={heroRef} id="home" className="relative h-screen flex items-center overflow-hidden snap-start bg-hero pt-16" // Add a class for background
+  style={{ 
+    backgroundImage: window.innerWidth > 768 ? "url('/assets/heroBG.png')" : 'none',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  }}>
+  <motion.div 
+    className="absolute inset-0"
+    style={{ opacity: heroOpacity }}
+  />
+  
+  <motion.div 
+    className="container px-6 mx-auto relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12"
+    style={{ scale: heroScale, y: heroY }}
+  >
+    {/* Text Content - Left Side */}
+    <div className="lg:w-1/2 text-center lg:text-left mt-8 lg:mt-0">
+    <motion.div 
+        className="inline-block mb-4 lg:mb-6 overflow-hidden rounded-2xl"
+        variants={scaleUp}
+      >
+        <span className="inline-block bg-[#4cb6ac] text-white px-3 py-1 lg:px-4 lg:py-2 rounded-3xl text-xs lg:text-sm font-medium">
+          Plan . Collaborate . Travel.
+        </span>
+      </motion.div>
+      
+      <motion.h1 
+        className="text-4xl lg:text-7xl font-bold mb-4 lg:mb-6 leading-tight text-[#383838] font-league-spartan"
+        variants={fadeInUp}
+      >
+        Get your trips<br />
+        out of the<br />
+        <span className="text-[#4cb6ac]">Group Chat</span>
+      </motion.h1>
+      
+      <motion.p 
+        className="text-[#383838] text-sm sm:text-lg lg:text-xl mb-6 lg:mb-8 max-w-xl mx-auto lg:mx-0 px-14 sm:px-0"
+        variants={fadeInUp}
+      >
+        Everything your group needs to plan and manage a trip, <br/>without the hassle.
+      </motion.p>
+      
+      <motion.div
+  initial={{ scale: 0.95 }}
+  animate={{ scale: 1 }}
+  transition={{ 
+    repeat: Infinity,
+    repeatType: "reverse",
+    duration: 2
+  }}
+>      <Link to="/create-trip">
+  <Button 
+    size="lg" 
+    className="relative overflow-hidden group bg-gradient-to-r from-teal-400 to-teal-500 text-white text-lg px-10 py-7 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 font-medium hover:from-teal-500 hover:to-teal-700 w-full sm:w-auto"
+  >
+    {/* Animated background effect */}
+    <span className="absolute inset-0 bg-gradient-to-r from-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+    
+    {/* Button content with animation */}
+    <motion.span 
+      className="relative z-10 flex items-center justify-center gap-2"
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+    >
+      Start Planning
+      <motion.span
+        animate={{ x: [0, 4, 0] }}
+        transition={{ repeat: Infinity, duration: 2 }}
+      >
+        <Rocket className="h-5 w-5" />
+      </motion.span>
+    </motion.span>
+    
+    {/* Glow effect */}
+    <span className="absolute inset-0 rounded-2xl shadow-[0_0_15px_rgba(76,182,172,0.7)] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+  </Button>
+</Link>
+        
+      </motion.div>
+    </div>
+    
+    {/* Image - Right Side */}
+    <motion.div
+      className="lg:w-1/2 flex justify-center items-center"
+      initial={{ opacity: 0, scale: 0.8, y: 40 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <motion.div
+        className="w-full max-w-2xl" // Increased max-width
+        animate={{ 
+          y: [0, -15, 0],
+        }}
+        transition={{ 
+          duration: 6,
+          repeat: Infinity,
+          repeatType: "reverse"
+        }}
+      >
+        <img 
+          src={LandingImage} 
+          alt="KeepTrek app preview" 
+          className="w-full h-auto object-contain" // Ensures proper scaling
         />
-
-        <motion.div
-          className="container px-6 mx-auto relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12"
-          style={{ scale: heroScale, y: heroY }}
-        >
-          {/* Text Content - Left Side */}
-          <div className="lg:w-1/2 text-center lg:text-left">
-            <motion.div
-              className="inline-block mb-6 overflow-hidden rounded-2xl"
-              variants={scaleUp}
-            >
-              <span className="inline-block bg-[#4cb6ac] text-white px-4 py-2 rounded-3xl text-sm font-medium">
-                Plan . Collaborate . Travel.
-              </span>
-            </motion.div>
-
-            <motion.h1
-              className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-[#383838] font-league-spartan"
-              variants={fadeInUp}
-            >
-              Get your trips<br />
-              out of the<br />
-              <span className="text-[#4cb6ac]">Group Chat</span>
-            </motion.h1>
-
-            <motion.p
-              className="text-[#383838] text-xl mb-8 max-w-xl mx-auto lg:mx-0"
-              variants={fadeInUp}
-            >
-              Everything your group needs to plan and manage a trip, <br />without the hassle.
-            </motion.p>
-
-            <motion.div
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              transition={{
-                repeat: Infinity,
-                repeatType: "reverse",
-                duration: 2
-              }}
-            >      <Link to="/yourTrips">
-                <Button
-                  size="lg"
-                  className="relative overflow-hidden group bg-gradient-to-r from-teal-400 to-teal-600 text-white text-lg px-10 py-7 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 font-medium hover:from-teal-500 hover:to-teal-700 w-full sm:w-auto"
-                >
-                  {/* Animated background effect */}
-                  <span className="absolute inset-0 bg-gradient-to-r from-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-
-                  {/* Button content with animation */}
-                  <motion.span
-                    className="relative z-10 flex items-center justify-center gap-2"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Start Planning
-                    <motion.span
-                      animate={{ x: [0, 4, 0] }}
-                      transition={{ repeat: Infinity, duration: 2 }}
-                    >
-                      <Rocket className="h-5 w-5" />
-                    </motion.span>
-                  </motion.span>
-
-                  {/* Glow effect */}
-                  <span className="absolute inset-0 rounded-2xl shadow-[0_0_15px_rgba(76,182,172,0.7)] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-                </Button>
-              </Link>
-
-            </motion.div>
-          </div>
-
-          {/* Image - Right Side */}
-          <motion.div
-            className="lg:w-1/2 flex justify-center items-center"
-            initial={{ opacity: 0, scale: 0.8, y: 40 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <motion.div
-              className="w-full max-w-2xl" // Increased max-width
-              animate={{
-                y: [0, -15, 0],
-              }}
-              transition={{
-                duration: 6,
-                repeat: Infinity,
-                repeatType: "reverse"
-              }}
-            >
-              <img
-                src={LandingImage}
-                alt="KeepTrek app preview"
-                className="w-full h-auto object-contain" // Ensures proper scaling
-              />
-            </motion.div>
-          </motion.div>
-        </motion.div>
-
-        {showScrollIndicator && <ScrollToNextSection targetId="features" />}
-      </section>
+      </motion.div>
+    </motion.div>
+  </motion.div>
+  
+  {showScrollIndicator && <ScrollToNextSection targetId="features" />}
+</section>
 
       {/* Features Section */}
       <section id="features" className="py-28 snap-start bg-white relative">
@@ -293,79 +296,79 @@ export default function LandingPage() {
               <motion.span className="inline-block bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-medium mb-4">
                 Features
               </motion.span>
-              <h2 className="text-3xl md:text-3xl font-bold mb-6">From schedules to spending, <br />organize every part of your group trip.</h2>
+              <h2 className="text-3xl md:text-3xl font-bold mb-6">From schedules to spending, <br/>organize every part of your group trip.</h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
                 KeepTrek simplifies group trip planning with powerful, intuitive tools
               </p>
             </motion.div>
-
-            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-              {[
-                {
-                  icon: Calendar,
-                  title: "Discover locations and activities",
-                  description: "Find the perfect spots for your trip",
-                },
-                {
-                  icon: Users,
-                  title: "Arrange and plan your days",
-                  description: "Organize your itinerary efficiently",
-                },
-                {
-                  icon: Share2,
-                  title: "Invite your friends to keep them in the loop",
-                  description: "Share plans with your group",
-                },
-                {
-                  icon: Map,
-                  title: "Find dates where everyone is available",
-                  description: "Coordinate schedules easily",
-                },
-                {
-                  icon: Search,
-                  title: "Search for the best deals on activities",
-                  description: "Get the best value for your trip",
-                },
-                {
-                  icon: PieChart,
-                  title: "Review and vote on plans with your friends",
-                  description: "Make decisions together",
-                },
-                {
-                  icon: Calculator,
-                  title: "Split and track shared expenses",
-                  description: "Manage group finances easily",
-                },
-                {
-                  icon: FileText,
-                  title: "Keep all necessary info in one place",
-                  description: "Access important details quickly",
-                },
-              ].map((feature, index) => (
-                <motion.div key={index} variants={fadeInUp}>
-                  <Card className="p-6 border-none shadow-none bg-gray-50 hover:bg-gray-100 transition-colors duration-300">
-                    <div className="flex gap-4">
-                      <feature.icon className="h-6 w-6 text-teal-500" />
-                      <div>
-                        <h3 className="font-semibold mb-2">{feature.title}</h3>
-                        <p className="text-sm text-gray-600">{feature.description}</p>
-                      </div>
+          
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {[
+              {
+                icon: Calendar,
+                title: "Discover locations and activities",
+                description: "Find the perfect spots for your trip",
+              },
+              {
+                icon: Users,
+                title: "Arrange and plan your days",
+                description: "Organize your itinerary efficiently",
+              },
+              {
+                icon: Share2,
+                title: "Invite your friends to keep them in the loop",
+                description: "Share plans with your group",
+              },
+              {
+                icon: Map,
+                title: "Find dates where everyone is available",
+                description: "Coordinate schedules easily",
+              },
+              {
+                icon: Search,
+                title: "Search for the best deals on activities",
+                description: "Get the best value for your trip",
+              },
+              {
+                icon: PieChart,
+                title: "Review and vote on plans with your friends",
+                description: "Make decisions together",
+              },
+              {
+                icon: Calculator,
+                title: "Split and track shared expenses",
+                description: "Manage group finances easily",
+              },
+              {
+                icon: FileText,
+                title: "Keep all necessary info in one place",
+                description: "Access important details quickly",
+              },
+            ].map((feature, index) => (
+              <motion.div key={index} variants={fadeInUp}>
+                <Card className="p-6 border-none shadow-none bg-gray-50 hover:bg-gray-100 transition-colors duration-300">
+                  <div className="flex gap-4">
+                    <feature.icon className="h-6 w-6 text-teal-500" />
+                    <div>
+                      <h3 className="font-semibold mb-2">{feature.title}</h3>
+                      <p className="text-sm text-gray-600">{feature.description}</p>
                     </div>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </AnimatedSection>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </AnimatedSection>
         </div>
         <ScrollToNextSection targetId="why-keeptrek" />
       </section>
 
       {/* Why KeepTrek Section - Vertical timeline with parallax effect */}
-      <section id="why-keeptrek" className="bg-white py-24 relative">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-20">
-            <motion.h2
-              className="text-4xl font-bold mb-6"
+      <section id="why-keeptrek" className="bg-white py-16 sm:py-20 lg:py-24 relative">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12 lg:mb-20">
+            <motion.h2 
+              className="text-4xl font-bold mb-6" 
               variants={fadeInUp}
               initial="hidden"
               whileInView="visible"
@@ -373,7 +376,7 @@ export default function LandingPage() {
             >
               Why <span className="text-teal-500">KeepTrek</span>?
             </motion.h2>
-            <motion.p
+            <motion.p 
               className="text-xl text-gray-600 max-w-3xl mx-auto"
               variants={fadeInUp}
               initial="hidden"
@@ -401,7 +404,7 @@ export default function LandingPage() {
                 title: "The Solution",
                 description: "KeepTrek brings everyone together in one place where you can plan, organize, and coordinate your entire trip seamlessly.",
                 icon: <Zap className="h-8 w-8 text-white" />,
-                color: "from-teal-400 to-teal-600",
+                color: "from-teal-400 to-teal-600", 
                 side: "right"
               },
               {
@@ -419,7 +422,7 @@ export default function LandingPage() {
                 side: "right"
               },
             ].map((item, index) => (
-              <motion.div
+              <motion.div 
                 key={index}
                 className={`flex items-center mb-20 ${item.side === 'left' ? 'flex-row' : 'flex-row-reverse'} relative z-10`}
                 initial={{ opacity: 0, x: item.side === 'left' ? -50 : 50 }}
@@ -428,7 +431,7 @@ export default function LandingPage() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
                 {/* Content */}
-                <div className={`w-5/12 ${item.side === 'left' ? 'text-right pr-12' : 'text-left pl-12'}`}>
+                <div className={`w-5/12 ${item.side === 'left' ? 'text-center sm:text-right pr-0 sm:pr-12 pl-0 sm:pl-52' : 'text-center sm:text-left pl-2 sm:pl-12 pr-0 sm:pr-52'}`}>
                   <h3 className="text-2xl font-bold mb-3">{item.title}</h3>
                   <p className="text-gray-600">{item.description}</p>
                 </div>
@@ -443,7 +446,7 @@ export default function LandingPage() {
                 {/* Empty space or image */}
                 <div className="w-5/12">
                   {index % 2 === 0 && (
-                    <motion.div
+                    <motion.div 
                       className={`${item.side === 'right' ? 'pr-12' : 'pl-12'} opacity-0 sm:opacity-100`}
                       initial={{ opacity: 0, scale: 0.8 }}
                       whileInView={{ opacity: 1, scale: 1 }}
@@ -530,14 +533,14 @@ export default function LandingPage() {
         <ScrollToNextSection targetId="pre-launch" />
       </section> */}
 
-
+    
       {/* Newsletter Section */}
       <section id="newsletter" className="py-28 snap-start bg-white">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-5xl mx-auto">
             <AnimatedSection>
-              <motion.div
-                className="bg-gradient-to-r from-teal-500 to-teal-400 rounded-3xl p-12 flex flex-col lg:flex-row justify-center lg:justify-between items-center lg:items-start gap-10"
+              <motion.div 
+                className="bg-gradient-to-r from-teal-500 to-teal-400 rounded-3xl p-12 flex flex-col lg:flex-row justify-center lg:justify-between items-center lg:items-start gap-10" 
                 variants={fadeInUp}
                 whileHover={{ y: -5, transition: { duration: 0.3 } }}
               >

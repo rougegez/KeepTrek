@@ -112,10 +112,10 @@ export default function TopNavbar() {
                   )}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button size="icon" variant="ghost" className="m-2 rounded-full">
+                      <Button size="icon" variant="ghost" className="m-2 rounded-full mr-3 sm:mr-0">
                         <UserAvatar 
                           userId={user}
-                          className="h-12 w-12"
+                          className="h-10 sm:h-12 w-10 sm:w-12"
                         />
                       </Button>
                     </DropdownMenuTrigger>
