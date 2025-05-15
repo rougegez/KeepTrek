@@ -176,6 +176,7 @@ export default function LandingPage() {
   </div>
 
       {/* Hero Section */}
+
 <section ref={heroRef} id="home" className="relative h-screen flex items-center overflow-hidden snap-start bg-hero pt-16" // Add a class for background
   style={{ 
     backgroundImage: window.innerWidth > 768 ? "url('/assets/heroBG.png')" : 'none',
@@ -227,7 +228,7 @@ export default function LandingPage() {
     repeatType: "reverse",
     duration: 2
   }}
->      <Link to="/create-trip">
+>      <Link to="/yourTrips">
   <Button 
     size="lg" 
     className="relative overflow-hidden group bg-gradient-to-r from-teal-400 to-teal-500 text-white text-lg px-10 py-7 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 font-medium hover:from-teal-500 hover:to-teal-700 w-full sm:w-auto"
@@ -280,6 +281,7 @@ export default function LandingPage() {
           src={LandingImage} 
           alt="KeepTrek app preview" 
           className="w-full h-auto object-contain" // Ensures proper scaling
+
         />
       </motion.div>
     </motion.div>
