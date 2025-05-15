@@ -22,6 +22,7 @@ import { MapProvider } from 'react-map-gl/mapbox'
 import ItinerarySocketWrapper from "@/components/Itinerary/ItinerarySocketWrapper";
 import { Analytics } from '@vercel/analytics/react';
 import { TooltipProvider } from "@/components/ui/tooltip";
+import BlogEditor from "./components/Blog/BlogEditor";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ function App() {
                       <Route path="/" element={<LandingPage />} />
                       <Route path="/join/:inviteCode" element={<InvitePage />} />
                       <Route path="/AgodaPartnerVerification.html" element={<AgodaVerificationPage />} />
+                      <Route path="/blog" element={<BlogEditor/>} />
                       {/* Protected Routes */}
                       <Route
                         element={
