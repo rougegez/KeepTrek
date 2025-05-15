@@ -5,6 +5,8 @@ import ErrorMessage from "./erroeMessage.jsx";
 import NoTripsMessage from "./noTripsMessage.jsx";
 import { getUserTrips } from "@/APIs/trip.js"; // API function to fetch trips
 import { Skeleton } from "@/components/ui/skeleton"
+import { Button } from "@/components/ui/button";
+import { NavLink } from "react-router-dom";
 
 export default function YourTrips() {
   const [trips, setTrips] = useState([]);
@@ -34,6 +36,14 @@ export default function YourTrips() {
         <div className="mx-auto max-w-6xl">
           <div className="flex justify-between">
             <h1 className="text-3xl font-bold text-center mb-6">Your Trips</h1>
+            <Button asChild className="mr-4 sm:inline-flex">
+              <NavLink
+                to="/create-trip"
+                className="border-transparent inline-flex text-sm font-semibold"
+              >
+                Create a Trip
+              </NavLink>
+            </Button>
           </div>
           {error ? (
             <ErrorMessage error={error} />
