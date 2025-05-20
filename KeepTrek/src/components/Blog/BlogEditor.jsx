@@ -4,8 +4,8 @@ const BlogEditor = () => {
 
     return (
         <>
-        <div className="px-24">
-        <TipTap/>
+        <div className="px-64">
+            <TipTap editable={true}/>
         </div>
         </>
     )

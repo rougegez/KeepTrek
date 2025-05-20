@@ -44,6 +44,9 @@ import {
     Superscript as SuperscriptIcon,
     Subscript as SubscriptIcon,
     Trash,
+    Eraser,
+    CornerDownLeft,
+    Palette,
 } from "lucide-react";
 
 import {
@@ -55,12 +58,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DataStatePropInterceptor } from "@/utils/DataStatePropInterceptor";
+import { Separator } from "@/components/ui/separator";
 
 const MenuBar = () => {
     const { editor } = useCurrentEditor();
 
     const [hyperlink, setHyperLink] = useState(null);
     const [isLinkOpen, setIsLinkOpen] = useState(false);
+    const [isImageOpen, setIsImageOpen] = useState(false);
+    const [imageLink, setImageLink] = useState(null);
 
     const setLink = () => {
         const parsedUrl = hyperlink.includes(':') ? new URL(hyperlink).href : new URL(`https://${hyperlink}`).href
@@ -86,264 +92,328 @@ const MenuBar = () => {
         }
     }
 
+    const setImage = () => {
+        if (imageLink) {
+            editor.chain().focus().setImage({ src: imageLink, alt: "/assets/dummy-image.jpg" }).run()
+        }
+    }
+
     if (!editor) {
         return null;
     }
 
     return (
-        <>
-            {/* Bold */}
-            <Toggle
-                pressed={editor.isActive("bold")}
-                onPressedChange={() => editor.chain().focus().toggleBold().run()}
-                disabled={!editor.can().chain().focus().toggleBold().run()}
-            >
-                <Bold />
-            </Toggle>
+        <div className="flex flex-wrap max-w-full overflow-auto" style={{scrollbarWidth: 'none' }}>
+            <div className="inline-flex flex-none space-x-4">
+                <div className="shrink-0">
+                    {/* Bold */}
+                    <Toggle
+                        pressed={editor.isActive("bold")}
+                        onPressedChange={() => editor.chain().focus().toggleBold().run()}
+                        disabled={!editor.can().chain().focus().toggleBold().run()}
+                    >
+                        <Bold />
+                    </Toggle>
 
-            {/* Italic */}
-            <Toggle
-                pressed={editor.isActive("italic")}
-                onPressedChange={() => editor.chain().focus().toggleItalic().run()}
-                disabled={!editor.can().chain().focus().toggleItalic().run()}
-            >
-                <Italic />
-            </Toggle>
+                    {/* Italic */}
+                    <Toggle
+                        pressed={editor.isActive("italic")}
+                        onPressedChange={() => editor.chain().focus().toggleItalic().run()}
+                        disabled={!editor.can().chain().focus().toggleItalic().run()}
+                    >
+                        <Italic />
+                    </Toggle>
 
-            {/* Strike */}
-            <Toggle
-                pressed={editor.isActive("strike")}
-                onPressedChange={() => editor.chain().focus().toggleStrike().run()}
-                disabled={!editor.can().chain().focus().toggleStrike().run()}
-            >
-                <Strikethrough />
-            </Toggle>
+                    {/* Strike */}
+                    <Toggle
+                        pressed={editor.isActive("strike")}
+                        onPressedChange={() => editor.chain().focus().toggleStrike().run()}
+                        disabled={!editor.can().chain().focus().toggleStrike().run()}
+                    >
+                        <Strikethrough />
+                    </Toggle>
 
-            {/* Underline */}
-            <Toggle
-                pressed={editor.isActive("underline")}
-                onPressedChange={() => editor.chain().focus().toggleUnderline().run()}
-                disabled={!editor.can().chain().focus().toggleUnderline().run()}
-            >
-                <UnderlineIcon />
-            </Toggle>
+                    {/* Underline */}
+                    <Toggle
+                        pressed={editor.isActive("underline")}
+                        onPressedChange={() => editor.chain().focus().toggleUnderline().run()}
+                        disabled={!editor.can().chain().focus().toggleUnderline().run()}
+                    >
+                        <UnderlineIcon />
+                    </Toggle>
 
-            {/* Superscript */}
-            <Toggle
-                pressed={editor.isActive("superscript")}
-                onPressedChange={() => editor.chain().focus().toggleSuperscript().run()}
-                disabled={!editor.can().chain().focus().toggleSuperscript().run()}
-            >
-                <SuperscriptIcon />
-            </Toggle>
+                    {/* Superscript */}
+                    <Toggle
+                        pressed={editor.isActive("superscript")}
+                        onPressedChange={() => editor.chain().focus().toggleSuperscript().run()}
+                        disabled={!editor.can().chain().focus().toggleSuperscript().run()}
+                    >
+                        <SuperscriptIcon />
+                    </Toggle>
 
-            {/* Subscript */}
-            <Toggle
-                pressed={editor.isActive("subscript")}
-                onPressedChange={() => editor.chain().focus().toggleSubscript().run()}
-                disabled={!editor.can().chain().focus().toggleSubscript().run()}
-            >
-                <SubscriptIcon />
-            </Toggle>
+                    {/* Subscript */}
+                    <Toggle
+                        pressed={editor.isActive("subscript")}
+                        onPressedChange={() => editor.chain().focus().toggleSubscript().run()}
+                        disabled={!editor.can().chain().focus().toggleSubscript().run()}
+                    >
+                        <SubscriptIcon />
+                    </Toggle>
 
-            {/* Headings */}
-            <Toggle
-                pressed={editor.isActive("heading", { level: 1 })}
-                onPressedChange={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-            >
-                <Heading1 />
-            </Toggle>
-            <Toggle
-                pressed={editor.isActive("heading", { level: 2 })}
-                onPressedChange={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-            >
-                <Heading2 />
-            </Toggle>
-            <Toggle
-                pressed={editor.isActive("heading", { level: 3 })}
-                onPressedChange={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-            >
-                <Heading3 />
-            </Toggle>
-            <Toggle
-                pressed={editor.isActive("heading", { level: 4 })}
-                onPressedChange={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
-            >
-                <Heading4 />
-            </Toggle>
-            <Toggle
-                pressed={editor.isActive("paragraph")}
-                onPressedChange={() => editor.chain().focus().setParagraph().run()}
-            >
-                <Pilcrow />
-            </Toggle>
+                </div>
 
-            {/* Alignments */}
-            <Toggle
-                pressed={editor.isActive({ textAlign: "left" })}
-                onPressedChange={() => editor.chain().focus().setTextAlign("left").run()}
-            >
-                <AlignLeft />
-            </Toggle>
+                <Separator orientation="vertical" />
 
-            <Toggle
-                pressed={editor.isActive({ textAlign: "center" })}
-                onPressedChange={() => editor.chain().focus().setTextAlign("center").run()}
-            >
-                <AlignCenter />
-            </Toggle>
+                <div className="shrink-0">
 
-            <Toggle
-                pressed={editor.isActive({ textAlign: "right" })}
-                onPressedChange={() => editor.chain().focus().setTextAlign("right").run()}
-            >
-                <AlignRight />
-            </Toggle>
+                    {/* Bullet List */}
+                    <Toggle
+                        pressed={editor.isActive("bulletList")}
+                        onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
+                    >
+                        <List />
+                    </Toggle>
 
-            <Toggle
-                pressed={editor.isActive({ textAlign: "justify" })}
-                onPressedChange={() => editor.chain().focus().setTextAlign("justify").run()}
-            >
-                <AlignJustify />
-            </Toggle>
+                    {/* Ordered List */}
+                    <Toggle
+                        pressed={editor.isActive("orderedList")}
+                        onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
+                    >
+                        <ListOrdered />
+                    </Toggle>
 
-            {/* Bullet List */}
-            <Toggle
-                pressed={editor.isActive("bulletList")}
-                onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
-            >
-                <List />
-            </Toggle>
+                    {/* Blockquote */}
+                    <Toggle
+                        pressed={editor.isActive("blockquote")}
+                        onPressedChange={() => editor.chain().focus().toggleBlockquote().run()}
+                    >
+                        <TextQuoteIcon />
+                    </Toggle>
+                </div>
 
-            {/* Ordered List */}
-            <Toggle
-                pressed={editor.isActive("orderedList")}
-                onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
-            >
-                <ListOrdered />
-            </Toggle>
+                <Separator orientation="vertical" />
 
-            {/* Blockquote */}
-            <Toggle
-                pressed={editor.isActive("blockquote")}
-                onPressedChange={() => editor.chain().focus().toggleBlockquote().run()}
-            >
-                <TextQuoteIcon />
-            </Toggle>
+                <div className="shrink-0">
+                    {/* Link */}
+                    <Popover
+                        open={isLinkOpen}
+                        onOpenChange={(open) => {
+                            setIsLinkOpen(open)
+                            if (!open) {
+                                setLink()
+                            }
+                        }}
+                    >
+                        <PopoverTrigger asChild >
+                            <DataStatePropInterceptor>
+                                <Toggle
+                                    pressed={editor.isActive("link")}
+                                    onPressedChange={() => { setHyperLink(editor.getAttributes('link').href) }}
+                                >
+                                    <LinkIcon />
+                                </Toggle>
+                            </DataStatePropInterceptor>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                            <div className="grid gap-2">
+                                <div className="flex justify-between">
+                                    <h4 className="font-medium leading-none items-center my-auto">Insert Link</h4>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => { editor.chain().focus().unsetLink().run(); setIsLinkOpen(false); }}
+                                    >
+                                        <Trash color="#ef4444" />
+                                    </Button>
+                                </div>
+                                <div className="grid w-full max-w-sm items-center gap-1.5">
+                                    <Label htmlFor="linkto">Link to</Label>
+                                    <Input
+                                        id="linkto"
+                                        defaultValue={hyperlink}
+                                        onChange={(e) => setHyperLink(e.target.value)}
+                                        className="col-span-2 h-8"
+                                    />
+                                </div>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
 
-            <Popover
-                open={isLinkOpen}
-                onOpenChange={(open) => {
-                    setIsLinkOpen(open)
-                    if (!open) {
-                        setLink()
-                    }
-                }}
-            >
-                <PopoverTrigger asChild >
-                    <DataStatePropInterceptor>
-                        <Toggle
-                            pressed={editor.isActive("link")}
-                            onPressedChange={() => { setHyperLink(editor.getAttributes('link').href) }}
-                        >
-                            <LinkIcon />
-                        </Toggle>
-                    </DataStatePropInterceptor>
-                </PopoverTrigger>
-                <PopoverContent>
-                    <div className="grid gap-2">
-                        <div className="flex justify-between">
-                            <h4 className="font-medium leading-none items-center my-auto">Insert Link</h4>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => { editor.chain().focus().unsetLink().run(); setIsLinkOpen(false); }}
-                            >
-                                <Trash color="#ef4444" />
-                            </Button>
-                        </div>
-                        <div className="grid w-full max-w-sm items-center gap-1.5">
-                            <Label htmlFor="linkto">Link to</Label>
-                            <Input
-                                id="linkto"
-                                defaultValue={hyperlink}
-                                onChange={(e) => setHyperLink(e.target.value)}
-                                className="col-span-2 h-8"
-                            />
-                        </div>
-                    </div>
-                </PopoverContent>
-            </Popover>
+                    {/* Image */}
+                    <Popover
+                        open={isImageOpen}
+                        onOpenChange={(open) => {
+                            setIsImageOpen(open)
+                            if (!open) {
+                                setImage()
+                            }
+                        }}
+                    >
+                        <PopoverTrigger asChild >
+                            <DataStatePropInterceptor>
+                                <Toggle
+                                    pressed={editor.isActive("image")}
+                                    onPressedChange={() => { setImageLink(editor.getAttributes("image").src) }}
+                                >
+                                    <ImageIcon />
+                                </Toggle>
+                            </DataStatePropInterceptor>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                            <div className="grid gap-2">
+                                <div className="flex justify-between">
+                                    <h4 className="font-medium leading-none my-2">Insert Image</h4>
+                                </div>
+                                <div className="grid w-full max-w-sm items-center gap-1.5">
+                                    <Label htmlFor="imageto">Image source</Label>
+                                    <Input
+                                        id="image"
+                                        defaultValue={imageLink}
+                                        onChange={(e) => setImageLink(e.target.value)}
+                                        className="col-span-2 h-8"
+                                    />
+                                </div>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                </div>
+            </div>
 
+            <div className="inline-flex flex-none space-x-4">
+                <div className="shrink-0">
+                    {/* Headings */}
+                    <Toggle
+                        pressed={editor.isActive("heading", { level: 1 })}
+                        onPressedChange={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+                    >
+                        <Heading1 />
+                    </Toggle>
+                    <Toggle
+                        pressed={editor.isActive("heading", { level: 2 })}
+                        onPressedChange={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                    >
+                        <Heading2 />
+                    </Toggle>
+                    <Toggle
+                        pressed={editor.isActive("heading", { level: 3 })}
+                        onPressedChange={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+                    >
+                        <Heading3 />
+                    </Toggle>
+                    <Toggle
+                        pressed={editor.isActive("heading", { level: 4 })}
+                        onPressedChange={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
+                    >
+                        <Heading4 />
+                    </Toggle>
+                    <Toggle
+                        pressed={editor.isActive("paragraph")}
+                        onPressedChange={() => editor.chain().focus().setParagraph().run()}
+                    >
+                        <Pilcrow />
+                    </Toggle>
+                </div>
 
+                <Separator orientation="vertical" />
 
-            {/* Horizontal Rule */}
-            <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => editor.chain().focus().setHorizontalRule().run()}
-            >
-                <SeparatorHorizontal />
-            </Button>
+                <div className="shrink-0">
+                    {/* Alignments */}
+                    <Toggle
+                        pressed={editor.isActive({ textAlign: "left" })}
+                        onPressedChange={() => editor.chain().focus().setTextAlign("left").run()}
+                    >
+                        <AlignLeft />
+                    </Toggle>
 
-            {/* Hard Break */}
-            <Button
-                variant="ghost"
-                onClick={() => editor.chain().focus().setHardBreak().run()}
-            >
-                Hard Break
-            </Button>
+                    <Toggle
+                        pressed={editor.isActive({ textAlign: "center" })}
+                        onPressedChange={() => editor.chain().focus().setTextAlign("center").run()}
+                    >
+                        <AlignCenter />
+                    </Toggle>
 
-            {/* Undo Redo */}
-            <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => editor.chain().focus().undo().run()}
-                disabled={!editor.can().chain().focus().undo().run()}
-            >
-                <RotateCcw />
-            </Button>
-            <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => editor.chain().focus().redo().run()}
-                disabled={!editor.can().chain().focus().redo().run()}
-            >
-                <RotateCw />
-            </Button>
+                    <Toggle
+                        pressed={editor.isActive({ textAlign: "right" })}
+                        onPressedChange={() => editor.chain().focus().setTextAlign("right").run()}
+                    >
+                        <AlignRight />
+                    </Toggle>
 
-            {/* Purple Color */}
-            <Toggle
-                pressed={editor.isActive("textStyle", { color: "#958DF1" })}
-                onPressedChange={() => editor.chain().focus().setColor("#958DF1").run()}
-            >
-                Purple
-            </Toggle>
+                    <Toggle
+                        pressed={editor.isActive({ textAlign: "justify" })}
+                        onPressedChange={() => editor.chain().focus().setTextAlign("justify").run()}
+                    >
+                        <AlignJustify />
+                    </Toggle>
 
-            {/* Clear Marks */}
-            <Button
-                variant="ghost"
-                onClick={() => editor.chain().focus().unsetAllMarks().run()}>
-                clear marks
-            </Button>
+                </div>
 
-            {/* Clear Nodes */}
-            <Button
-                variant="ghost"
-                onClick={() => editor.chain().focus().clearNodes().run()}>
-                clear nodes
-            </Button>
+                <Separator orientation="vertical" />
 
-            <Button
-                variant="ghost"
-                onClick={() => {
-                    editor.chain().focus().clearNodes().run()
-                    editor.chain().focus().unsetAllMarks().run()
-                }}
-            >
-                Clear Formatting
-            </Button>
-        </>
+                <div className="shrink-0">
+                    {/* Horizontal Rule */}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => editor.chain().focus().setHorizontalRule().run()}
+                    >
+                        <SeparatorHorizontal />
+                    </Button>
+
+                    {/* Hard Break */}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => editor.chain().focus().setHardBreak().run()}
+                    >
+                        <CornerDownLeft />
+                    </Button>
+                </div>
+            </div>
+
+            <div className="inline-flex flex-none space-x-4">
+                {/* Purple Color */}
+                <Toggle
+                    pressed={editor.isActive("textStyle", { color: "#958DF1" })}
+                    onPressedChange={() => editor.chain().focus().setColor("#958DF1").run()}
+                >
+                    <Palette />
+                </Toggle>
+
+                <Separator orientation="vertical" />
+
+                <div className="shrink-0">
+                {/* Undo Redo */}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => editor.chain().focus().undo().run()}
+                    disabled={!editor.can().chain().focus().undo().run()}
+                >
+                    <RotateCcw />
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => editor.chain().focus().redo().run()}
+                    disabled={!editor.can().chain().focus().redo().run()}
+                >
+                    <RotateCw />
+                </Button>
+
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                        editor.chain().focus().clearNodes().run()
+                        editor.chain().focus().unsetAllMarks().run()
+                    }}
+                >
+                    <Eraser />
+                </Button>
+                </div>
+            </div>
+        </div>
     );
 };
 
@@ -473,13 +543,14 @@ display: none;
 </blockquote>
 `;
 
-export const Tiptap = () => {
+export const Tiptap = ({editable}) => {
     return (
         <EditorProvider
-            slotBefore={<MenuBar />}
+            slotBefore={editable ? <MenuBar /> : null}
             extensions={extensions}
+            editable={editable}
             content={content}
-            editorProps={{ attributes: { class: "prose prose-sm sm:prose-sm m-5 focus:outline-none" } }} // ORIGINAL: "prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none"
+            editorProps={{ attributes: { class: "prose prose-sm sm:prose-sm lg:prose-lg xl:prose-2xl m-5 focus:outline-none min-w-full" } }} // ORIGINAL: "prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none"
         ></EditorProvider>
     );
 };
