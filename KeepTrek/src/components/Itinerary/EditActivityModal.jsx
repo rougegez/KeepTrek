@@ -21,7 +21,7 @@ const EditActivityModal = ({ isOpen, onClose, activityId}) => {
       updateActivity({
         ...activity,
         placeId : suggestion?.placeId ?? "",
-        location: suggestion?.address ?? newLocation,
+        location: suggestion?.address ?? "",
         coordinates: suggestion?.coordinates ?? [],
         rating: suggestion?.rating ?? "",
         openingHours: suggestion?.openingHours ?? "",

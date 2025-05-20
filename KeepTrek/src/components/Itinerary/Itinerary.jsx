@@ -111,17 +111,12 @@ function Itinerary() {
 
       const position = window.scrollY;
 
-      // Auto-expand map when scrolling to top (desktop only)
-      if (!isMobile && position < 50) {
-        setIsMapExpanded(true);
-      }
-      // For mobile: collapse map on ANY scroll event
-      else if (isMobile && isMapExpanded) {
-        setIsMapExpanded(false);
-      }
-      // For desktop: Auto-collapse map when scrolling down past threshold
-      else if (!isMobile && position > 10 && isMapExpanded) {
-        setIsMapExpanded(false);
+      // Only handle map collapsing on desktop
+      if (!isMobile) {
+        // Auto-expand map when scrolling to top
+        if (position < 50) {
+          setIsMapExpanded(true);
+        }
       }
 
       setLastScrollPosition(position);
@@ -304,61 +299,6 @@ function Itinerary() {
     };
   }, [isMobile, isMapExpanded]);
 
-  // Add a direct interaction effect
-  useEffect(() => {
-    if (!isMobile) return;
-
-    const forceCollapseMap = (e) => {
-      // Skip if we're clicking on a button
-      if (e.target.closest("button")) {
-        return;
-      }
-
-      if (isMapExpanded) {
-        setIsMapExpanded(false);
-      }
-    };
-
-    // Add various interaction listeners
-    document.addEventListener("touchstart", forceCollapseMap, {
-      capture: true,
-    });
-    document.addEventListener("click", forceCollapseMap, { capture: true });
-
-    return () => {
-      document.removeEventListener("touchstart", forceCollapseMap, {
-        capture: true,
-      });
-      document.removeEventListener("click", forceCollapseMap, {
-        capture: true,
-      });
-    };
-  }, [isMobile, isMapExpanded]);
-
-  // Direct scroll handler for the content ref
-  useEffect(() => {
-    if (!contentRef.current || !isMobile) return;
-
-    const handleDirectScroll = (e) => {
-      // Don't handle scrolling if it's coming from a button interaction
-      if (e.target.closest("button")) {
-        return;
-      }
-      if (isMapExpanded) {
-        setIsMapExpanded(false);
-      }
-    };
-
-    const contentElement = contentRef.current;
-    contentElement.addEventListener("scroll", handleDirectScroll, {
-      passive: true,
-    });
-
-    return () => {
-      contentElement.removeEventListener("scroll", handleDirectScroll);
-    };
-  }, [contentRef.current, isMobile, isMapExpanded]);
-
   return (
     <SidebarProvider>
       <AppSidebar tripID={tripID} />
@@ -392,7 +332,6 @@ function Itinerary() {
               disableSearchBar={!canModify}
               markers={normalizeMarkers(days)}
               itineraryDays={itineraryDays}
-              onInteraction={isMobile ? collapseMapOnMobile : undefined}
             />
             <MapToggleButton />
           </motion.div>
@@ -419,33 +358,21 @@ function Itinerary() {
             flexShrink: 0,
             height: isMobile ? "calc(100vh - 3.5rem)" : "100vh",
           }}
-          onTouchStart={
-            isMobile
-              ? () => isMapExpanded && setIsMapExpanded(false)
-              : undefined
-          }
         >
           <ScrollArea
             className={`${
               isMobile ? "h-[calc(100vh-3.5rem)]" : "h-full"
             } px-2 pt-6`}
-            onTouchStart={collapseMapOnMobile}
-            onWheel={collapseMapOnMobile}
-            onScroll={collapseMapOnMobile}
-            onClick={collapseMapOnMobile}
           >
-            <div
-              className="space-y-6"
-              onClick={isMobile ? collapseMapOnMobile : undefined}
-            >
+            <div className="space-y-6">
               <div
                 className={`flex flex-col gap-y-2 sm:flex-row sm:items-center sm:gap-x-4 py-2 mr-5 w-[98%]`}
               >
                 <div className="flex-1 min-w-0">
                   <h1 className="text-2xl sm:text-3xl font-bold truncate max-w-[350px] sm:max-w-[450px]  lg:max-w-[230px] xl:max-w-[200px] 2xl:max-w-[450px]">
-                  {tripDetails.tripName.length > 40
-                  ? tripDetails.tripName.slice(0, 40) + '...'
-                  : tripDetails.tripName}
+                    {tripDetails.tripName.length > 40
+                      ? tripDetails.tripName.slice(0, 40) + "..."
+                      : tripDetails.tripName}
                   </h1>
                   <p className="text-sm text-muted-foreground">
                     {dateFormatter(tripDetails.startDate)} to{" "}
