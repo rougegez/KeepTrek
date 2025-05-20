@@ -22,6 +22,7 @@ import { MapProvider } from 'react-map-gl/mapbox'
 import ItinerarySocketWrapper from "@/components/Itinerary/ItinerarySocketWrapper";
 import { Analytics } from '@vercel/analytics/react';
 import { TooltipProvider } from "@/components/ui/tooltip";
+// import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ function App() {
   return (
     <>
       <Analytics />
+      {/* <SpeedInsights/> */}
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <MapProvider>

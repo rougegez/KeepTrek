@@ -442,8 +442,10 @@ function Itinerary() {
                 className={`flex flex-col gap-y-2 sm:flex-row sm:items-center sm:gap-x-4 py-2 mr-5 w-[98%]`}
               >
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-2xl sm:text-3xl font-bold truncate">
-                    {tripDetails.tripName}
+                  <h1 className="text-2xl sm:text-3xl font-bold truncate max-w-[340px] lg:max-w-[200px] 2xl:max-w-[400px]">
+                  {tripDetails.tripName.length > 40
+                  ? tripDetails.tripName.slice(0, 40) + '...'
+                  : tripDetails.tripName}
                   </h1>
                   <p className="text-sm text-muted-foreground">
                     {dateFormatter(tripDetails.startDate)} to{" "}
