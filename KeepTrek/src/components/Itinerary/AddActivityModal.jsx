@@ -41,7 +41,7 @@ const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, locatio
             setNewActivity(prev => ({
                 ...prev,
                 placeId: suggestion.placeId,
-                location: suggestion?.address ?? newLocation,
+                location: suggestion?.address ?? "",
                 coordinates: suggestion?.coordinates ?? [],
                 rating: suggestion?.rating ?? "",
                 openingHours: suggestion?.openingHours ?? "",
