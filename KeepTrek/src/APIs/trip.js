@@ -122,11 +122,13 @@ export const editTrip = async (tripID, tripData) => {
         // Format dates if they are Date objects
         const formattedData = { ...tripData };
         if (formattedData.startDate instanceof Date) {
-            formattedData.startDate = formattedData.startDate.toISOString().split('T')[0];
+            formattedData.startDate = `${String(formattedData.startDate.getFullYear())}-${String(formattedData.startDate.getMonth() + 1).padStart(2, '0')}-${String(formattedData.startDate.getDate()).padStart(2, '0')}`;
         }
         if (formattedData.endDate instanceof Date) {
-            formattedData.endDate = formattedData.endDate.toISOString().split('T')[0];
+            formattedData.endDate = `${String(formattedData.endDate.getFullYear())}-${String(formattedData.endDate.getMonth() + 1).padStart(2, '0')}-${String(formattedData.endDate.getDate()).padStart(2, '0')}`;
         }
+
+        console.log('Formatted trip data:', formattedData);
         
         // Make the API request
         const response = await axios.patch(`/trip/${tripID}/edit`, formattedData);
