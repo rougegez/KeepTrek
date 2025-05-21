@@ -103,8 +103,7 @@ const MenuBar = () => {
     }
 
     return (
-        <div className="flex flex-wrap max-w-full overflow-auto" style={{scrollbarWidth: 'none' }}>
-            <div className="inline-flex flex-none space-x-4">
+        <div className="flex flex-wrap max-w-full gap-x-4 overflow-auto" style={{ scrollbarWidth: 'none' }}>
                 <div className="shrink-0">
                     {/* Bold */}
                     <Toggle
@@ -162,7 +161,7 @@ const MenuBar = () => {
 
                 </div>
 
-                <Separator orientation="vertical" />
+                <Separator orientation="vertical" className="min-h-0 h-8" />
 
                 <div className="shrink-0">
 
@@ -191,7 +190,7 @@ const MenuBar = () => {
                     </Toggle>
                 </div>
 
-                <Separator orientation="vertical" />
+                <Separator orientation="vertical" className="min-h-0 h-8" />
 
                 <div className="shrink-0">
                     {/* Link */}
@@ -277,9 +276,8 @@ const MenuBar = () => {
                         </PopoverContent>
                     </Popover>
                 </div>
-            </div>
 
-            <div className="inline-flex flex-none space-x-4">
+                <Separator orientation="vertical" className="min-h-0 h-8" />
                 <div className="shrink-0">
                     {/* Headings */}
                     <Toggle
@@ -314,7 +312,7 @@ const MenuBar = () => {
                     </Toggle>
                 </div>
 
-                <Separator orientation="vertical" />
+                <Separator orientation="vertical" className="min-h-0 h-8" />
 
                 <div className="shrink-0">
                     {/* Alignments */}
@@ -348,7 +346,7 @@ const MenuBar = () => {
 
                 </div>
 
-                <Separator orientation="vertical" />
+                <Separator orientation="vertical" className="min-h-0 h-8" />
 
                 <div className="shrink-0">
                     {/* Horizontal Rule */}
@@ -369,50 +367,51 @@ const MenuBar = () => {
                         <CornerDownLeft />
                     </Button>
                 </div>
-            </div>
 
-            <div className="inline-flex flex-none space-x-4">
-                {/* Purple Color */}
-                <Toggle
-                    pressed={editor.isActive("textStyle", { color: "#958DF1" })}
-                    onPressedChange={() => editor.chain().focus().setColor("#958DF1").run()}
-                >
-                    <Palette />
-                </Toggle>
-
-                <Separator orientation="vertical" />
+                <Separator orientation="vertical" className="min-h-0 h-8" />
 
                 <div className="shrink-0">
-                {/* Undo Redo */}
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => editor.chain().focus().undo().run()}
-                    disabled={!editor.can().chain().focus().undo().run()}
-                >
-                    <RotateCcw />
-                </Button>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => editor.chain().focus().redo().run()}
-                    disabled={!editor.can().chain().focus().redo().run()}
-                >
-                    <RotateCw />
-                </Button>
-
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                        editor.chain().focus().clearNodes().run()
-                        editor.chain().focus().unsetAllMarks().run()
-                    }}
-                >
-                    <Eraser />
-                </Button>
+                    {/* Purple Color */}
+                    <Toggle
+                        pressed={editor.isActive("textStyle", { color: "#958DF1" })}
+                        onPressedChange={() => editor.chain().focus().setColor("#958DF1").run()}
+                    >
+                        <Palette />
+                    </Toggle>
                 </div>
-            </div>
+
+                <Separator orientation="vertical" className="min-h-0 h-8" />
+
+                <div className="shrink-0">
+                    {/* Undo Redo */}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => editor.chain().focus().undo().run()}
+                        disabled={!editor.can().chain().focus().undo().run()}
+                    >
+                        <RotateCcw />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => editor.chain().focus().redo().run()}
+                        disabled={!editor.can().chain().focus().redo().run()}
+                    >
+                        <RotateCw />
+                    </Button>
+
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                            editor.chain().focus().clearNodes().run()
+                            editor.chain().focus().unsetAllMarks().run()
+                        }}
+                    >
+                        <Eraser />
+                    </Button>
+                </div>
         </div>
     );
 };
@@ -509,10 +508,15 @@ const extensions = [
                 class: "marker:text-[#374151]",
             }
         },
+        code: false,
+        codeBlock: false,
     })
 ];
 
 const content = `
+<h1>
+    Hi there,
+</h1>
 <h2>
   Hi there,
 </h2>
@@ -530,9 +534,6 @@ const content = `
 <p>
   Isn’t that great? And all of that is editable. But wait, there’s more. Let’s try a code block:
 </p>
-<pre><code class="language-css">body {
-display: none;
-}</code></pre>
 <p>
   I know, I know, this is impressive. It’s only the tip of the iceberg though. Give it a try and click a little bit around. Don’t forget to check the other examples too.
 </p>
@@ -543,15 +544,17 @@ display: none;
 </blockquote>
 `;
 
-export const Tiptap = ({editable}) => {
+export const Tiptap = ({ editable }) => {
     return (
-        <EditorProvider
-            slotBefore={editable ? <MenuBar /> : null}
-            extensions={extensions}
-            editable={editable}
-            content={content}
-            editorProps={{ attributes: { class: "prose prose-sm sm:prose-sm lg:prose-lg xl:prose-2xl m-5 focus:outline-none min-w-full" } }} // ORIGINAL: "prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none"
-        ></EditorProvider>
+        <div className="flex-shrink min-w-60 w-full">
+            <EditorProvider
+                slotBefore={editable ? <MenuBar /> : null}
+                extensions={extensions}
+                editable={editable}
+                content={content}
+                editorProps={{ attributes: { class: "prose prose-sm sm:prose-sm lg:prose-lg xl:prose-2xl m-5 focus:outline-none min-w-full" } }} // ORIGINAL: "prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none"
+            ></EditorProvider>
+        </div>
     );
 };
 
