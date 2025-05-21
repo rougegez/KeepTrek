@@ -18,8 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { UserAvatarStack } from "@/components/profilePage/avatar.jsx";
 import ShareModal2 from "./ShareModal2.jsx"; 
-
-// lazy‐load the nested modal
+import Image from "@/components/ui/image.jsx";
 
 export default function ShareModal({
   trip,
@@ -57,9 +56,8 @@ export default function ShareModal({
         {/* Trip Card*/}
         <Card className="overflow-hidden relative group">
           <div className="relative h-48">
-            <img
+            <Image
               src={trip.image}
-              alt={trip.tripName}
               className="w-full h-full object-cover"
             />
           </div>

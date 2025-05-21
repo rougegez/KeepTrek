@@ -235,7 +235,7 @@ export default function TripCard({ trip, onDelete }) {
               </div>
               <div className="flex items-center gap-1">
 
-                <ShareModal trip={trip} />
+                {/* <ShareModal trip={trip} /> */}
 
                 {currentUser && (
                   <DropdownMenu>
