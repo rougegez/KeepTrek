@@ -42,8 +42,8 @@ export default function CreateTrip() {
     setIsCreating(true);
 
     // Prepare data for the API
-    const startDate = new Date(dateRange.from).toISOString().split("T")[0]; // Format as YYYY-MM-DD
-    const endDate = new Date(dateRange.to).toISOString().split("T")[0];
+    const startDate = new Date(dateRange.from)
+    const endDate = new Date(dateRange.to)
 
     try {
       const response = await createTrip({ tripName, placeId, location, coordinates, startDate, endDate, image });
