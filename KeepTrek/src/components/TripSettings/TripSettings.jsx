@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
   DialogTitle,
   DialogDescription,
   DialogFooter
@@ -13,14 +13,13 @@ import { Input } from '@/components/ui/input';
 import { getTrip, editTrip, deleteTrip } from '@/APIs/trip';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import DeleteAlert from '@/components/ui/DeleteAlert';
+import { DateRangePicker } from '@/components/ui/datepicker';
 
 const TripSettings = ({ isOpen, onClose, tripID }) => {
   const navigate = useNavigate();
-  
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [trip, setTrip] = useState(null);
   const [form, setForm] = useState({
     tripName: '',
     location: '',
@@ -33,12 +32,11 @@ const TripSettings = ({ isOpen, onClose, tripID }) => {
   useEffect(() => {
     const fetchTripDetails = async () => {
       if (!tripID || !isOpen) return;
-      
+
       try {
         setLoading(true);
         const tripData = await getTrip(tripID);
-        setTrip(tripData);
-        
+
         // Initialize the form with all trip data (for future use)
         setForm({
           tripName: tripData.tripName,
@@ -65,10 +63,16 @@ const TripSettings = ({ isOpen, onClose, tripID }) => {
   const handleSave = async () => {
     try {
       setSaving(true);
-      
+
       // Validation
       if (!form.tripName.trim()) {
         setError("Trip name is required");
+        setSaving(false);
+        return;
+      }
+
+      if (!form.startDate || !form.endDate) {
+        setError("Start and end dates are required");
         setSaving(false);
         return;
       }
@@ -103,7 +107,7 @@ const TripSettings = ({ isOpen, onClose, tripID }) => {
               Edit your trip details below. Click save when you're done.
             </DialogDescription>
           </DialogHeader>
-          
+
           {loading ? (
             <div className="flex justify-center p-10">
               <LoadingSpinner size="lg" />
@@ -122,15 +126,32 @@ const TripSettings = ({ isOpen, onClose, tripID }) => {
                   onChange={handleInputChange}
                 />
               </div>
-              
+
+              <div className="space-y-2">
+                <label htmlFor="location" className="block text-sm font-medium text-muted-foreground mb-1">
+                  Date<span className="text-red-500">*</span>
+                </label>
+                <DateRangePicker
+                  value={{ from: form.startDate, to: form.endDate }}
+                  onValueChange={(range) => {
+                    setForm(prev => ({
+                      ...prev,
+                      startDate: range?.from,
+                      endDate: range?.to
+                    }));
+                  }}
+
+                />
+              </div>
+
               {/* Hidden inputs to retain the data structure for future use */}
               <input type="hidden" name="location" value={form.location} />
               <input type="hidden" name="image" value={form.image} />
             </div>
           )}
-          
+
           {error && <p className="text-red-500 text-sm">{error}</p>}
-          
+
           <DialogFooter>
             <div className="flex w-full items-center justify-between">
               <Button
@@ -160,7 +181,7 @@ const TripSettings = ({ isOpen, onClose, tripID }) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       <DeleteAlert
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}

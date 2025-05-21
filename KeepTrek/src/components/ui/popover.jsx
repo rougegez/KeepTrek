@@ -9,8 +9,12 @@ const PopoverTrigger = PopoverPrimitive.Trigger
 
 const PopoverAnchor = PopoverPrimitive.Anchor
 
+// Built-in portal messes with popover focus, so it is separated
+// https://github.com/shadcn-ui/ui/issues/1511
+const PopoverPortal = PopoverPrimitive.Portal
+
 const PopoverContent = React.forwardRef(({ className, align = "center", sideOffset = 4, ...props }, ref) => (
-  <PopoverPrimitive.Portal>
+  // <PopoverPrimitive.Portal>
     <PopoverPrimitive.Content
       ref={ref}
       align={align}
@@ -20,8 +24,8 @@ const PopoverContent = React.forwardRef(({ className, align = "center", sideOffs
         className
       )}
       {...props} />
-  </PopoverPrimitive.Portal>
+  // </PopoverPrimitive.Portal>
 ))
 PopoverContent.displayName = PopoverPrimitive.Content.displayName
 
-export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor }
+export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor, PopoverPortal }
