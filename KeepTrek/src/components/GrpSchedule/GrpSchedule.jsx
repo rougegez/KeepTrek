@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
 import { useQuery } from "react-query";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import {
   fetchAvailableTrips,
   updateAvailability,
@@ -59,7 +59,9 @@ export const GrpSchedule = () => {
       window.location.reload();
     } catch (error) {
       console.error("Error saving availability:", error.message);
-      toast.error("Failed to submit availability");
+      toast.error("Failed to submit availability", {
+        description: <p>{error.message}</p>,
+      });
     } finally {
       setLoading(false); // Hide loading spinner
     }
@@ -68,6 +70,7 @@ export const GrpSchedule = () => {
   return (
     <SidebarProvider>
       <AppSidebar tripID={tripID} />
+      {!isMobile && <SidebarTrigger />}
       {isMobile && <MobileHeader title="Group Schedule" />}
       <div className="flex h-screen w-screen">
         <div className="flex flex-col flex-1 overflow-hidden">

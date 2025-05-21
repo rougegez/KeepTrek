@@ -6,8 +6,17 @@ import WishlistSection from "./WishlistSection.jsx";
 import { WishlistCard, AddItemCard } from "./WishlistCard.jsx";
 import ItemModal from "./ItemModal.jsx";
 import CreateEditItemModal from "./CreateEditItemModal.jsx";
-import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx";
-import { getAllItems, createItem, editItem, deleteItem, upvoteItem, downvoteItem, deleteFile } from "@/APIs/wishlist";
+import MapboxMap from "@/components/MapboxMap/MapboxMapGoogleSearch.jsx";
+import { normalizeMarkers } from "@/components/MapboxMap/MapUtil.jsx";
+import {
+  getAllItems,
+  createItem,
+  editItem,
+  deleteItem,
+  upvoteItem,
+  downvoteItem,
+  deleteFile,
+} from "@/APIs/wishlist";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,25 +24,37 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
-import { useMediaQuery } from 'react-responsive';
+import { useMediaQuery } from "react-responsive";
 import { motion } from "framer-motion";
-import { ChevronUp, ChevronDown, Menu } from "lucide-react";
+import {
+  ChevronUp,
+  ChevronDown,
+  Menu,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import MobileHeader from "../MobileHeader";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { canEdit } from "@/utils/permissions";
-import { useQuery } from 'react-query';
-import { getTrip } from '@/APIs/trip';
+import { useQuery } from "react-query";
+import { getTrip } from "@/APIs/trip";
 import { useAuth } from "@/contexts/AuthProvider.jsx";
-import { useItinerary } from "../Itinerary/useItinerarySocket.jsx";
+import { useItinerary } from "@/hooks/useItinerary.jsx";
+import DeleteAlert from "../ui/DeleteAlert.jsx";
+import { toast } from "sonner";
 
 export default function WishlistPage() {
   const { tripID } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  
-  const [wishlistData, setWishlistData] = useState({ accommodation: [], activities: [], food: [] });
+
+  const [wishlistData, setWishlistData] = useState({
+    accommodation: [],
+    activities: [],
+    food: [],
+  });
   const [selectedItem, setSelectedItem] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -42,19 +63,15 @@ export default function WishlistPage() {
   const [mapInstance, setMapInstance] = useState(null);
   const [searchedPlace, setSearchedPlace] = useState(null);
   const [savedLocation, setSavedLocation] = useState(null);
-  // const [category, setCategory] = useState("");
-  // const [name, setName] = useState("");
-  // const [image, setImage] = useState("");
-  // const [address, setAddress] = useState("");
-  // const [note, setNote] = useState("");
 
   // New state for add mode
   const [addMode, setAddMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
   const [selectedDay, setSelectedDay] = useState("");
 
-  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
+  const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
   const [isMapExpanded, setIsMapExpanded] = useState(true);
+  const [isMapVisible, setIsMapVisible] = useState(true); // Added for desktop map visibility
   const [scrollPosition, setScrollPosition] = useState(0);
   const contentRef = useRef(null);
   const [lastScrollPosition, setLastScrollPosition] = useState(0);
@@ -62,39 +79,21 @@ export default function WishlistPage() {
   const [optimisticVotes, setOptimisticVotes] = useState({});
   const [initialCategory, setInitialCategory] = useState("");
 
-  const { data: tripDetails } = useQuery(['trip', tripID], () => getTrip(tripID));
-  const userRole = tripDetails?.users.find(u => u.userID === user)?.role;
+  const { data: tripDetails } = useQuery(
+    ["trip", tripID],
+    () => getTrip(tripID),
+    { suspense: true }
+  );
+  const userRole = tripDetails?.users.find((u) => u.userID === user)?.role;
   const canModify = canEdit(userRole);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const position = window.scrollY;
-      const scrollDelta = position - lastScrollPosition;
-      
-      // Auto-expand map when scrolling to top
-      if (position < 50) {
-        setIsMapExpanded(true);
-      }
-      // Auto-collapse map when scrolling down past threshold
-      else if (scrollDelta > 10 && position > 10 && isMapExpanded) {
-        setIsMapExpanded(false);
-      }
-      // Auto-expand map when scrolling up quickly
-      //else if (scrollDelta < -50 && !isMapExpanded) {
-      //  setIsMapExpanded(true);
-      //}
-      
-      setLastScrollPosition(position);
-      setScrollPosition(position);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isMapExpanded, lastScrollPosition]);
+  // Add state for delete alert
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   const fetchWishlistData = async () => {
     const allItems = await getAllItems(tripID);
-    
+
     // Sort function to calculate rank
     const sortByRank = (items) => {
       return [...items].sort((a, b) => {
@@ -104,14 +103,20 @@ export default function WishlistPage() {
       });
     };
 
-    const accommodation = sortByRank(allItems.filter(item => item.category === "accommodation"));
-    const activities = sortByRank(allItems.filter(item => item.category === "activities"));
-    const food = sortByRank(allItems.filter(item => item.category === "food"));
-    
+    const accommodation = sortByRank(
+      allItems.filter((item) => item.category === "accommodation")
+    );
+    const activities = sortByRank(
+      allItems.filter((item) => item.category === "activities")
+    );
+    const food = sortByRank(
+      allItems.filter((item) => item.category === "food")
+    );
+
     setWishlistData({ accommodation, activities, food });
   };
 
-  const {days : itineraryDays, setDays, readyState} = useItinerary();
+  const { days: itineraryDays, setDays, readyState } = useItinerary();
 
   useEffect(() => {
     fetchWishlistData();
@@ -120,34 +125,36 @@ export default function WishlistPage() {
   useEffect(() => {
     // Initialize optimistic votes from items
     const initialVotes = {};
-    wishlistData.accommodation.concat(wishlistData.activities, wishlistData.food).forEach(item => {
-      initialVotes[item.id] = {
-        upvotes: item.upvotes,
-        downvotes: item.downvotes,
-        upvoterNames: [], // Will be populated when modal opens
-        downvoterNames: [] // Will be populated when modal opens
-      };
-    });
+    wishlistData.accommodation
+      .concat(wishlistData.activities, wishlistData.food)
+      .forEach((item) => {
+        initialVotes[item.id] = {
+          upvotes: item.upvotes,
+          downvotes: item.downvotes,
+          upvoterNames: [], // Will be populated when modal opens
+          downvoterNames: [], // Will be populated when modal opens
+        };
+      });
     setOptimisticVotes(initialVotes);
   }, [wishlistData]);
 
   const handleVote = async (item, isUpvote) => {
-    const voteType = isUpvote ? 'upvotes' : 'downvotes';
-    const oppositeType = isUpvote ? 'downvotes' : 'upvotes';
+    const voteType = isUpvote ? "upvotes" : "downvotes";
+    const oppositeType = isUpvote ? "downvotes" : "upvotes";
     const currentVotes = optimisticVotes[item.id];
-    
+
     const isVoted = currentVotes[voteType].includes(user);
-    const newVotes = isVoted 
-      ? currentVotes[voteType].filter(id => id !== user)
+    const newVotes = isVoted
+      ? currentVotes[voteType].filter((id) => id !== user)
       : [...currentVotes[voteType], user];
-    
-    setOptimisticVotes(prev => ({
+
+    setOptimisticVotes((prev) => ({
       ...prev,
       [item.id]: {
         ...prev[item.id],
         [voteType]: newVotes,
-        [oppositeType]: currentVotes[oppositeType].filter(id => id !== user)
-      }
+        [oppositeType]: currentVotes[oppositeType].filter((id) => id !== user),
+      },
     }));
 
     if (isUpvote) {
@@ -168,7 +175,17 @@ export default function WishlistPage() {
   };
 
   const handleSubmitCreateItem = async (newItem) => {
-    await createItem(tripID, newItem);
+    await createItem(tripID, newItem)
+      .then((res) => {
+        if (res.status === 200) {
+          toast.success("Item created successfully");
+        }
+      })
+      .catch((err) => {
+        toast.error("Failed to create item", {
+          description: <p>{err.message}</p>,
+        });
+      });
     await fetchWishlistData();
     setIsCreateModalOpen(false);
   };
@@ -182,7 +199,7 @@ export default function WishlistPage() {
     clickLocation.address = clickLocation.location;
     clickLocation.name = clickLocation.title;
     const random = new Date().getTime();
-    setSearchedPlace({random, clickLocation});
+    setSearchedPlace({ random, clickLocation });
     if (isMobile) {
       setIsMapExpanded(true);
     }
@@ -190,10 +207,6 @@ export default function WishlistPage() {
 
   const handleSaveLocation = (place) => {
     setSavedLocation(place);
-    setName(place.name);
-    setAddress(place.address);
-    setImage(place.image);
-    setNote(place.link);
     setIsCreateModalOpen(true);
   };
 
@@ -203,28 +216,49 @@ export default function WishlistPage() {
   };
 
   const handleSubmitEditItem = async (updatedItem) => {
-    if (selectedItem.image && selectedItem.image !== updatedItem.image) {
-      const imageUrlParts = selectedItem.image.split('/');
-      const imageFileName = imageUrlParts[imageUrlParts.length - 1];
-      await deleteFile(selectedItem.tripID, imageFileName);
-    }
-    await editItem(selectedItem.tripID, selectedItem.id, updatedItem);
+    await editItem(selectedItem.tripID, selectedItem.id, updatedItem)
+      .then((res) => {
+        if (res.status === 200) {
+          toast.success("Item updated successfully");
+        }
+      })
+      .catch((err) => {
+        toast.error("Failed to update item", {
+          description: <p>{err.message}</p>,
+        });
+      });
     await fetchWishlistData();
     const allItems = await getAllItems(selectedItem.tripID);
-    const newSelectedItem = allItems.find(i => i.id === selectedItem.id);
+    const newSelectedItem = allItems.find((i) => i.id === selectedItem.id);
     setSelectedItem(newSelectedItem);
     setIsEditModalOpen(false);
   };
 
-  const handleDelete = async (item) => {
-    if (item.image) {
-      const imageUrlParts = item.image.split('/');
-      const imageFileName = imageUrlParts[imageUrlParts.length - 1];
-      await deleteFile(item.tripID, imageFileName);
+  // Update handleDelete to show alert instead of deleting immediately
+  const handleDelete = (item) => {
+    setItemToDelete(item);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  // New: Confirm delete handler
+  const handleDeleteConfirm = async () => {
+    if (itemToDelete) {
+      await deleteItem(itemToDelete.tripID, itemToDelete.id)
+        .then((res) => {
+          if (res.status === 200) {
+            toast.success("Item deleted successfully");
+          }
+        })
+        .catch((err) => {
+          toast.error("Failed to delete item", {
+            description: <p>{err.message}</p>,
+          });
+        });
+      await fetchWishlistData();
+      setSelectedItem(null);
     }
-    await deleteItem(item.tripID, item.id);
-    await fetchWishlistData();
-    setSelectedItem(null);
+    setIsDeleteConfirmOpen(false);
+    setItemToDelete(null);
   };
 
   const handleUpvote = async (item) => {
@@ -237,6 +271,12 @@ export default function WishlistPage() {
     await fetchWishlistData();
   };
 
+  const handleNewImage = async (editedItem) => {
+    await editItem(editedItem.tripID, editedItem.id, editedItem);
+    await fetchWishlistData();
+    console.log(editedItem);
+  };
+
   const handleAddModeToggle = () => {
     setAddMode(!addMode);
     setSelectedItems([]);
@@ -244,14 +284,14 @@ export default function WishlistPage() {
 
   const handleSelectItem = (item) => {
     if (selectedItems.includes(item)) {
-      setSelectedItems(selectedItems.filter(i => i !== item));
+      setSelectedItems(selectedItems.filter((i) => i !== item));
     } else {
       setSelectedItems([...selectedItems, item]);
     }
   };
 
   const handleAddToItinerary = async () => {
-    const updatedDays = itineraryDays.map(day => {
+    const updatedDays = itineraryDays.map((day) => {
       if (day.date === selectedDay) {
         return {
           ...day,
@@ -259,7 +299,6 @@ export default function WishlistPage() {
             ...day.activities,
             ...selectedItems.map((item, index) => ({
               id: `${Date.now()}-${index}`,
-              day: selectedDay,
               type: item.category,
               time: "",
               duration: "",
@@ -272,8 +311,8 @@ export default function WishlistPage() {
               link: item.link || "",
               image: item.image || "../src/assets/dummy-image.jpg",
               notes: item.notes || "",
-            }))
-          ]
+            })),
+          ],
         };
       }
       return day;
@@ -282,35 +321,85 @@ export default function WishlistPage() {
     setDays(updatedDays);
     setAddMode(false);
     setSelectedItems([]);
-    navigate(`/itinerary/${tripID}`);
+    toast.success("Successfully added to itinerary", {
+      action: {
+        label: "View Itinerary",
+        onClick: () => navigate(`/itinerary/${tripID}`),
+      },
+    });
   };
 
-  const getMapHeight = () => isMapExpanded ? '65vh' : '10vh';
-  
+  const getMapHeight = () => (isMapExpanded ? "65vh" : "10vh");
+
   const MapToggleButton = () => (
     <Button
-      className="absolute right-4 -bottom-5 z-50 rounded-full p-2 bg-secondary text-muted-foreground shadow-md"
-      onClick={() => setIsMapExpanded(!isMapExpanded)}
+      className="absolute right-4 -bottom-5 z-[100] rounded-full p-2 bg-white border border-gray-200 text-muted-foreground shadow-lg"
+      onClick={(e) => {
+        e.stopPropagation();
+        setIsMapExpanded(!isMapExpanded);
+      }}
+      style={{
+        width: isMobile ? "44px" : "36px",
+        height: isMobile ? "44px" : "36px",
+        boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
+      }}
+      aria-label={isMapExpanded ? "Collapse Map" : "Expand Map"}
+      title={isMapExpanded ? "Collapse Map" : "Expand Map"}
     >
-      {isMapExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+      {isMapExpanded ? (
+        <ChevronUp size={isMobile ? 24 : 20} />
+      ) : (
+        <ChevronDown size={isMobile ? 24 : 20} />
+      )}
+    </Button>
+  );
+
+  const HideMapButton = () => (
+    <Button
+      className="absolute left-4 top-1/2 -translate-y-1/2 z-[100] rounded-full w-10 h-10 p-0 flex items-center justify-center bg-secondary text-muted-foreground shadow-md"
+      onClick={(e) => {
+        e.stopPropagation();
+        setIsMapVisible(false);
+      }}
+      title="Hide Map"
+    >
+      <ChevronRight size={20} />
+    </Button>
+  );
+
+  const ShowMapButton = () => (
+    <Button
+      className="fixed right-4 top-1/2 -translate-y-1/2 z-[100] rounded-full w-10 h-10 p-0 flex items-center justify-center bg-secondary text-muted-foreground shadow-md"
+      onClick={(e) => {
+        e.stopPropagation();
+        setIsMapVisible(true);
+      }}
+      title="Show Map"
+    >
+      <ChevronLeft size={20} />
     </Button>
   );
 
   return (
     <SidebarProvider>
-      <AppSidebar tripID={tripID}/>
+      <AppSidebar tripID={tripID} />
       {!isMobile && <SidebarTrigger />}
       {isMobile && <MobileHeader title="Suggest a place to Go!" />}
-      <div className={`flex w-full ${!isMobile && 'grid grid-cols-2'}`}>
+      <div
+        className={`flex w-full ${
+          !isMobile && isMapVisible && "grid grid-cols-2"
+        }`}
+      >
+        {!isMobile && !isMapVisible && <ShowMapButton />}
         {isMobile ? (
           <motion.div
             className="fixed w-full z-40 bg-background"
-            initial={{ height: '75vh' }}
-            animate={{ 
+            initial={{ height: "75vh" }}
+            animate={{
               height: getMapHeight(),
-              transition: { duration: 0.3, ease: 'easeInOut' }
+              transition: { duration: 0.3, ease: "easeInOut" },
             }}
-            style={{ top: '3.5rem' }}
+            style={{ top: "3.5rem" }}
           >
             <MapboxMap
               onSaveLocation={handleSaveLocation}
@@ -319,29 +408,41 @@ export default function WishlistPage() {
               initCenter={tripDetails?.coordinates}
               height="100%"
               width="100%"
+              markers={normalizeMarkers(wishlistData)}
             />
             <MapToggleButton />
           </motion.div>
         ) : null}
 
-        <motion.div 
+        <motion.div
           ref={contentRef}
           className={`${
-            isMobile 
-              ? 'w-full bg-background relative z-30' 
-              : 'col-span-1 h-screen'
+            isMobile
+              ? "w-full bg-background relative z-30"
+              : isMapVisible
+              ? "col-span-1 h-screen"
+              : "col-span-2 h-screen mx-auto max-w-4xl"
           }`}
-          animate={isMobile ? {
-            marginTop: `calc(${getMapHeight()} + 3.5rem)`,
-            transition: { duration: 0.3, ease: 'easeInOut' }
-          } : {}}
+          animate={
+            isMobile
+              ? {
+                  marginTop: `calc(${getMapHeight()} + 3.5rem)`,
+                  transition: { duration: 0.3, ease: "easeInOut" },
+                }
+              : {}
+          }
         >
-          <ScrollArea className={`${isMobile ? 'p-6' : 'h-full px-6 pt-6'}`}>
+          <ScrollArea className={`${isMobile ? "p-6" : "h-full px-6 pt-6"}`}>
             <div className="space-y-4">
-              {!isMobile && <h1 className="text-3xl font-bold">Suggest a place to Go!</h1>}
+              {!isMobile && (
+                <h1 className="text-3xl font-bold">Suggest a place to Go!</h1>
+              )}
               <div className="flex justify-between items-center">
                 {canModify && (
-                  <Button variant={addMode ? "outline" : "default"} onClick={handleAddModeToggle}>
+                  <Button
+                    variant={addMode ? "outline" : "default"}
+                    onClick={handleAddModeToggle}
+                  >
                     {addMode ? "Cancel" : "Add Items to Itinerary"}
                   </Button>
                 )}
@@ -362,7 +463,10 @@ export default function WishlistPage() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <Button onClick={handleAddToItinerary} disabled={!selectedDay || selectedItems.length === 0}>
+                    <Button
+                      onClick={handleAddToItinerary}
+                      disabled={!selectedDay || selectedItems.length === 0}
+                    >
                       Add to Itinerary
                     </Button>
                   </div>
@@ -370,19 +474,24 @@ export default function WishlistPage() {
               </div>
               {addMode && (
                 <p className="text-sm font-normal text-muted-foreground">
-                  {selectedItems.length > 0 ? `${selectedItems.length} items selected.` : "Select at least 1 wishlist item to add to your itinerary."}
+                  {selectedItems.length > 0
+                    ? `${selectedItems.length} items selected.`
+                    : "Select at least 1 wishlist item to add to your itinerary."}
                 </p>
               )}
 
               <WishlistSection title="Accommodation">
                 {wishlistData.accommodation.map((item) => (
                   <WishlistCard
-                    key={item.id}
+                    key={`${item.id}`}
                     item={item}
                     onClick={() => handleItemClick(item)}
                     onUpvote={(item) => handleVote(item, true)}
                     onDownvote={(item) => handleVote(item, false)}
-                    onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                    onLocationClick={(clickLocation) =>
+                      handleLocationClick(clickLocation)
+                    }
+                    onNewImage={handleNewImage}
                     currUser={user}
                     addMode={addMode}
                     onSelect={handleSelectItem}
@@ -391,7 +500,10 @@ export default function WishlistPage() {
                   />
                 ))}
                 {canModify && (
-                  <AddItemCard onClick={handleCreateItem} category="accommodation" />
+                  <AddItemCard
+                    onClick={handleCreateItem}
+                    category="accommodation"
+                  />
                 )}
               </WishlistSection>
 
@@ -403,7 +515,10 @@ export default function WishlistPage() {
                     onClick={() => handleItemClick(item)}
                     onUpvote={(item) => handleVote(item, true)}
                     onDownvote={(item) => handleVote(item, false)}
-                    onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                    onLocationClick={(clickLocation) =>
+                      handleLocationClick(clickLocation)
+                    }
+                    onNewImage={handleNewImage}
                     currUser={user}
                     addMode={addMode}
                     onSelect={handleSelectItem}
@@ -412,7 +527,10 @@ export default function WishlistPage() {
                   />
                 ))}
                 {canModify && (
-                  <AddItemCard onClick={handleCreateItem} category="activities" />
+                  <AddItemCard
+                    onClick={handleCreateItem}
+                    category="activities"
+                  />
                 )}
               </WishlistSection>
 
@@ -424,7 +542,10 @@ export default function WishlistPage() {
                     onClick={() => handleItemClick(item)}
                     onUpvote={(item) => handleVote(item, true)}
                     onDownvote={(item) => handleVote(item, false)}
-                    onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
+                    onLocationClick={(clickLocation) =>
+                      handleLocationClick(clickLocation)
+                    }
+                    onNewImage={handleNewImage}
                     currUser={user}
                     addMode={addMode}
                     onSelect={handleSelectItem}
@@ -440,8 +561,8 @@ export default function WishlistPage() {
           </ScrollArea>
         </motion.div>
 
-        {!isMobile && (
-          <div className="col-span-1 h-screen sticky top-0">
+        {!isMobile && isMapVisible && (
+          <div className="col-span-1 h-screen sticky top-0 relative">
             <MapboxMap
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
@@ -449,7 +570,10 @@ export default function WishlistPage() {
               initCenter={tripDetails?.coordinates}
               height="100%"
               width="100%"
+              markers={normalizeMarkers(wishlistData)}
             />
+            <HideMapButton />
+            <MapToggleButton />
           </div>
         )}
       </div>
@@ -472,12 +596,14 @@ export default function WishlistPage() {
         onClose={() => {
           setIsCreateModalOpen(false);
           setInitialCategory("");
+          setSavedLocation(null);
         }}
         onSubmit={handleSubmitCreateItem}
         tripId={tripID}
         initialCategory={initialCategory}
+        location={savedLocation}
       />
-    
+
       <CreateEditItemModal // Edit modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -487,7 +613,14 @@ export default function WishlistPage() {
         tripId={selectedItem?.tripID}
         location={selectedItem}
       />
+
+      {/* Delete confirmation alert */}
+      <DeleteAlert
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        itemName={itemToDelete?.title}
+      />
     </SidebarProvider>
   );
 }
-

@@ -1,10 +1,9 @@
 import { useExpenses } from '@/components/Expenses/expenseContext';
-import { Utensils, Droplet, Bike, Home, Waves, DollarSign, ShoppingBag } from "lucide-react";
+import { Utensils, Droplet, Bike, Home, Plane, DollarSign, ShoppingBag } from "lucide-react";
 import React, { useMemo, useState } from 'react';
 import { Card } from "@/components/ui/card";
 import {ModalExpense} from '../expenseList/modalExpense';
 import { useParams } from "react-router-dom";
-
 
 export const ExpenseList = () => {
   const { tripID } = useParams();
@@ -12,20 +11,16 @@ export const ExpenseList = () => {
     expenses,
     user,
     usernames,
-    isLoadingExpenses,
     error,
   } = useExpenses();
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState(null);
-  if (isLoadingExpenses) {
-    return <div>Loading...</div>;
-  }
 
   const typeIcons = useMemo(() => ({
     Food: <Utensils className="w-6 h-6" />,
     Activity: <Bike className="w-6 h-6" />,
     Stay: <Home className="w-6 h-6" />,
-    Transport: <Waves className="w-6 h-6" />,
+    Transport: <Plane className="w-6 h-6" />,
     Shopping: <ShoppingBag className="w-6 h-6" />,
     Other: <DollarSign className="w-6 h-6" />
   }), []);
@@ -34,6 +29,18 @@ export const ExpenseList = () => {
     setSelectedExpense(expense);
     setIsExpenseModalOpen(true);
   };
+
+  if (error) {
+    return <div className="text-red-500 p-4">Error: {error}</div>;
+  }
+
+  if (!expenses || !user || !usernames) {
+    return null;
+  }
+
+  if (expenses.length === 0) {
+    return <div className="text-center p-8 text-gray-500">No expenses added yet.</div>;
+  }
 
   return (
     <div className="space-y-3">
@@ -85,20 +92,18 @@ export const ExpenseList = () => {
         );
       })}
       {isExpenseModalOpen && (
-    <ModalExpense
-        isOpen={isExpenseModalOpen}
-        onClose={() => {
+        <ModalExpense
+          isOpen={isExpenseModalOpen}
+          onClose={() => {
             setIsExpenseModalOpen(false);
-            setSelectedExpense(null);  // Clear selected expense when closing
-        }}
-        selectedExpense={selectedExpense}
-        setSelectedExpense={setSelectedExpense}
-        tripID={tripID}
-    />
-)}
+            setSelectedExpense(null);
+          }}
+          selectedExpense={selectedExpense}
+          setSelectedExpense={setSelectedExpense}
+          tripID={tripID}
+        />
+      )}
     </div>
-    
-    
   );
 };
 

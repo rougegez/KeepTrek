@@ -19,6 +19,7 @@ import { fetchPlaceDetails } from "@/APIs/fetchPlaceDetails.js";
 import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar";
 import { Textarea } from '@/components/ui/textarea';
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { toast } from "sonner";
 
 export default function CreateEditItemModal({ 
   isOpen,
@@ -35,6 +36,7 @@ export default function CreateEditItemModal({
     tripID: tripId,
     category: initialCategory,
     title: "",
+    placeId: "",
     location: "",
     coordinates: [],
     image: "",
@@ -44,7 +46,6 @@ export default function CreateEditItemModal({
     link: "",
     notes: "",
   });
-  const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -53,6 +54,7 @@ export default function CreateEditItemModal({
         ...prev,
         category: location.category,
         title: location.title,
+        placeId: location.placeId,
         location: location.location,
         coordinates: location.coordinates,
         image: location.image,
@@ -67,6 +69,7 @@ export default function CreateEditItemModal({
         ...prev,
         category: initialCategory,
         title: location ? location.name : "",
+        placeId: location ? location.placeId : "",
         location: location ? location.address : "",
         coordinates: location ? location.coordinates : [],
         rating: location ? location.rating : "",
@@ -84,6 +87,7 @@ export default function CreateEditItemModal({
       setNewItem(prev => ({
           ...prev,
           title: suggestion?.name ?? newLocation.placePrediction.structuredFormat.mainText.text,
+          placeId: suggestion?.placeId ?? "",
           location: suggestion?.address ?? newLocation,
           coordinates: suggestion?.coordinates ?? [],
           rating: suggestion?.rating ?? "",
@@ -96,6 +100,7 @@ export default function CreateEditItemModal({
       setNewItem(prev => ({
           ...prev,
           title: newLocation,
+          placeId: "",
           location: newLocation,
           coordinates: [],
           rating: "",
@@ -112,7 +117,7 @@ export default function CreateEditItemModal({
     setIsSaving(true);
 
     if (!newItem.category || !newItem.title || !newItem.location) {
-      setError("All fields with * are required.");
+      toast.info(<>All fields with <span className='text-red-500'>*</span> are required.</>);
       setIsSaving(false);
       return;
     }
@@ -122,7 +127,6 @@ export default function CreateEditItemModal({
       onClose();
     } catch (err) {
       console.error(`Error ${isEditMode ? "updating" : "creating"} wishlist item:`, err);
-      setError(err.response?.data?.detail || `Failed to ${isEditMode ? "update" : "create"} wishlist item`);
     } finally {
       setIsSaving(false);
     }
@@ -177,7 +181,7 @@ export default function CreateEditItemModal({
             <MapSearchBar
                 id="location"
                 searchButton={false}
-                onChange={handleLocationChange}
+                onInputChange={handleLocationChange}
                 initialPlace={newItem.title}
             />
           </div>
@@ -210,9 +214,6 @@ export default function CreateEditItemModal({
           </div>
 
           <DialogFooter className="pt-4 flex justify-between items-center">
-            <div className="flex-1">
-              {error && <p className="text-red-500 text-sm">{error}</p>}
-            </div>
             <div className="flex space-x-2">
               <Button onClick={handleCancel} variant="outline">Cancel</Button>
               <Button type="submit" disabled={isSaving}>

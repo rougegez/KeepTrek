@@ -42,9 +42,9 @@ export function WhosOnlineWrapper() {
                     refetch();
                 }
             },
-            reconnectAttempts: 10,
+            reconnectAttempts: 5,
             reconnectInterval: (attemptNumber) =>
-                Math.min(Math.pow(2, attemptNumber) * 1000, 10000),
+                Math.min(Math.pow(3, attemptNumber) * 1000, 30000),
         },
         !(token == "" || token === undefined)
     );

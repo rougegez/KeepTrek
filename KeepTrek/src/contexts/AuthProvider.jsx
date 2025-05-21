@@ -62,6 +62,7 @@ export function AuthProvider({ children }) {
         setState((prev) => ({ ...prev, token: event.data.token, isLoggedIn: true, error: null }));
         localStorage.setItem("token", event.data.token);
         checkStatus();
+        closeModals();
         if (onLoginSuccess) onLoginSuccess();
         window.removeEventListener("message", handleMessage);
         if (authWindow) authWindow.close();
@@ -77,7 +78,7 @@ export function AuthProvider({ children }) {
     try {
       const response = await registerUser(userData)
       setState((prev) => ({ ...prev, user: response["userID"], isLoggedIn: false, response: response, error: null }))
-      toast.success("Account created successfully", { description: "Please login to continue" })
+      toast.success("Account created successfully", { description: <p>Please login to continue</p> })
       openLoginModal();
     } catch (err) {
       if (err?.response) {

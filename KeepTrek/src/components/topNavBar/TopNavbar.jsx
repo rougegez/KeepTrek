@@ -1,5 +1,3 @@
-'use client'
-
 import React, { useState } from "react"
 import { Menu, LogOut, User as UserIcon } from 'lucide-react'
 import { NavLink, useNavigate, useLocation } from "react-router-dom"
@@ -11,10 +9,12 @@ import {
 } from "@/components/ui/sheet"
 import { UserAvatar } from "@/components/profilePage/avatar"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { useMediaQuery } from 'react-responsive'
 
 import { useAuth } from "@/contexts/AuthProvider"
 
 export default function TopNavbar() {
+  const isMobile = useMediaQuery({ query: "(max-width: 1170px)" });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -45,25 +45,25 @@ export default function TopNavbar() {
           navigateAndScroll("features")
           onClick()
         }}
-        className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium text-gray-600"
+        className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
       >
         Features
       </button>
       <button
         onClick={() => {
-          navigateAndScroll("pre-launch")
+          navigateAndScroll("why-keeptrek")
           onClick()
         }}
-        className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium text-gray-600"
+        className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
       >
-        Pricing
+        Why
       </button>
       <button
         onClick={() => {
           navigateAndScroll("newsletter")
           onClick()
         }}
-        className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium text-gray-600"
+        className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
       >
         Newsletter
       </button>
@@ -72,7 +72,7 @@ export default function TopNavbar() {
   
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-white border-b shadow-sm">
+      <nav className="sticky top-0 z-50 bg-white border-b shadow-sm ${className}">
         <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 py-1">
             <div className="flex items-center">
@@ -90,7 +90,7 @@ export default function TopNavbar() {
               </Sheet>
               <div className="flex-shrink-0 flex items-center max-w-36">
                 <NavLink to="/" className="text-2xl font-bold text-gray-800">
-                  <img src="/assets/KeepTrekNew.png" alt="KeepTrek" className="object-scale-down" />
+                  <img src="/assets/navbarlogo.png" alt="KeepTrek" className="object-scale-down" />
                 </NavLink>
               </div>
             </div>
@@ -100,6 +100,7 @@ export default function TopNavbar() {
             <div className="flex items-center">
               { isLoggedIn ? (
                 <>
+                  { !isMobile && (
                   <Button asChild className="mr-4 sm:inline-flex">
                     <NavLink
                       to="/create-trip"
@@ -108,12 +109,13 @@ export default function TopNavbar() {
                       Create a Trip
                     </NavLink>
                   </Button>
+                  )}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button size="icon" variant="ghost" className="m-2 rounded-full">
+                      <Button size="icon" variant="ghost" className="m-2 rounded-full mr-3 sm:mr-0">
                         <UserAvatar 
                           userId={user}
-                          className="h-12 w-12"
+                          className="h-10 sm:h-12 w-10 sm:w-12"
                         />
                       </Button>
                     </DropdownMenuTrigger>

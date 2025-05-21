@@ -18,47 +18,68 @@ import { GrpSchedule } from "./components/GrpSchedule/GrpSchedule.jsx";
 import InvitePage from './components/Invite/InvitePage';
 import { Toaster } from '@/components/ui/sonner';
 import { WhosOnlineWrapper } from "./components/CreateTrip/WhosOnlineWrapper";
+import { MapProvider } from 'react-map-gl/mapbox'
+import ItinerarySocketWrapper from "@/components/Itinerary/ItinerarySocketWrapper";
+import { Analytics } from '@vercel/analytics/react';
+import { TooltipProvider } from "@/components/ui/tooltip";
+// import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const queryClient = new QueryClient();
+
+function AgodaVerificationPage() {
+  return (
+    <div>
+      agoda-partner-site-verification: AgodaPartnerVerification.html
+    </div>
+  );
+}
 
 function App() {
 
   return (
     <>
+      <Analytics />
+      {/* <SpeedInsights/> */}
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <Router>
-            <div className="min-h-screen flex flex-col">
-              <div className="flex-grow">
-                <Routes>
-                  {/* Public Routes */}
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/join/:inviteCode" element={<InvitePage />} />
-
-                  {/* Protected Routes */}
-                  <Route
-                    element={
-                      <PrivateRoute
-                      />
-                    }
-                  >
-                    <Route path="/yourTrips" element={<YourTrips />} />
-                    <Route element={<WhosOnlineWrapper />}>
-                      <Route path="/expenses/:tripID" element={<MainExpensePage />} />
-                      <Route path="/itinerary/:tripID" element={<Itinerary />} />
-                      {/* <Route path="/trip-details" element={<TripDetailsPage />} /> */}
-                      <Route path="/schedule/:tripID" element={<GrpSchedule />} />
-                      <Route path="/wishlist/:tripID" element={<Wishlist />} />
-                    </Route>
-                    <Route path="/create-trip" element={<CreateTrip />} />
-                    <Route path="/profile" element={<ProfilePage />} />
-                  </Route>
-                </Routes>
-              </div>
-            </div>
-          </Router>
+          <MapProvider>
+            <TooltipProvider>
+              <Router>
+                <div className="min-h-screen flex flex-col">
+                  <div className="flex-grow">
+                    <Routes>
+                      {/* Public Routes */}
+                      <Route path="/" element={<LandingPage />} />
+                      <Route path="/join/:inviteCode" element={<InvitePage />} />
+                      <Route path="/AgodaPartnerVerification.html" element={<AgodaVerificationPage />} />
+                      {/* Protected Routes */}
+                      <Route
+                        element={
+                          <PrivateRoute
+                          />
+                        }
+                      >
+                        <Route path="/yourTrips" element={<YourTrips />} />
+                        <Route element={<WhosOnlineWrapper />}>
+                          <Route element={<ItinerarySocketWrapper />}>
+                            <Route path="/expenses/:tripID" element={<MainExpensePage />} />
+                            <Route path="/itinerary/:tripID" element={<Itinerary />} />
+                            {/* <Route path="/trip-details" element={<TripDetailsPage />} /> */}
+                            <Route path="/schedule/:tripID" element={<GrpSchedule />} />
+                            <Route path="/wishlist/:tripID" element={<Wishlist />} />
+                          </Route>
+                        </Route>
+                        <Route path="/create-trip" element={<CreateTrip />} />
+                        <Route path="/profile" element={<ProfilePage />} />
+                      </Route>
+                    </Routes>
+                  </div>
+                </div>
+              </Router>
+            </TooltipProvider>
+          </MapProvider>
         </AuthProvider>
-      </QueryClientProvider>
+      </QueryClientProvider >
       <Toaster
         position='top-center' closeButton />
     </>

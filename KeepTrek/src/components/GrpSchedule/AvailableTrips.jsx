@@ -200,7 +200,10 @@ const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) =
         setIsEditing(false);
       } catch (error) {
         console.error("Error updating trip period:", error.message);
-        toast.error("Failed to update trip period.");
+        toast.error("Failed to update trip period.", {
+          description: <p>{error.message}</p>,
+        }
+        );
       } finally {
         setIsUpdating(false);
       }

@@ -7,7 +7,7 @@ import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar.jsx";
 import { Textarea } from '@/components/ui/textarea';
 import { fetchPlaceDetails } from '@/APIs/fetchPlaceDetails.js';
 
-import { useItinerary } from './useItinerarySocket.jsx';
+import { useItinerary } from '../../hooks/useItinerary.jsx';
 
 const EditActivityModal = ({ isOpen, onClose, activityId}) => {
   const {days, getDayAndActivity: getActivity , updateActivity, changeActivityDay} = useItinerary();
@@ -20,7 +20,8 @@ const EditActivityModal = ({ isOpen, onClose, activityId}) => {
       const suggestion = await fetchPlaceDetails(newLocation.placePrediction.placeId)
       updateActivity({
         ...activity,
-        location: suggestion?.address ?? newLocation,
+        placeId : suggestion?.placeId ?? "",
+        location: suggestion?.address ?? "",
         coordinates: suggestion?.coordinates ?? [],
         rating: suggestion?.rating ?? "",
         openingHours: suggestion?.openingHours ?? "",
@@ -31,6 +32,7 @@ const EditActivityModal = ({ isOpen, onClose, activityId}) => {
     } else {
       updateActivity({
         ...activity,
+        placeId : "",
         location: newLocation,
         coordinates: [],
         rating: "",
@@ -164,7 +166,7 @@ const EditActivityModal = ({ isOpen, onClose, activityId}) => {
             <MapSearchBar
               id="address"
               searchButton={false}
-              onChange={handleLocationChange}
+              onInputChange={handleLocationChange}
               initialPlace={activity.location}
             />
           </div>

@@ -1,5 +1,5 @@
 // src/components/TripCard.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect , memo} from "react";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { NavLink } from "react-router-dom";
 import { CalendarIcon, MapPin } from "lucide-react";
@@ -32,6 +32,7 @@ import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useAuth } from "@/contexts/AuthProvider";
 import ShareModal from "@/components/ShareTrips/ShareModal";
+import GoogleMapImage from "@/components/MapboxMap/GoogleMapImage";
 
 export default function TripCard({ trip, onDelete }) {
   const navigate = useNavigate();
@@ -89,7 +90,9 @@ export default function TripCard({ trip, onDelete }) {
     if (now <= end) return "ongoing";
     return "completed";
   };
+
   const status = getTripStatus();
+
   const statusColors = {
     upcoming: "bg-blue-100 text-blue-800 hover:bg-blue-200",
     ongoing: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
@@ -99,21 +102,25 @@ export default function TripCard({ trip, onDelete }) {
 
   // handlers
   const openInNewTab = () => window.open(`/itinerary/${trip.tripID}`, "_blank");
+
   const handleLeave = async () => {
     await removeMember(trip.tripID, currentUser);
     window.location.reload();
   };
+
   const handleDelete = async () => {
     setIsDeleting(true);
     await deleteTrip(trip.tripID);
     onDelete?.(trip.tripID);
     window.location.reload();
   };
+
   const openRenameDialog = () => {
     setNewTripName(trip.tripName);
     setRenameError("");
     setShowRenameDialog(true);
   };
+
   const handleRename = async () => {
     if (!newTripName.trim()) {
       setRenameError("Trip name cannot be empty");
@@ -136,10 +143,24 @@ export default function TripCard({ trip, onDelete }) {
       setIsRenaming(false);
     }
   };
+
   const handleContextMenu = (e) => {
     e.preventDefault();
     document.getElementById(`trip-menu-${trip.tripID}`)?.click();
   };
+
+  const handleNewImage = async (image) => {
+    if (isCreator) {
+      try {
+        await editTrip(trip.tripID,
+          {
+            image: image
+          });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }
 
   // calculate days
   const days =
@@ -163,10 +184,12 @@ export default function TripCard({ trip, onDelete }) {
             onContextMenu={handleContextMenu}
           >
             <div className="relative h-48">
-              <img
+              <GoogleMapImage
+                placeId={trip?.placeId}
                 src={trip.image}
                 alt={trip.tripName}
                 className="w-full h-full object-cover"
+                onNewImage={handleNewImage}
               />
               <Badge className={`absolute top-2 right-2 ${statusColors[status]}`}>
                 {statusLabel}
@@ -211,6 +234,7 @@ export default function TripCard({ trip, onDelete }) {
                 </span>
               </div>
               <div className="flex items-center gap-1">
+
                 <ShareModal trip={trip} />
 
                 {currentUser && (
@@ -293,6 +317,7 @@ export default function TripCard({ trip, onDelete }) {
         onClose={() => !isDeleting && setShowDeleteAlert(false)}
         onConfirm={handleDelete}
         itemName="Trip"
+        itemType="trip"
         isLoading={isDeleting}
       />
 
