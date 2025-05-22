@@ -106,7 +106,7 @@ export default function CarouselEdit({ preview }) {
                         </CarouselItem>
                     ))}
                 </CarouselContent>
-                {imagePreview.length === 0 && !preview &&
+                {imagePreview.length != 0 &&
                     <>
                         <CarouselPrevious className="left-4" />
                         <CarouselNext className="right-4" />
@@ -125,6 +125,7 @@ export default function CarouselEdit({ preview }) {
                             type="text"
                             placeholder="Image URL"
                             className="mb-4"
+                            value={link}
                             onChange={(e) => setLink(e.target.value)}
                         />
                         <Button
