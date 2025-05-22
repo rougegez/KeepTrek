@@ -1,12 +1,11 @@
-import React, { useState } from "react";
+import React, { useState , useEffect} from "react";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { toast } from "sonner";
 
-import { EditorProvider, useCurrentEditor } from "@tiptap/react";
+import { EditorContent, useEditor } from "@tiptap/react";
 
 // Extensions
-import { Color } from "@tiptap/extension-color";
 import ListItem from "@tiptap/extension-list-item";
 import TextStyle from "@tiptap/extension-text-style";
 import StarterKit from "@tiptap/starter-kit";
@@ -18,6 +17,8 @@ import Underline from "@tiptap/extension-underline";
 import Placeholder from "@tiptap/extension-placeholder";
 import Superscript from "@tiptap/extension-superscript";
 import Subscript from "@tiptap/extension-subscript";
+
+import { cn } from "@/lib/utils";
 
 import {
     Bold,
@@ -60,8 +61,7 @@ import { Label } from "@/components/ui/label";
 import { DataStatePropInterceptor } from "@/utils/DataStatePropInterceptor";
 import { Separator } from "@/components/ui/separator";
 
-const MenuBar = () => {
-    const { editor } = useCurrentEditor();
+const MenuBar = ({editor}) => {
 
     const [hyperlink, setHyperLink] = useState(null);
     const [isLinkOpen, setIsLinkOpen] = useState(false);
@@ -371,18 +371,6 @@ const MenuBar = () => {
                 <Separator orientation="vertical" className="min-h-0 h-8" />
 
                 <div className="shrink-0">
-                    {/* Purple Color */}
-                    <Toggle
-                        pressed={editor.isActive("textStyle", { color: "#958DF1" })}
-                        onPressedChange={() => editor.chain().focus().setColor("#958DF1").run()}
-                    >
-                        <Palette />
-                    </Toggle>
-                </div>
-
-                <Separator orientation="vertical" className="min-h-0 h-8" />
-
-                <div className="shrink-0">
                     {/* Undo Redo */}
                     <Button
                         variant="ghost"
@@ -417,7 +405,6 @@ const MenuBar = () => {
 };
 
 const extensions = [
-    Color.configure({ types: [TextStyle.name, ListItem.name] }),
     TextStyle.configure({ types: [ListItem.name] }),
     TextAlign.configure({ types: ["heading", "paragraph"] }),
     Typography,
@@ -544,16 +531,34 @@ const content = `
 </blockquote>
 `;
 
-export const Tiptap = ({ editable }) => {
+export const Tiptap = ({ editable = true, showMenuBar = true, className }) => {
+
+    const editor = useEditor({
+        editable,
+        shouldRerenderOnTransaction: false,
+        content: content,
+        extensions: extensions,
+        editorProps: {
+            attributes: {
+                class: "prose prose-sm sm:prose-sm lg:prose-lg xl:prose-xl m-5 focus:outline-none min-w-full",
+            },
+        },
+    })
+
+    useEffect(() => {
+    if (!editor) {
+      return undefined
+    }
+
+    editor.setEditable(editable)
+  }, [editor, editable])
+    
     return (
-        <div className="flex-shrink min-w-60 w-full">
-            <EditorProvider
-                slotBefore={editable ? <MenuBar /> : null}
-                extensions={extensions}
-                editable={editable}
-                content={content}
-                editorProps={{ attributes: { class: "prose prose-sm sm:prose-sm lg:prose-lg xl:prose-2xl m-5 focus:outline-none min-w-full" } }} // ORIGINAL: "prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none"
-            ></EditorProvider>
+        <div className={cn("flex-shrink min-w-60 w-full", className)}>
+            {(editable && showMenuBar) && 
+                <MenuBar editor={editor}
+            />}
+            <EditorContent editor={editor}/>
         </div>
     );
 };
