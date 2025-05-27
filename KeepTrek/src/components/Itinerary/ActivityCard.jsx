@@ -25,6 +25,7 @@ import {
 import GoogleMapImage from "@/components/MapboxMap/GoogleMapImage.jsx";
 
 import { useItinerary } from "@/hooks/useItinerary.jsx";
+import { getDayColor, getMaxDay, MarkerSvg, normalizeMarkers } from "@/components/MapboxMap/MapUtil.jsx";
 
 const ActivityCard = ({
   activity,
@@ -46,6 +47,10 @@ const ActivityCard = ({
   const activityIndex = currentDay.activities.findIndex(
     (a) => a.id === activity.id
   );
+  const { maxDay } = getMaxDay(normalizeMarkers(days));
+  let color = "#4db6ac"
+  color = getDayColor(currentDay.date, maxDay);
+
 
   const controls = useDragControls();
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
@@ -129,9 +134,8 @@ const ActivityCard = ({
       ) : (
         // Desktop: Vertical layout to the left of the card
         <div
-          className={`absolute left-0 -ml-24 top-12 flex flex-col space-y-1 text-sm ${
-            largeMode ? "text-base" : "text-sm"
-          } text-muted-foreground pl-10 pr-0`}
+          className={`absolute left-0 -ml-24 top-12 flex flex-col space-y-1 text-sm ${largeMode ? "text-base" : "text-sm"
+            } text-muted-foreground pl-10 pr-0`}
         >
           {/* Time */}
           {activity.time && (
@@ -149,17 +153,15 @@ const ActivityCard = ({
       )}
 
       <Card
-        className={`bg-white rounded-xl shadow-sm w-full max-w-4xl ${
-          largeMode ? "p-1" : ""
-        } ${isMobile ? 'px-2 mb-2' : ''}`}
+        className={`bg-white rounded-xl shadow-sm w-full max-w-4xl ${largeMode ? "p-1" : ""
+          } ${isMobile ? 'px-2 mb-2' : ''}`}
       >
         <CardContent className={`py-4 pr-4 pl-0 ${largeMode ? "py-6" : ""}`}>
           <div className="flex w-full gap-x-0 gap-y-4">
             {canModify ? (
               <div
-                className={`mx-0 flex items-center ${
-                  largeMode ? "w-12" : "w-10"
-                } justify-center ${!isMobile ? `cursor-grab` : null}`}
+                className={`mx-0 flex items-center ${largeMode ? "w-12" : "w-10"
+                  } justify-center ${!isMobile ? `cursor-grab` : null}`}
                 onPointerDown={(event) => {
                   if (!isMobile) {
                     controls.start(event);
@@ -170,9 +172,8 @@ const ActivityCard = ({
                 {/* Drag Handle for desktop, buttons for mobile */}
                 {!isMobile ? (
                   <GripVertical
-                    className={`mx-0 p-0 my-4 ${
-                      largeMode ? "w-5 h-5" : "w-4 h-4"
-                    } text-gray-400 cursor-grab`}
+                    className={`mx-0 p-0 my-4 ${largeMode ? "w-5 h-5" : "w-4 h-4"
+                      } text-gray-400 cursor-grab`}
                     onPointerDown={(event) => {
                       controls.start(event);
                       event.preventDefault();
@@ -209,14 +210,9 @@ const ActivityCard = ({
             )}
 
             <div
-              className={`flex flex-grow ${
-                isMobile ? "flex-col" : "flex-row"
-              } gap-4  ${
-                activity.coordinates && activity.coordinates.length > 1
-                  ? "cursor-pointer hover:bg-gray-50"
-                  : ""
-              }`}
-              onClick={handleCardClick}
+              className={`flex flex-grow ${isMobile ? "flex-col" : "flex-row"
+                } gap-4`}
+              // onClick={handleCardClick}
             >
               {/* Image for mobile - moved to top with overlapping menu */}
               {isMobile && (
@@ -274,11 +270,31 @@ const ActivityCard = ({
 
               <div className="flex-grow space-y-2">
                 {/* Title row with menu for desktop */}
-                <div className="flex items-start justify-between">
+                <div className="flex items-center justify-start gap-x-2">
+                  <MarkerSvg 
+                    height={24} 
+                    width={16} 
+                    color={color}
+                    onClick={handleCardClick}
+                    whileTap={{ scale: 0.90 }}
+                    whileHover={{ scale: 1.1 }}
+                    className={`shrink-0 ${activity.coordinates && activity.coordinates.length > 1
+                  ? "cursor-pointer hover:bg-gray-50"
+                  : ""}`}
+                    >
+                    <text
+                      x="13.5"
+                      y="13.5"
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      style={{ fontSize: '18px', fill: '#ffffff', fontWeight: 'bold' }}
+                    >
+                      {activityIndex + 1}
+                    </text>
+                  </MarkerSvg>
                   <h3
-                    className={`${
-                      largeMode ? "text-xl" : "text-sm md:text-lg"
-                    } font-semibold`}
+                    className={`${largeMode ? "text-xl" : "text-sm md:text-lg"
+                      } font-semibold`}
                   >
                     {activity.title}
                   </h3>
@@ -293,9 +309,8 @@ const ActivityCard = ({
 
                 {/* Notes */}
                 <Textarea
-                  className={`w-full min-h-[50px] p-2 ${
-                    largeMode ? "text-base min-h-[70px]" : "text-xs md:text-sm"
-                  } bg-muted/50 rounded-lg border-0 resize-none placeholder:text-muted-foreground/50`}
+                  className={`w-full min-h-[50px] p-2 ${largeMode ? "text-base min-h-[70px]" : "text-xs md:text-sm"
+                    } bg-muted/50 rounded-lg border-0 resize-none placeholder:text-muted-foreground/50`}
                   placeholder="Add a note..."
                   value={activity.notes}
                   onChange={(e) => onNoteChange(activity.id, e.target.value)}
@@ -321,9 +336,8 @@ const ActivityCard = ({
                       placeId={activity?.placeId}
                       src={activity.image}
                       onNewImage={handleNewImage}
-                      className={`${
-                        largeMode ? "w-64 h-40" : "w-52 h-32"
-                      } rounded-lg object-cover`}
+                      className={`${largeMode ? "w-64 h-40" : "w-52 h-32"
+                        } rounded-lg object-cover`}
                     />
                   </a>
                   {/* Menu positioned over the image */}

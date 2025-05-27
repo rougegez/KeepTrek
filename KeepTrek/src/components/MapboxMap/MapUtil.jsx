@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { Bed, Tickets, Utensils } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 function getDayIndex() {
     const today = new Date().getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
@@ -7,9 +8,9 @@ function getDayIndex() {
 }
 
 // wrapper for standard map pin
-const MarkerSvg = memo(function MarkerSvg({ children, color = "#4DB6AC" , height = "41px", width = "27px"}) {
+const MarkerSvg = memo(function MarkerSvg({ children, color = "#4DB6AC" , height = "41px", width = "27px", className = "" , ...props }) {
     return (    
-        <svg display="block" height={height} width={width} viewBox="0 0 27 41">
+        <motion.svg {...props} display="block" height={height} width={width} viewBox="0 0 27 41" className={className} >
             <defs>
                 <radialGradient id="shadowGradient">
                     <stop offset="10%" stopOpacity="0.4"></stop>
@@ -22,7 +23,7 @@ const MarkerSvg = memo(function MarkerSvg({ children, color = "#4DB6AC" , height
             {children ?
                 children :
                 <circle fill="#ffffff" opacity="1" cx="13.5" cy="13.5" r="5.5"></circle>}
-        </svg>
+        </motion.svg>
     )
 })
 
