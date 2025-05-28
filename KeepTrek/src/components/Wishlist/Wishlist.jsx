@@ -409,6 +409,7 @@ export default function WishlistPage() {
               height="100%"
               width="100%"
               markers={normalizeMarkers(wishlistData)}
+              locationBias={tripDetails?.locationBias}
             />
             <MapToggleButton />
           </motion.div>
@@ -571,6 +572,7 @@ export default function WishlistPage() {
               height="100%"
               width="100%"
               markers={normalizeMarkers(wishlistData)}
+              locationBias={tripDetails?.locationBias}
             />
             <HideMapButton />
             <MapToggleButton />
@@ -602,6 +604,7 @@ export default function WishlistPage() {
         tripId={tripID}
         initialCategory={initialCategory}
         location={savedLocation}
+        locationBias={tripDetails?.viewport}
       />
 
       <CreateEditItemModal // Edit modal
@@ -612,6 +615,7 @@ export default function WishlistPage() {
         itemId={selectedItem?.id}
         tripId={selectedItem?.tripID}
         location={selectedItem}
+        locationBias={tripDetails?.viewport}
       />
 
       {/* Delete confirmation alert */}

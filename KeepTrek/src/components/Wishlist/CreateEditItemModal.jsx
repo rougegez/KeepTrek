@@ -29,7 +29,8 @@ export default function CreateEditItemModal({
   itemId,
   tripId,
   location,
-  initialCategory = ""
+  initialCategory = "",
+  locationBias
 }) {
   const [newItem, setNewItem] = useState({
     id: itemId,
@@ -183,6 +184,7 @@ export default function CreateEditItemModal({
                 searchButton={false}
                 onInputChange={handleLocationChange}
                 initialPlace={newItem.title}
+                locationBias={locationBias}
             />
           </div>
 

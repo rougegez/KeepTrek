@@ -20,6 +20,7 @@ import {
     DropdownMenuTrigger }
 from '@/components/ui/dropdown-menu.jsx'
 import { toast } from 'sonner'
+import Image from '../ui/image'
 
 function LocationCard({ place, onClick, onSaveLocation, disableSaveLocation, itineraryDays, onDaySelected , daySelected}) {
 
@@ -55,9 +56,8 @@ function LocationCard({ place, onClick, onSaveLocation, disableSaveLocation, iti
                 {place.image && (
                     <div className="md:hidden absolute bottom-14 right-4 w-28 h-20 overflow-hidden rounded-md flex-shrink-0">
                         <a href={place.link} target="_blank" rel="noopener noreferrer">
-                            <img
+                            <Image
                                 src={place.image}
-                                alt={place.name}
                                 className="w-full h-full object-cover"
                                 loading="lazy"
                             />
@@ -178,9 +178,8 @@ function LocationCard({ place, onClick, onSaveLocation, disableSaveLocation, iti
                     {place.image && (
                         <div className="hidden md:block w-52 h-32 overflow-hidden rounded-lg">
                             <a href={place.link} target="_blank" rel="noopener noreferrer">
-                                <img
+                                <Image
                                     src={place.image}
-                                    alt={place.name}
                                     className="w-full h-full object-cover"
                                     loading="lazy"
                                 />

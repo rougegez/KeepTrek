@@ -9,7 +9,7 @@ import { fetchPlaceDetails } from '@/APIs/fetchPlaceDetails.js';
 
 import { useItinerary } from '../../hooks/useItinerary.jsx';
 
-const EditActivityModal = ({ isOpen, onClose, activityId}) => {
+const EditActivityModal = ({ isOpen, onClose, activityId, locationBias}) => {
   const {days, getDayAndActivity: getActivity , updateActivity, changeActivityDay} = useItinerary();
   const { date: foundDate, day: foundDay, activity: activity} = getActivity(activityId) || {};
 
@@ -168,6 +168,7 @@ const EditActivityModal = ({ isOpen, onClose, activityId}) => {
               searchButton={false}
               onInputChange={handleLocationChange}
               initialPlace={activity.location}
+              locationBias={locationBias}
             />
           </div>
 

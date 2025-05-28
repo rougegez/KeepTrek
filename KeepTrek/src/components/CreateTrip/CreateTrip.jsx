@@ -22,7 +22,7 @@ import InfoTip from "@/components/Tooltip/InfoTip.jsx";
 export default function CreateTrip() {
   const [dateRange, setDateRange] = useState({ from: undefined, to: undefined });
   const [tripName, setTripName] = useState("");
-  const [location, setLocation] = useState("");
+  const [location, setLocation] = useState({location: "", placeId: "", coordinates: [], image: "../src/assets/dummy-image.jpg", viewport: {}});
   const [image, setImage] = useState("../src/assets/dummy-image.jpg");
   const [coordinates, setCoordinates] = useState([]);
   const [error, setError] = useState(null);
@@ -46,7 +46,7 @@ export default function CreateTrip() {
     const endDate = new Date(dateRange.to)
 
     try {
-      const response = await createTrip({ tripName, placeId, location, coordinates, startDate, endDate, image });
+      const response = await createTrip({ tripName, startDate, endDate, ...location});
       const tripID = response.tripID;
       // Create itinerary
       const dayCount = Math.ceil((new Date(dateRange.to) - new Date(dateRange.from)) / (1000 * 60 * 60 * 24)) + 1;
@@ -66,16 +66,22 @@ export default function CreateTrip() {
 
   const handleLocationChange = async (location) => {
     if (location?.placePrediction?.structuredFormat?.mainText?.text) {
-      setLocation(location.placePrediction.structuredFormat.mainText.text);
       const suggestion = await fetchPlaceDetails(location.placePrediction.placeId);
-      setPlaceId(suggestion.placeId);
-      setCoordinates([suggestion.coordinates[0], suggestion.coordinates[1]]);
-      setImage(suggestion.image);
+      setLocation({
+          location : location.placePrediction.structuredFormat.mainText.text,
+          placeId: suggestion.placeId,
+          coordinates: [suggestion.coordinates[0], suggestion.coordinates[1]],
+          image: suggestion.image,
+          viewport: suggestion.viewport
+        });
     } else {
-      setLocation(location);
-      setImage("../src/assets/dummy-image.jpg");
-      setPlaceId("");
-      setCoordinates([]);
+      setLocation({
+        location: location,
+        placeId: "",
+        coordinates: [],
+        image: "../src/assets/dummy-image.jpg",
+        viewport: {}
+      });
     }
   }
 
