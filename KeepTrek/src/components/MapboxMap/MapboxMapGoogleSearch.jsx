@@ -67,7 +67,17 @@ const MapboxMap = ({
     const selectedDay = useRef(null);
 
     useEffect(() => {
-        if (handlePanTo) {
+        if (handlePanTo?.viewport) {
+            const { high, low } = handlePanTo.viewport
+            const bounds = [
+                [high.longitude, high.latitude],
+                [low.longitude, low.latitude],
+            ]
+            mapRef.fitBounds(bounds, {
+                padding: 100,
+                maxZoom: 15,
+            })
+        } else if (handlePanTo) {
             goToLocation(handlePanTo?.clickLocation ?? handlePanTo)
         }
     }, [handlePanTo])
