@@ -10,7 +10,7 @@ const fetchPlaceDetails = async (placeId) => {
         let image = ""
 
         // Find a photo that is attributed to the place
-        if (!data.photos.length === 0) {
+        if (data.photos.length != 0) {
             image = data.photos[0].name
             photoLoop: for (let i = 0; i < data.photos.length; i++) {
                 for (let j = 0; j < data.photos[i].authorAttributions.length; j++) {
