@@ -406,6 +406,7 @@ export default function WishlistPage() {
               onMapLoad={handleMapLoad}
               handlePanTo={searchedPlace}
               initCenter={tripDetails?.coordinates}
+              initViewport={tripDetails?.viewport}
               height="100%"
               width="100%"
               markers={normalizeMarkers(wishlistData)}
@@ -569,6 +570,7 @@ export default function WishlistPage() {
               onMapLoad={handleMapLoad}
               handlePanTo={searchedPlace}
               initCenter={tripDetails?.coordinates}
+              initViewport={tripDetails?.viewport}
               height="100%"
               width="100%"
               markers={normalizeMarkers(wishlistData)}
