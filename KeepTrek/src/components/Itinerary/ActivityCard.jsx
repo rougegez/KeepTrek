@@ -160,7 +160,7 @@ const ActivityCard = ({
           <div className="flex w-full gap-x-0 gap-y-4">
             {canModify ? (
               <div
-                className={`mx-0 flex items-center ${largeMode ? "w-12" : "w-10"
+                className={`shrink-0 mx-0 flex items-center ${largeMode ? "w-12" : "w-10"
                   } justify-center ${!isMobile ? `cursor-grab` : null}`}
                 onPointerDown={(event) => {
                   if (!isMobile) {
@@ -272,12 +272,12 @@ const ActivityCard = ({
                 {/* Title row with menu for desktop */}
                 <div className="flex items-center justify-start gap-x-2">
                   <MarkerSvg 
-                    height={24} 
-                    width={16} 
+                    height={36} 
+                    width={28} 
                     color={color}
                     onClick={handleCardClick}
                     whileTap={{ scale: 0.90 }}
-                    whileHover={{ scale: 1.1 }}
+                    whileHover={{ scale: 1.2 }}
                     className={`shrink-0 ${activity.coordinates && activity.coordinates.length > 1
                   ? "cursor-pointer hover:bg-gray-50"
                   : ""}`}
