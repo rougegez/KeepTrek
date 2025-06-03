@@ -1,2 +1,5 @@
 {
+    "tailwindCSS.experimental.classRegex": [
+        "class:\\s*?[\"'`]([^\"'`]*).*?,"
+    ]
 }

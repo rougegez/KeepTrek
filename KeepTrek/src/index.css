@@ -139,12 +139,20 @@ html {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
+
 @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .tiptap p.is-editor-empty:first-child::before {
+    @apply text-muted-foreground float-left h-0 pointer-events-none;
+    content: attr(data-placeholder);
   }
 }
 
