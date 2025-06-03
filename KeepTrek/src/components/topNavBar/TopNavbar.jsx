@@ -9,10 +9,12 @@ import {
 } from "@/components/ui/sheet"
 import { UserAvatar } from "@/components/profilePage/avatar"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { useMediaQuery } from 'react-responsive'
 
 import { useAuth } from "@/contexts/AuthProvider"
 
 export default function TopNavbar() {
+  const isMobile = useMediaQuery({ query: "(max-width: 1170px)" });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -98,6 +100,7 @@ export default function TopNavbar() {
             <div className="flex items-center">
               { isLoggedIn ? (
                 <>
+                  { !isMobile && (
                   <Button asChild className="mr-4 sm:inline-flex">
                     <NavLink
                       to="/create-trip"
@@ -106,12 +109,13 @@ export default function TopNavbar() {
                       Create a Trip
                     </NavLink>
                   </Button>
+                  )}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button size="icon" variant="ghost" className="m-2 rounded-full">
+                      <Button size="icon" variant="ghost" className="m-2 rounded-full mr-3 sm:mr-0">
                         <UserAvatar 
                           userId={user}
-                          className="h-12 w-12"
+                          className="h-10 sm:h-12 w-10 sm:w-12"
                         />
                       </Button>
                     </DropdownMenuTrigger>

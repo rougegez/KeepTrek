@@ -2,34 +2,44 @@ import axios from "./axiosConfig"; // Base Axios instance
 
 // Create Trip
 export const createTrip = async (tripData) => {
-  const response = await axios.post("/trip/create", tripData);
-  return response.data;
+
+    // Format dates if they are Date objects
+    const formattedData = { ...tripData };
+    if (formattedData.startDate instanceof Date) {
+        formattedData.startDate = `${String(formattedData.startDate.getFullYear())}-${String(formattedData.startDate.getMonth() + 1).padStart(2, '0')}-${String(formattedData.startDate.getDate()).padStart(2, '0')}`;
+    }
+    if (formattedData.endDate instanceof Date) {
+        formattedData.endDate = `${String(formattedData.endDate.getFullYear())}-${String(formattedData.endDate.getMonth() + 1).padStart(2, '0')}-${String(formattedData.endDate.getDate()).padStart(2, '0')}`;
+    }
+
+    const response = await axios.post("/trip/create", formattedData);
+    return response.data;
 };
 
 // Get Trip
 export const getTrip = async (tripID) => {
-  const response = await axios.get(`/trip/${tripID}`);
-  return response.data;
+    const response = await axios.get(`/trip/${tripID}`);
+    return response.data;
 }
 
 // List of trips
 export const getUserTrips = async () => {
     const response = await axios.get("/trip/user-trips");
     return response.data;
-  };
+};
 
 // Generate Invite Link
 export const generateInviteLink = async (tripID, role) => {
-  const response = await axios.get(`/trip/${tripID}/invite`, {
-    params: { role }
-  });
-  return response.data;
+    const response = await axios.get(`/trip/${tripID}/invite`, {
+        params: { role }
+    });
+    return response.data;
 }
 
 export const joinTrip = async (inviteCode) => {
     try {
-        const response = await axios.post(`/trip/join`, { 
-            invite_code: inviteCode.trim() 
+        const response = await axios.post(`/trip/join`, {
+            invite_code: inviteCode.trim()
         });
         console.log('Join trip response:', response.data);
         return response.data;
@@ -40,8 +50,8 @@ export const joinTrip = async (inviteCode) => {
 };
 
 export const getTripMembers = async (tripID) => {
-  const response = await axios.get(`/trip/${tripID}/users`);
-  return response.data;
+    const response = await axios.get(`/trip/${tripID}/users`);
+    return response.data;
 }
 
 export const updateMemberRole = async (tripID, userID, newRole) => {
@@ -118,19 +128,21 @@ export const editTrip = async (tripID, tripData) => {
     try {
         // Log the edit operation
         console.log('Editing trip:', { tripID, data: tripData });
-        
+
         // Format dates if they are Date objects
         const formattedData = { ...tripData };
         if (formattedData.startDate instanceof Date) {
-            formattedData.startDate = formattedData.startDate.toISOString().split('T')[0];
+            formattedData.startDate = `${String(formattedData.startDate.getFullYear())}-${String(formattedData.startDate.getMonth() + 1).padStart(2, '0')}-${String(formattedData.startDate.getDate()).padStart(2, '0')}`;
         }
         if (formattedData.endDate instanceof Date) {
-            formattedData.endDate = formattedData.endDate.toISOString().split('T')[0];
+            formattedData.endDate = `${String(formattedData.endDate.getFullYear())}-${String(formattedData.endDate.getMonth() + 1).padStart(2, '0')}-${String(formattedData.endDate.getDate()).padStart(2, '0')}`;
         }
-        
+
+        console.log('Formatted trip data:', formattedData);
+
         // Make the API request
         const response = await axios.patch(`/trip/${tripID}/edit`, formattedData);
-        
+
         // Log successful edit
         console.log('Edit trip response:', response.data);
         return response.data;
@@ -141,7 +153,7 @@ export const editTrip = async (tripID, tripData) => {
             data: error.response?.data,
             message: error.message
         });
-        
+
         // User-friendly error messages
         if (error.response?.status === 400) {
             throw new Error(error.response.data.detail || 'Invalid trip data');

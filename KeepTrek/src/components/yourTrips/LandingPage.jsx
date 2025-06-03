@@ -176,9 +176,13 @@ export default function LandingPage() {
   </div>
 
       {/* Hero Section */}
-<section ref={heroRef} id="home" className="relative h-screen flex items-center overflow-hidden snap-start bg-hero" // Add a class for background
+
+<section ref={heroRef} id="home" className="relative h-screen flex items-center overflow-hidden snap-start bg-hero pt-16" // Add a class for background
   style={{ 
-    backgroundImage: window.innerWidth > 768 ? "url('/assets/heroBG.png')" : 'none', // Conditional background
+    backgroundImage: window.innerWidth > 768 ? "url('/assets/heroBG.png')" : 'none',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
   }}>
   <motion.div 
     className="absolute inset-0"
@@ -190,18 +194,18 @@ export default function LandingPage() {
     style={{ scale: heroScale, y: heroY }}
   >
     {/* Text Content - Left Side */}
-    <div className="lg:w-1/2 text-center lg:text-left">
+    <div className="lg:w-1/2 text-center lg:text-left mt-8 lg:mt-0">
     <motion.div 
-        className="inline-block mb-6 overflow-hidden rounded-2xl"
+        className="inline-block mb-4 lg:mb-6 overflow-hidden rounded-2xl"
         variants={scaleUp}
       >
-        <span className="inline-block bg-[#4cb6ac] text-white px-4 py-2 rounded-3xl text-sm font-medium">
+        <span className="inline-block bg-[#4cb6ac] text-white px-3 py-1 lg:px-4 lg:py-2 rounded-3xl text-xs lg:text-sm font-medium">
           Plan . Collaborate . Travel.
         </span>
       </motion.div>
       
       <motion.h1 
-        className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-[#383838] font-league-spartan"
+        className="text-4xl lg:text-7xl font-bold mb-4 lg:mb-6 leading-tight text-[#383838] font-league-spartan"
         variants={fadeInUp}
       >
         Get your trips<br />
@@ -210,7 +214,7 @@ export default function LandingPage() {
       </motion.h1>
       
       <motion.p 
-        className="text-[#383838] text-xl mb-8 max-w-xl mx-auto lg:mx-0"
+        className="text-[#383838] text-sm sm:text-lg lg:text-xl mb-6 lg:mb-8 max-w-xl mx-auto lg:mx-0 px-14 sm:px-0"
         variants={fadeInUp}
       >
         Everything your group needs to plan and manage a trip, <br/>without the hassle.
@@ -224,10 +228,10 @@ export default function LandingPage() {
     repeatType: "reverse",
     duration: 2
   }}
->      <Link to="/create-trip">
+>      <Link to="/yourTrips">
   <Button 
     size="lg" 
-    className="relative overflow-hidden group bg-gradient-to-r from-teal-400 to-teal-600 text-white text-lg px-10 py-7 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 font-medium hover:from-teal-500 hover:to-teal-700 w-full sm:w-auto"
+    className="relative overflow-hidden group bg-gradient-to-r from-teal-400 to-teal-500 text-white text-lg px-10 py-7 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 font-medium hover:from-teal-500 hover:to-teal-700 w-full sm:w-auto"
   >
     {/* Animated background effect */}
     <span className="absolute inset-0 bg-gradient-to-r from-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
@@ -277,6 +281,7 @@ export default function LandingPage() {
           src={LandingImage} 
           alt="KeepTrek app preview" 
           className="w-full h-auto object-contain" // Ensures proper scaling
+
         />
       </motion.div>
     </motion.div>
@@ -361,9 +366,9 @@ export default function LandingPage() {
       </section>
 
       {/* Why KeepTrek Section - Vertical timeline with parallax effect */}
-      <section id="why-keeptrek" className="bg-white py-24 relative">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-20">
+      <section id="why-keeptrek" className="bg-white py-16 sm:py-20 lg:py-24 relative">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12 lg:mb-20">
             <motion.h2 
               className="text-4xl font-bold mb-6" 
               variants={fadeInUp}
@@ -428,7 +433,7 @@ export default function LandingPage() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
                 {/* Content */}
-                <div className={`w-5/12 ${item.side === 'left' ? 'text-right pr-12' : 'text-left pl-12'}`}>
+                <div className={`w-5/12 ${item.side === 'left' ? 'text-center sm:text-right pr-0 sm:pr-12 pl-0 sm:pl-52' : 'text-center sm:text-left pl-2 sm:pl-12 pr-0 sm:pr-52'}`}>
                   <h3 className="text-2xl font-bold mb-3">{item.title}</h3>
                   <p className="text-gray-600">{item.description}</p>
                 </div>

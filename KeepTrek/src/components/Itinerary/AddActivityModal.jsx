@@ -7,7 +7,7 @@ import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar";
 import { Textarea } from '@/components/ui/textarea';
 import { fetchPlaceDetails } from "@/APIs/fetchPlaceDetails.js";
 
-const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, location, days }) => {
+const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, location, days , locationBias}) => {
     const [newActivity, setNewActivity] = useState(location ? {
         title: location ? location.name : "",
         placeId: location ? location.placeId : "",
@@ -41,8 +41,9 @@ const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, locatio
             setNewActivity(prev => ({
                 ...prev,
                 placeId: suggestion.placeId,
-                location: suggestion?.address ?? newLocation,
+                location: suggestion?.address ?? "",
                 coordinates: suggestion?.coordinates ?? [],
+                viewport: suggestion?.viewport ?? null,
                 rating: suggestion?.rating ?? "",
                 openingHours: suggestion?.openingHours ?? "",
                 website: suggestion?.website ?? "",
@@ -55,6 +56,7 @@ const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, locatio
                 placeId: "",
                 location: newLocation,
                 coordinates: [],
+                viewport: null,
                 rating: "",
                 openingHours: "",
                 website: "",
@@ -187,6 +189,7 @@ const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, locatio
                             id="address"
                             onInputChange={handleLocationChange}
                             initialPlace={newActivity.location}
+                            locationBias={locationBias}
                         />
                     </div>
 

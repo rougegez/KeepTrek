@@ -23,6 +23,7 @@ import ItinerarySocketWrapper from "@/components/Itinerary/ItinerarySocketWrappe
 import { Analytics } from '@vercel/analytics/react';
 import { TooltipProvider } from "@/components/ui/tooltip";
 import BlogEditor from "./components/Blog/BlogEditor";
+// import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ function App() {
   return (
     <>
       <Analytics />
+      {/* <SpeedInsights/> */}
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <MapProvider>

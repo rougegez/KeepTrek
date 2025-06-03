@@ -28,7 +28,13 @@ import {
 } from "@/components/ui/select";
 import { useMediaQuery } from "react-responsive";
 import { motion } from "framer-motion";
-import { ChevronUp, ChevronDown, Menu } from "lucide-react";
+import {
+  ChevronUp,
+  ChevronDown,
+  Menu,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import MobileHeader from "../MobileHeader";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { canEdit } from "@/utils/permissions";
@@ -65,6 +71,7 @@ export default function WishlistPage() {
 
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
   const [isMapExpanded, setIsMapExpanded] = useState(true);
+  const [isMapVisible, setIsMapVisible] = useState(true); // Added for desktop map visibility
   const [scrollPosition, setScrollPosition] = useState(0);
   const contentRef = useRef(null);
   const [lastScrollPosition, setLastScrollPosition] = useState(0);
@@ -83,32 +90,6 @@ export default function WishlistPage() {
   // Add state for delete alert
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const position = window.scrollY;
-      const scrollDelta = position - lastScrollPosition;
-
-      // Auto-expand map when scrolling to top (desktop only)
-      if (!isMobile && position < 50) {
-        setIsMapExpanded(true);
-      }
-      // Auto-collapse map when scrolling down past threshold
-      else if (scrollDelta > 10 && position > 10 && isMapExpanded) {
-        setIsMapExpanded(false);
-      }
-      // Auto-expand map when scrolling up quickly
-      //else if (scrollDelta < -50 && !isMapExpanded) {
-      //  setIsMapExpanded(true);
-      //}
-
-      setLastScrollPosition(position);
-      setScrollPosition(position);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [isMapExpanded, lastScrollPosition, isMobile]);
 
   const fetchWishlistData = async () => {
     const allItems = await getAllItems(tripID);
@@ -194,15 +175,17 @@ export default function WishlistPage() {
   };
 
   const handleSubmitCreateItem = async (newItem) => {
-    await createItem(tripID, newItem).then((res) => {
-      if (res.status === 200) {
-        toast.success("Item created successfully");
-      }
-    }).catch((err) => {
-      toast.error("Failed to create item", {
-        description: <p>{err.message}</p>,
+    await createItem(tripID, newItem)
+      .then((res) => {
+        if (res.status === 200) {
+          toast.success("Item created successfully");
+        }
       })
-    });
+      .catch((err) => {
+        toast.error("Failed to create item", {
+          description: <p>{err.message}</p>,
+        });
+      });
     await fetchWishlistData();
     setIsCreateModalOpen(false);
   };
@@ -233,15 +216,17 @@ export default function WishlistPage() {
   };
 
   const handleSubmitEditItem = async (updatedItem) => {
-    await editItem(selectedItem.tripID, selectedItem.id, updatedItem).then((res) => {
-      if (res.status === 200) {
-        toast.success("Item updated successfully");
-      }
-    }).catch((err) => {
-      toast.error("Failed to update item", {
-        description: <p>{err.message}</p>,
+    await editItem(selectedItem.tripID, selectedItem.id, updatedItem)
+      .then((res) => {
+        if (res.status === 200) {
+          toast.success("Item updated successfully");
+        }
       })
-    });
+      .catch((err) => {
+        toast.error("Failed to update item", {
+          description: <p>{err.message}</p>,
+        });
+      });
     await fetchWishlistData();
     const allItems = await getAllItems(selectedItem.tripID);
     const newSelectedItem = allItems.find((i) => i.id === selectedItem.id);
@@ -258,15 +243,17 @@ export default function WishlistPage() {
   // New: Confirm delete handler
   const handleDeleteConfirm = async () => {
     if (itemToDelete) {
-      await deleteItem(itemToDelete.tripID, itemToDelete.id).then((res) => {
-        if (res.status === 200) {
-          toast.success("Item deleted successfully");
-        }
-      }).catch((err) => {
-        toast.error("Failed to delete item", {
-          description: <p>{err.message}</p>,
+      await deleteItem(itemToDelete.tripID, itemToDelete.id)
+        .then((res) => {
+          if (res.status === 200) {
+            toast.success("Item deleted successfully");
+          }
         })
-      });
+        .catch((err) => {
+          toast.error("Failed to delete item", {
+            description: <p>{err.message}</p>,
+          });
+        });
       await fetchWishlistData();
       setSelectedItem(null);
     }
@@ -346,10 +333,50 @@ export default function WishlistPage() {
 
   const MapToggleButton = () => (
     <Button
-      className="absolute right-4 -bottom-5 z-50 rounded-full p-2 bg-secondary text-muted-foreground shadow-md"
-      onClick={() => setIsMapExpanded(!isMapExpanded)}
+      className="absolute right-4 -bottom-5 z-[100] rounded-full p-2 bg-white border border-gray-200 text-muted-foreground shadow-lg"
+      onClick={(e) => {
+        e.stopPropagation();
+        setIsMapExpanded(!isMapExpanded);
+      }}
+      style={{
+        width: isMobile ? "44px" : "36px",
+        height: isMobile ? "44px" : "36px",
+        boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
+      }}
+      aria-label={isMapExpanded ? "Collapse Map" : "Expand Map"}
+      title={isMapExpanded ? "Collapse Map" : "Expand Map"}
     >
-      {isMapExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+      {isMapExpanded ? (
+        <ChevronUp size={isMobile ? 24 : 20} />
+      ) : (
+        <ChevronDown size={isMobile ? 24 : 20} />
+      )}
+    </Button>
+  );
+
+  const HideMapButton = () => (
+    <Button
+      className="absolute left-4 top-1/2 -translate-y-1/2 z-[100] rounded-full w-10 h-10 p-0 flex items-center justify-center bg-secondary text-muted-foreground shadow-md"
+      onClick={(e) => {
+        e.stopPropagation();
+        setIsMapVisible(false);
+      }}
+      title="Hide Map"
+    >
+      <ChevronRight size={20} />
+    </Button>
+  );
+
+  const ShowMapButton = () => (
+    <Button
+      className="fixed right-4 top-1/2 -translate-y-1/2 z-[100] rounded-full w-10 h-10 p-0 flex items-center justify-center bg-secondary text-muted-foreground shadow-md"
+      onClick={(e) => {
+        e.stopPropagation();
+        setIsMapVisible(true);
+      }}
+      title="Show Map"
+    >
+      <ChevronLeft size={20} />
     </Button>
   );
 
@@ -358,7 +385,12 @@ export default function WishlistPage() {
       <AppSidebar tripID={tripID} />
       {!isMobile && <SidebarTrigger />}
       {isMobile && <MobileHeader title="Suggest a place to Go!" />}
-      <div className={`flex w-full ${!isMobile && "grid grid-cols-2"}`}>
+      <div
+        className={`flex w-full ${
+          !isMobile && isMapVisible && "grid grid-cols-2"
+        }`}
+      >
+        {!isMobile && !isMapVisible && <ShowMapButton />}
         {isMobile ? (
           <motion.div
             className="fixed w-full z-40 bg-background"
@@ -374,9 +406,11 @@ export default function WishlistPage() {
               onMapLoad={handleMapLoad}
               handlePanTo={searchedPlace}
               initCenter={tripDetails?.coordinates}
+              initViewport={tripDetails?.viewport}
               height="100%"
               width="100%"
               markers={normalizeMarkers(wishlistData)}
+              locationBias={tripDetails?.locationBias}
             />
             <MapToggleButton />
           </motion.div>
@@ -387,7 +421,9 @@ export default function WishlistPage() {
           className={`${
             isMobile
               ? "w-full bg-background relative z-30"
-              : "col-span-1 h-screen"
+              : isMapVisible
+              ? "col-span-1 h-screen"
+              : "col-span-2 h-screen mx-auto max-w-4xl"
           }`}
           animate={
             isMobile
@@ -527,17 +563,21 @@ export default function WishlistPage() {
           </ScrollArea>
         </motion.div>
 
-        {!isMobile && (
-          <div className="col-span-1 h-screen sticky top-0">
+        {!isMobile && isMapVisible && (
+          <div className="col-span-1 h-screen sticky top-0 relative">
             <MapboxMap
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
               handlePanTo={searchedPlace}
               initCenter={tripDetails?.coordinates}
+              initViewport={tripDetails?.viewport}
               height="100%"
               width="100%"
               markers={normalizeMarkers(wishlistData)}
+              locationBias={tripDetails?.locationBias}
             />
+            <HideMapButton />
+            <MapToggleButton />
           </div>
         )}
       </div>
@@ -566,6 +606,7 @@ export default function WishlistPage() {
         tripId={tripID}
         initialCategory={initialCategory}
         location={savedLocation}
+        locationBias={tripDetails?.viewport}
       />
 
       <CreateEditItemModal // Edit modal
@@ -576,6 +617,7 @@ export default function WishlistPage() {
         itemId={selectedItem?.id}
         tripId={selectedItem?.tripID}
         location={selectedItem}
+        locationBias={tripDetails?.viewport}
       />
 
       {/* Delete confirmation alert */}

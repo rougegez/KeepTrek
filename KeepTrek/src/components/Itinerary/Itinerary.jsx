@@ -81,7 +81,8 @@ function Itinerary() {
     }
   );
 
-  const { days, setDays, readyState, getDayAndActivity, getDays, addActivity } = useItinerary()
+  const { days, setDays, readyState, getDayAndActivity, getDays, addActivity } =
+    useItinerary();
   const { whosOnline } = useWhosOnline();
 
   const userRole = useMemo(() => {
@@ -93,50 +94,77 @@ function Itinerary() {
 
   const canModify = canEdit(userRole);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const position = window.scrollY;
-      const scrollDelta = position - lastScrollPosition;
+  // Modified approach to map collapsing
+  const collapseMapOnMobile = () => {
+    if (isMobile && isMapExpanded) {
+      setIsMapExpanded(false);
+    }
+  };
 
-      // Auto-expand map when scrolling to top (desktop only)
-      if (!isMobile && position < 50) {
-        setIsMapExpanded(true);
+  // Simplify the scroll handler to be more aggressive
+  useEffect(() => {
+    const handleScroll = (e) => {
+      // Don't interfere with button interactions
+      if (e.target.closest && e.target.closest("button")) {
+        return;
       }
-      // Auto-collapse map when scrolling down past threshold
-      else if (scrollDelta > 10 && position > 10 && isMapExpanded) {
-        setIsMapExpanded(false);
+
+      const position = window.scrollY;
+
+      // Only handle map collapsing on desktop
+      if (!isMobile) {
+        // Auto-expand map when scrolling to top
+        if (position < 50) {
+          setIsMapExpanded(true);
+        }
       }
 
       setLastScrollPosition(position);
       setScrollPosition(position);
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [isMapExpanded, lastScrollPosition, isMobile]);
+    // Use capture phase to ensure we catch the event first
+    window.addEventListener("scroll", handleScroll, {
+      passive: true,
+      capture: true,
+    });
+    return () =>
+      window.removeEventListener("scroll", handleScroll, { capture: true });
+  }, [isMapExpanded, isMobile]);
 
   const getMapHeight = () => (isMapExpanded ? "65vh" : "10vh");
 
   const MapToggleButton = () => (
     <Button
-      className="absolute right-4 -bottom-5 z-50 rounded-full p-2 bg-white border border-gray-200 text-muted-foreground shadow-lg"
-      onClick={() => setIsMapExpanded(!isMapExpanded)}
-      style={{ 
-        width: isMobile ? '44px' : '36px', 
-        height: isMobile ? '44px' : '36px',
-        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)'
+      className="absolute right-4 -bottom-5 z-[100] rounded-full p-2 bg-white border border-gray-200 text-muted-foreground shadow-lg"
+      onClick={(e) => {
+        // Stop propagation to prevent other handlers from capturing this event
+        e.stopPropagation();
+        setIsMapExpanded(!isMapExpanded);
       }}
-      aria-label={isMapExpanded ? 'Collapse Map' : 'Expand Map'}
-      title={isMapExpanded ? 'Collapse Map' : 'Expand Map'}
+      style={{
+        width: isMobile ? "44px" : "36px",
+        height: isMobile ? "44px" : "36px",
+        boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
+      }}
+      aria-label={isMapExpanded ? "Collapse Map" : "Expand Map"}
+      title={isMapExpanded ? "Collapse Map" : "Expand Map"}
     >
-      {isMapExpanded ? <ChevronUp size={isMobile ? 24 : 20} /> : <ChevronDown size={isMobile ? 24 : 20} />}
+      {isMapExpanded ? (
+        <ChevronUp size={isMobile ? 24 : 20} />
+      ) : (
+        <ChevronDown size={isMobile ? 24 : 20} />
+      )}
     </Button>
   );
 
   const HideMapButton = () => (
     <Button
-      className="absolute left-4 top-1/2 -translate-y-1/2 z-50 rounded-full w-10 h-10 p-0 flex items-center justify-center bg-secondary text-muted-foreground shadow-md"
-      onClick={() => setIsMapVisible(false)}
+      className="absolute left-4 top-1/2 -translate-y-1/2 z-[100] rounded-full w-10 h-10 p-0 flex items-center justify-center bg-secondary text-muted-foreground shadow-md"
+      onClick={(e) => {
+        e.stopPropagation();
+        setIsMapVisible(false);
+      }}
       title="Hide Map"
     >
       <ChevronRight size={20} />
@@ -145,8 +173,11 @@ function Itinerary() {
 
   const ShowMapButton = () => (
     <Button
-      className="fixed right-4 top-1/2 -translate-y-1/2 z-50 rounded-full w-10 h-10 p-0 flex items-center justify-center bg-secondary text-muted-foreground shadow-md"
-      onClick={() => setIsMapVisible(true)}
+      className="fixed right-4 top-1/2 -translate-y-1/2 z-[100] rounded-full w-10 h-10 p-0 flex items-center justify-center bg-secondary text-muted-foreground shadow-md"
+      onClick={(e) => {
+        e.stopPropagation();
+        setIsMapVisible(true);
+      }}
       title="Show Map"
     >
       <ChevronLeft size={20} />
@@ -169,8 +200,8 @@ function Itinerary() {
       openingHours: place ? place.openingHours : "",
       website: place ? place.website : "",
       link: place ? place.link : "",
-    }
-    addActivity(newActivity, selectedDay)
+    };
+    addActivity(newActivity, selectedDay);
     if (readyState === ReadyState.OPEN) {
       toast.success("Activity added successfully!");
     }
@@ -251,12 +282,20 @@ function Itinerary() {
   // Prevent background scroll when map is expanded on mobile
   useEffect(() => {
     if (isMobile && isMapExpanded) {
-      document.body.style.overflow = 'hidden';
+      // Instead of preventing all scrolling, only prevent it on the body
+      // but allow scrolling in the content area
+      document.body.style.overflow = "auto";
+
+      // Make sure the content area is scrollable
+      if (contentRef.current) {
+        contentRef.current.style.overflowY = "auto";
+        contentRef.current.style.WebkitOverflowScrolling = "touch";
+      }
     } else {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = "auto";
     }
     return () => {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = "auto";
     };
   }, [isMobile, isMapExpanded]);
 
@@ -278,7 +317,7 @@ function Itinerary() {
             initial={{ height: "75vh" }}
             animate={{
               height: getMapHeight(),
-              transition: { duration: 0.3, ease: "easeInOut" },
+              transition: { duration: 0.2, ease: "easeInOut" },
             }}
             style={{ top: "3.5rem", flexShrink: 1 }}
           >
@@ -286,6 +325,7 @@ function Itinerary() {
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
               initCenter={tripDetails?.coordinates}
+              initViewport={tripDetails?.viewport}
               handlePanTo={searchedPlace}
               height="100%"
               width="100%"
@@ -293,6 +333,7 @@ function Itinerary() {
               disableSearchBar={!canModify}
               markers={normalizeMarkers(days)}
               itineraryDays={itineraryDays}
+              locationBias={tripDetails?.viewport}
             />
             <MapToggleButton />
           </motion.div>
@@ -302,7 +343,7 @@ function Itinerary() {
           ref={contentRef}
           className={`${
             isMobile
-              ? "w-full bg-background relative z-30"
+              ? "w-full bg-background relative z-30 overflow-y-auto"
               : isMapVisible
               ? "col-span-1 h-screen"
               : "col-span-2 h-screen mx-auto max-w-4xl large-mode"
@@ -315,27 +356,42 @@ function Itinerary() {
                 }
               : {}
           }
-          style={{ flexShrink: 0 }}
+          style={{
+            flexShrink: 0,
+            height: isMobile ? "calc(100vh - 3.5rem)" : "100vh",
+          }}
         >
-          <ScrollArea className="h-full px-2 pt-6 ">
+          <ScrollArea
+            className={`${
+              isMobile ? "h-[calc(100vh-3.5rem)]" : "h-full"
+            } px-2 pt-6`}
+          >
             <div className="space-y-6">
-              <div className={`flex flex-col gap-y-2 sm:flex-row sm:items-center sm:gap-x-4 py-2 mr-5 w-[98%]`}>
+              <div
+                className={`flex flex-col gap-y-2 sm:flex-row sm:items-center sm:gap-x-4 py-2 mr-5 w-[98%]`}
+              >
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-2xl sm:text-3xl font-bold truncate">{tripDetails.tripName}</h1>
+                  <h1 className="text-2xl sm:text-3xl font-bold truncate max-w-[350px] sm:max-w-[450px]  lg:max-w-[230px] xl:max-w-[200px] 2xl:max-w-[450px]">
+                    {tripDetails.tripName.length > 40
+                      ? tripDetails.tripName.slice(0, 40) + "..."
+                      : tripDetails.tripName}
+                  </h1>
                   <p className="text-sm text-muted-foreground">
                     {dateFormatter(tripDetails.startDate)} to{" "}
                     {dateFormatter(tripDetails.endDate)}
                   </p>
                 </div>
                 <div
-                  className={`flex items-center gap-2 ${isMobile ? 'flexitems-center gap-4' : ''}`}
-                  style={{ minWidth: 0, height: 'auto' }}
+                  className={`flex items-center gap-2 ${
+                    isMobile ? "flexitems-center gap-4" : ""
+                  }`}
+                  style={{ minWidth: 0, height: "auto" }}
                 >
-                  <UserAvatarStack 
-                    userIds={tripDetails.users} 
+                  <UserAvatarStack
+                    userIds={tripDetails.users}
                     isIdle={whosOnline}
-                    size={isMobile ? 8 : 10} 
-                    maxUsers={isMobile ? 3 : 5}
+                    size={isMobile ? 8 : 10}
+                    maxUsers={isMobile ? 2 : 3}
                     className={isMobile ? "scale-90" : ""}
                   />
                   {canModify && (
@@ -351,7 +407,9 @@ function Itinerary() {
                       title="Trip Settings"
                       aria-label="Trip Settings"
                     >
-                      <Settings className={`${isMobile ? 'h-4 w-4' : 'h-4 w-4'}`} />
+                      <Settings
+                        className={`${isMobile ? "h-4 w-4" : "h-4 w-4"}`}
+                      />
                     </Button>
                   )}
                   {currentUser && currentUser !== tripDetails.creatorID && (
@@ -363,39 +421,61 @@ function Itinerary() {
                       aria-label="Leave Trip"
                       className="min-w-[40px]"
                     >
-                      <LogOut className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                      <LogOut
+                        className={`${isMobile ? "h-3 w-3" : "h-4 w-4"}`}
+                      />
                     </Button>
                   )}
                 </div>
               </div>
-              {readyState === ReadyState.OPEN && (days && days.length > 0) ? (days.map((day, dayIndex) => (
-                <div key={day.date} className="space-y-4">
-                  <h2 className="text-xl font-semibold">{day.date}</h2>
-                  <Reorder.Group
-                    axis="y"
-                    values={day.activities}
-                    onReorder={(newActivities) => updateActivities(newActivities, dayIndex)}
-                    className={`space-y-4 ${isMobile ? 'w-full px-2' : 'w-[90%] ml-14'}`}>
-                    {day.activities.map((activity) => (
-                      <ActivityCard
-                        key={activity.id}
-                        activity={activity}
-                        onNoteChange={handleNoteChange}
-                        onEditClick={() => handleEditClick(dayIndex, activity)}
-                        onDeleteClick={() => handleDeleteClick(dayIndex, activity.id)}
-                        onLocationClick={(clickLocation) => handleLocationClick(clickLocation)}
-                        canModify={canModify}
-                      />
-                    ))}
-                  </Reorder.Group>
-                  {canModify && (
-                    <Button
-                      variant="outline"
-                      className={`${isMobile ? 'w-full mt-2 mb-2 rounded-lg shadow' : 'w-[92%] ml-8 mt-2 mb-2 rounded-lg shadow'}`}
-                      onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date })}
-                      aria-label="Add Activity"
+              {readyState === ReadyState.OPEN && days && days.length > 0 ? (
+                days.map((day, dayIndex) => (
+                  <div key={day.date} className="space-y-4">
+                    <h2 className="text-xl font-semibold">{day.date}</h2>
+                    <Reorder.Group
+                      axis="y"
+                      values={day.activities}
+                      onReorder={(newActivities) =>
+                        updateActivities(newActivities, dayIndex)
+                      }
+                      className={`space-y-4 ${
+                        isMobile ? "w-full px-2" : "w-[90%] ml-14"
+                      }`}
                     >
-                     
+                      {day.activities.map((activity) => (
+                        <ActivityCard
+                          key={activity.id}
+                          activity={activity}
+                          onNoteChange={handleNoteChange}
+                          onEditClick={() =>
+                            handleEditClick(dayIndex, activity)
+                          }
+                          onDeleteClick={() =>
+                            handleDeleteClick(dayIndex, activity.id)
+                          }
+                          onLocationClick={(clickLocation) =>
+                            handleLocationClick(clickLocation)
+                          }
+                          canModify={canModify}
+                        />
+                      ))}
+                    </Reorder.Group>
+                    {canModify && (
+                      <Button
+                        variant="outline"
+                        className={`${
+                          isMobile
+                            ? "w-full mt-2 mb-2 rounded-lg shadow"
+                            : "w-[92%] ml-8 mt-2 mb-2 rounded-lg shadow"
+                        }`}
+                        onClick={() =>
+                          setAddModalState({
+                            isOpen: true,
+                            selectedDay: day.date,
+                          })
+                        }
+                        aria-label="Add Activity"
+                      >
                         <Plus className="w-4 h-4 mr-2" />
                         Add Activity
                       </Button>
@@ -408,8 +488,15 @@ function Itinerary() {
               {canModify && (
                 <Button
                   variant="outline"
-                  className={`w-full mt-4 mb-6 rounded-lg shadow ${isMobile ? 'mx-auto' : ''}`}
-                  onClick={() => setDays([...days, { date: `Day ${days.length + 1}`, activities: [] }])}
+                  className={`w-full mt-4 mb-6 rounded-lg shadow ${
+                    isMobile ? "mx-auto" : ""
+                  }`}
+                  onClick={() =>
+                    setDays([
+                      ...days,
+                      { date: `Day ${days.length + 1}`, activities: [] },
+                    ])
+                  }
                   aria-label="Add Day"
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -426,6 +513,7 @@ function Itinerary() {
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
               initCenter={tripDetails?.coordinates}
+              initViewport={tripDetails?.viewport}
               handlePanTo={searchedPlace}
               height="100%"
               width="100%"
@@ -433,6 +521,7 @@ function Itinerary() {
               disableSearchBar={!canModify}
               markers={normalizeMarkers(days)}
               itineraryDays={itineraryDays}
+              locationBias={tripDetails?.viewport}
             />
             <HideMapButton />
             <MapToggleButton />
@@ -451,6 +540,7 @@ function Itinerary() {
         onAddActivity={handleAddActivity}
         location={savedLocation}
         days={days}
+        locationBias={tripDetails?.viewport}
       />
 
       <EditActivityModal
@@ -460,6 +550,7 @@ function Itinerary() {
           setCurrentActivity(null);
         }}
         activityId={currentActivity?.id}
+        locationBias={tripDetails?.viewport}
       />
 
       <DeleteAlert

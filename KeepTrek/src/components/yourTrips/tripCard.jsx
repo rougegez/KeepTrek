@@ -54,7 +54,6 @@ export default function TripCard({ trip, onDelete }) {
   const [newTripName, setNewTripName] = useState("");
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameError, setRenameError] = useState("");
-  const [showShareModal, setShowShareModal] = useState(false);
 
   // determine roles
   useEffect(() => {
@@ -235,16 +234,8 @@ export default function TripCard({ trip, onDelete }) {
                 </span>
               </div>
               <div className="flex items-center gap-1">
-                {/* <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowShareModal(true);
-                  }}
-                >
-                  <Share2 className="h-4 w-4" />
-                </Button> */}
+
+                {/* <ShareModal trip={trip} /> */}
 
                 {currentUser && (
                   <DropdownMenu>
@@ -372,18 +363,6 @@ export default function TripCard({ trip, onDelete }) {
         </DialogContent>
       </Dialog>
 
-      {/* Share Modal */}
-      {showShareModal && (
-        <ShareModal
-          tripName={trip.tripName}
-          location={trip.location}
-          startDate={new Date(trip.startDate).toLocaleDateString()}
-          endDate={new Date(trip.endDate).toLocaleDateString()}
-          days={days}
-          participants={trip.users.length}
-          onClose={() => setShowShareModal(false)}
-        />
-      )}
     </>
   );
 }
