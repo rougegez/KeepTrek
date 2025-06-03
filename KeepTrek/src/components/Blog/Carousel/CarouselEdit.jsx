@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Autoplay from 'embla-carousel-autoplay'
 
-export default function CarouselEdit({ preview }) {
+export default function CarouselEdit({ file, onFileChange, preview }) {
 
     const carouselProps = preview ? {
         plugins: [
@@ -40,15 +40,23 @@ export default function CarouselEdit({ preview }) {
     }
 
     const [isOpen, setIsOpen] = useState(false)
-    const [files, setFiles] = useState([])
-    const [imagePreview, setImagePreview] = useState([])
+    const [files, setFiles] = useState(file ?? [])
+    let imageUrls = [];
+    if (file.length > 0) {
+        imageUrls = file.map((file) => {
+            if (file.url) {
+                return file.url;
+            } else
+                return URL.createObjectURL(file)
+        });
+    }
+    const [imagePreview, setImagePreview] = useState(imageUrls ?? [])
     const [link, setLink] = useState('')
 
 
     const handleFileChange = (files) => {
         if (files) {
             setFiles(files);
-            console.log(files);
         }
     };
 
@@ -73,6 +81,9 @@ export default function CarouselEdit({ preview }) {
             setImagePreview([]);
             setIsOpen(false);
         }
+        if (onFileChange) {
+            onFileChange(files);
+        }
     }
 
     return (
@@ -95,8 +106,8 @@ export default function CarouselEdit({ preview }) {
                             </div>
                         </CarouselItem>
                     }
-                    {(imagePreview && imagePreview.length > 0) && imagePreview.map((image, index) => (
-                        <CarouselItem key={index} className="pl-1 md:basis-1/2 lg:basis-1/3 object-contain">
+                    {(imagePreview && imagePreview.length > 0) && imagePreview.map((image) => (
+                        <CarouselItem key={image} className="pl-1 md:basis-1/2 lg:basis-1/3 object-contain">
                             <div className="relative w-full aspect-video">
                                 <Image
                                     src={image}

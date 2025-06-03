@@ -51,7 +51,7 @@ function App() {
                       <Route path="/" element={<LandingPage />} />
                       <Route path="/join/:inviteCode" element={<InvitePage />} />
                       <Route path="/AgodaPartnerVerification.html" element={<AgodaVerificationPage />} />
-                      <Route path="/blog" element={<BlogEditor/>} />
+                      {/* <Route path="/blog" element={<BlogEditor/>} /> */}
                       {/* Protected Routes */}
                       <Route
                         element={
