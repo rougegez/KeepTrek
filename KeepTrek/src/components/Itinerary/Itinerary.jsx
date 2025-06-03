@@ -325,6 +325,7 @@ function Itinerary() {
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
               initCenter={tripDetails?.coordinates}
+              initViewport={tripDetails?.viewport}
               handlePanTo={searchedPlace}
               height="100%"
               width="100%"
@@ -332,6 +333,7 @@ function Itinerary() {
               disableSearchBar={!canModify}
               markers={normalizeMarkers(days)}
               itineraryDays={itineraryDays}
+              locationBias={tripDetails?.viewport}
             />
             <MapToggleButton />
           </motion.div>
@@ -511,6 +513,7 @@ function Itinerary() {
               onSaveLocation={handleSaveLocation}
               onMapLoad={handleMapLoad}
               initCenter={tripDetails?.coordinates}
+              initViewport={tripDetails?.viewport}
               handlePanTo={searchedPlace}
               height="100%"
               width="100%"
@@ -518,6 +521,7 @@ function Itinerary() {
               disableSearchBar={!canModify}
               markers={normalizeMarkers(days)}
               itineraryDays={itineraryDays}
+              locationBias={tripDetails?.viewport}
             />
             <HideMapButton />
             <MapToggleButton />
@@ -536,6 +540,7 @@ function Itinerary() {
         onAddActivity={handleAddActivity}
         location={savedLocation}
         days={days}
+        locationBias={tripDetails?.viewport}
       />
 
       <EditActivityModal
@@ -545,6 +550,7 @@ function Itinerary() {
           setCurrentActivity(null);
         }}
         activityId={currentActivity?.id}
+        locationBias={tripDetails?.viewport}
       />
 
       <DeleteAlert

@@ -20,7 +20,8 @@ const MapSearchBar = ({
     isSearchbar = false,
     onLocationSearch,
     onInputChange,
-    initialPlace }) => {
+    initialPlace,
+    locationBias }) => {
     const [query, setQuery] = useState("");
     const [suggestions, setSuggestions] = useState([]);
 
@@ -47,15 +48,7 @@ const MapSearchBar = ({
                         },
                         body: JSON.stringify({
                             input: value,
-                            // locationBias: {
-                            //     circle: {
-                            //         center: {
-                            //             latitude: 37.7937,
-                            //             longitude: -122.3965
-                            //         },
-                            //         radius: 500.0
-                            //     }
-                            // }
+                            locationBias: locationBias ? {rectangle : locationBias} : null,
                         })
                     }
                 );
@@ -104,9 +97,9 @@ const MapSearchBar = ({
                     placeholder="Search for a location..."
                     value={query}
                     onChange={handleInputChange}
-                    className={`w-full border bg-white ${ isSearchbar ? "rounded-full  shadow-lg" : "rounded"}`}
+                    className={`w-full border bg-white ${isSearchbar ? "rounded-full  shadow-lg" : "rounded"}`}
                 />
-                { isSearchbar && (
+                {isSearchbar && (
                     query ?
                         <div
                             role='button'

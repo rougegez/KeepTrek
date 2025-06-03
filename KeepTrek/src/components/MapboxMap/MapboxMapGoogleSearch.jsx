@@ -20,12 +20,12 @@ import LocationCard from '@/components/MapboxMap/LocationCard.jsx'
 import ResetMapButton from '@/components/MapboxMap/ResetMapButton.jsx'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API_KEY
-const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
 const MapboxMap = ({
     height = '100%',
     width = '100%',
     initCenter = [101.6160160887531, 3.0644537753819425], // BizPod
+    initViewport,
     initZoom = 15,
     onSaveLocation,
     handlePanTo = null,
@@ -33,15 +33,28 @@ const MapboxMap = ({
     disableSaveLocation = false,
     markers = [],
     itineraryDays = [],
+    locationBias,
 }) => {
 
     const { map: mapRef } = useMap()
 
-    const [viewState, setViewState] = useState({
-        longitude: initCenter[0] ?? 101.6160160887531,
-        latitude: initCenter[1] ?? 3.0644537753819425,
-        zoom: initZoom,
-    });
+    const [viewState, setViewState] = useState(initViewport ?
+        {
+            bounds: [
+                [initViewport.high.longitude, initViewport.high.latitude],
+                [initViewport.low.longitude, initViewport.low.latitude],
+            ],
+            fitBoundsOptions: {
+                padding: 100,
+                maxZoom: 15,
+            },
+        } :
+        {
+            longitude: initCenter[0] ?? 101.6160160887531,
+            latitude: initCenter[1] ?? 3.0644537753819425,
+            zoom: initZoom,
+        }
+    );
 
     const [dropMarker, setDropMarker] = useState({
         showDropMarker: false,
@@ -54,7 +67,17 @@ const MapboxMap = ({
     const selectedDay = useRef(null);
 
     useEffect(() => {
-        if (handlePanTo) {
+        if (handlePanTo?.viewport) {
+            const { high, low } = handlePanTo.viewport
+            const bounds = [
+                [high.longitude, high.latitude],
+                [low.longitude, low.latitude],
+            ]
+            mapRef.fitBounds(bounds, {
+                padding: 100,
+                maxZoom: 15,
+            })
+        } else if (handlePanTo) {
             goToLocation(handlePanTo?.clickLocation ?? handlePanTo)
         }
     }, [handlePanTo])
@@ -293,6 +316,7 @@ const MapboxMap = ({
                             onLocationSearch={handleLocationSearch}
                             isSearchbar={true}
                             searchButton={true}
+                            locationBias={locationBias}
                         />
                     </div>
                 )}
