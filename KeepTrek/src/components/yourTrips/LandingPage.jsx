@@ -231,7 +231,7 @@ export default function LandingPage() {
 >      <Link to="/yourTrips">
   <Button 
     size="lg" 
-    className="relative overflow-hidden group bg-gradient-to-r from-teal-400 to-teal-500 text-white text-lg px-10 py-7 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 font-medium hover:from-teal-500 hover:to-teal-700 w-full sm:w-auto"
+    className="relative overflow-hidden group bg-gradient-to-r from-purple-400 to-purple-600 text-white text-lg px-10 py-7 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 font-medium hover:from-purple-500 hover:to-purple-700 w-full sm:w-auto"
   >
     {/* Animated background effect */}
     <span className="absolute inset-0 bg-gradient-to-r from-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
