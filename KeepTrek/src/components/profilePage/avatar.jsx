@@ -5,14 +5,24 @@ import { getUserProfile } from '@/APIs/users';
 import { cn } from "@/lib/utils";
 import { useQuery } from 'react-query';
 import { Calendar, PiggyBank, Heart, CalendarClock } from 'lucide-react';
+import { 
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from '../ui/hover-card';
+import { Button } from '../ui/button';
+import { useNavigate } from 'react-router-dom';
 
 export function UserAvatar({
   userId,
   src,
   alt,
+  hover = true,
   isIdle = null,
   currentPage = null,
   className }) {
+
+  const navigate = useNavigate();
 
   const { data: userProfile, } = useQuery(
     ["userProfile", userId],
@@ -32,8 +42,10 @@ export function UserAvatar({
 
   const currentPageIcon = pageIcons[currentPage] || null;
 
+  let avatar = null;
+
   if (isIdle == null) { // no isIdle specifed = default behavior
-    return (
+    avatar = (
       <Avatar className={cn("", className)}>
         <AvatarImage
           src={userProfile?.image || src}
@@ -45,7 +57,7 @@ export function UserAvatar({
       </Avatar>
     );
   } else {
-    return ( // isIdle specified = show online/offline status
+    avatar = ( // isIdle specified = show online/offline status
       <div className="relative inline-block">
         <Avatar className={cn(`${isIdle ? `opacity-40` : ``}`, className)}>
           <AvatarImage
@@ -69,6 +81,38 @@ export function UserAvatar({
       </div>
     );
   }
+
+  if (hover) {
+    return (
+      <HoverCard>
+        <HoverCardTrigger>
+          {avatar}
+        </HoverCardTrigger>
+        <HoverCardContent className="w-64">
+          <div className="flex items-center space-x-2">
+            <Avatar className="h-10 w-10">
+              <AvatarImage
+                src={userProfile?.image || src}
+                alt={userProfile?.username || alt}
+              />
+              <AvatarFallback>
+                <User className="w-1/2 h-1/2 text-gray-500" />
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-semibold">{userProfile?.username}</p>
+              <Button
+                variant="link"
+                onClick={() => navigate(`/profile/${userId}`)}
+              >
+                View Profile
+              </Button>
+            </div>
+          </div>
+        </HoverCardContent>
+      </HoverCard>
+    )
+  } else return avatar;
 }
 
 export function UserAvatarStack({
