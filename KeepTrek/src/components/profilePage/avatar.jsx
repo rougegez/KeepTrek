@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { User } from "lucide-react";
+import { LinkIcon, User } from "lucide-react";
 import { getUserProfile } from '@/APIs/users';
 import { cn } from "@/lib/utils";
-import { useQuery } from 'react-query';
+import { useQuery, useQueries } from 'react-query';
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent
+} from '@/components/ui/popover'
 import { Calendar, PiggyBank, Heart, CalendarClock } from 'lucide-react';
-import { 
-  HoverCard,
-  HoverCardTrigger,
-  HoverCardContent,
-} from '../ui/hover-card';
+
 import { Button } from '../ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,12 +18,10 @@ export function UserAvatar({
   userId,
   src,
   alt,
-  hover = true,
+  hover = false,
   isIdle = null,
   currentPage = null,
   className }) {
-
-  const navigate = useNavigate();
 
   const { data: userProfile, } = useQuery(
     ["userProfile", userId],
@@ -34,10 +33,10 @@ export function UserAvatar({
   )
 
   const pageIcons = {
-    itinerary: <Calendar size={12}/>,
-    expenses: <PiggyBank size={12}/>,
-    wishlist: <Heart size={12}/>,
-    schedule: <CalendarClock size={12}/>,
+    itinerary: <Calendar size={12} />,
+    expenses: <PiggyBank size={12} />,
+    wishlist: <Heart size={12} />,
+    schedule: <CalendarClock size={12} />,
   }
 
   const currentPageIcon = pageIcons[currentPage] || null;
@@ -84,33 +83,16 @@ export function UserAvatar({
 
   if (hover) {
     return (
-      <HoverCard>
-        <HoverCardTrigger>
+      <Popover>
+        <PopoverTrigger asChild className="cursor-pointer">
           {avatar}
-        </HoverCardTrigger>
-        <HoverCardContent className="w-64">
-          <div className="flex items-center space-x-2">
-            <Avatar className="h-10 w-10">
-              <AvatarImage
-                src={userProfile?.image || src}
-                alt={userProfile?.username || alt}
-              />
-              <AvatarFallback>
-                <User className="w-1/2 h-1/2 text-gray-500" />
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="font-semibold">{userProfile?.username}</p>
-              <Button
-                variant="link"
-                onClick={() => navigate(`/profile/${userId}`)}
-              >
-                View Profile
-              </Button>
-            </div>
-          </div>
-        </HoverCardContent>
-      </HoverCard>
+        </PopoverTrigger>
+        <PopoverContent className="">
+          <ProfileDisplay
+            profile={userProfile}
+          />
+        </PopoverContent>
+      </Popover>
     )
   } else return avatar;
 }
@@ -120,6 +102,7 @@ export function UserAvatarStack({
   size = 10,
   maxUsers = 5,
   isIdle = null,
+  hover = false,
   className }) {
 
   let userIDs = userIds
@@ -140,9 +123,55 @@ export function UserAvatarStack({
     }).filter(profile => profile !== null); // Filter out null values
   }
 
+  const profilesQueries = useQueries(
+    userIds.map(userId => ({
+      queryKey: ['userProfile', userId.userID],
+      queryFn: () => getUserProfile(userId.userID),
+    }))
+  );
+
+  const allProfiles = profilesQueries.map(query => query.data);
+
 
   let remainingCount = (userIDs.length || 0) - maxUsers;
   let displayedProfiles = userIDs.slice(0, maxUsers);
+
+  let remaining = (
+    <div
+      className={cn(
+        "flex items-center justify-center text-sm font-medium",
+        "text-foreground-muted bg-secondary rounded-full",
+        "ring-2 ring-background"
+      )}
+      style={{
+        width: `${size * 4}px`,
+        height: `${size * 4}px`,
+        zIndex: displayedProfiles.length + 1
+      }}
+    >
+      +{remainingCount}
+    </div>
+  )
+
+  if (hover) {
+    remaining = (
+      <Popover>
+        <PopoverTrigger asChild className="cursor-pointer">
+          {remaining}
+        </PopoverTrigger>
+        <PopoverContent>
+          <div className="flex flex-col space-y-2 overflow-y-auto max-h-24">
+            {allProfiles.slice(maxUsers).map((profile) => (
+              <ProfileDisplay
+                key={profile?.id}
+                profile={profile}
+              />
+            ))}
+          </div>
+        </PopoverContent>
+      </Popover>
+    )
+  }
 
   return (
     <div className={cn("flex items-center", className)}>
@@ -162,23 +191,11 @@ export function UserAvatarStack({
               height: `${size * 4}px`,
               zIndex: displayedProfiles.length - index
             }}
+            hover={true}
           />
         ))}
         {remainingCount > 0 && (
-          <div
-            className={cn(
-              "flex items-center justify-center text-sm font-medium",
-              "text-foreground-muted bg-secondary rounded-full",
-              "ring-2 ring-background"
-            )}
-            style={{
-              width: `${size * 4}px`,
-              height: `${size * 4}px`,
-              zIndex: displayedProfiles.length + 1
-            }}
-          >
-            +{remainingCount}
-          </div>
+          remaining
         )}
       </div>
     </div>
@@ -186,3 +203,35 @@ export function UserAvatarStack({
 }
 
 export default Avatar;
+
+function ProfileDisplay({ profile }) {
+
+  const navigate = useNavigate();
+
+  return (
+    <div className="flex flex-row items-center">
+      <Avatar className="h-10 w-10">
+        <AvatarImage
+          src={profile?.image}
+          alt={profile?.username}
+        />
+        <AvatarFallback>
+          <User className="w-1/2 h-1/2 text-gray-500" />
+        </AvatarFallback>
+      </Avatar>
+      <div className="mt-0 ml-3 flex flex-row space-x-4 items-center">
+        <p className="font-semibold">{profile?.username}
+          <span className="inline-flex">
+            <Button
+              variant="ghost"
+              className="m-0 ml-1 p-0 h-4"
+              onClick={() => navigate(`/profile/${profile?.id}`)}
+            >
+              <LinkIcon />
+            </Button>
+          </span>
+        </p>
+      </div>
+    </div>
+  )
+}
