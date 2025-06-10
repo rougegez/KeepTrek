@@ -23,6 +23,7 @@ import ItinerarySocketWrapper from "@/components/Itinerary/ItinerarySocketWrappe
 import { Analytics } from '@vercel/analytics/react';
 import { TooltipProvider } from "@/components/ui/tooltip";
 import BlogEditor from "./components/Blog/BlogEditor";
+import ItineraryView from "./components/Guides/guides.jsx";
 // import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const queryClient = new QueryClient();
@@ -53,6 +54,7 @@ function App() {
                       <Route path="/" element={<LandingPage />} />
                       <Route path="/join/:inviteCode" element={<InvitePage />} />
                       <Route path="/AgodaPartnerVerification.html" element={<AgodaVerificationPage />} />
+                      <Route path="/guides" element={<ItineraryView/>}/>
                       {/* <Route path="/blog" element={<BlogEditor/>} /> */}
                       {/* Protected Routes */}
                       <Route
