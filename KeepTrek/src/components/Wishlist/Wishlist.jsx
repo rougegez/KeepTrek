@@ -420,7 +420,7 @@ export default function WishlistPage() {
           ref={contentRef}
           className={`${
             isMobile
-              ? "w-full bg-background relative z-30"
+              ? "w-full bg-background relative z-30 overflow-y-auto"
               : isMapVisible
               ? "col-span-1 h-screen"
               : "col-span-2 h-screen mx-auto max-w-4xl"
@@ -433,8 +433,16 @@ export default function WishlistPage() {
                 }
               : {}
           }
+          style={{
+            flexShrink: 0,
+            height: isMobile ? "calc(100vh - 3.5rem)" : "100vh",
+          }}
         >
-          <ScrollArea className={`${isMobile ? "p-6" : "h-full px-6 pt-6"}`}>
+          <ScrollArea
+            className={`${
+              isMobile ? "h-[calc(100vh-3.5rem)] p-6" : "h-full px-6 pt-6"
+            }`}
+          >
             <div className="space-y-4">
               {!isMobile && (
                 <h1 className="text-3xl font-bold">Suggest a place to Go!</h1>
@@ -577,7 +585,6 @@ export default function WishlistPage() {
               locationBias={tripDetails?.locationBias}
             />
             <HideMapButton />
-            <MapToggleButton />
           </div>
         )}
       </div>
