@@ -12,7 +12,7 @@ import MainExpensePage from "./components/Expenses/mainExpensePage.jsx";
 import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx";
 import Itinerary from "./components/Itinerary/Itinerary.jsx";
 import Wishlist from "./components/Wishlist/Wishlist.jsx";
-import { ProfilePage } from "./components/profilePage/profilePage.jsx";
+import ProfilePage from "./components/profilePage/profilePage.jsx";
 // import { TripDetailsPage } from "./components/TripDetails/TripDetailsPage.jsx";
 import { GrpSchedule } from "./components/GrpSchedule/GrpSchedule.jsx";
 import InvitePage from './components/Invite/InvitePage';
@@ -72,7 +72,7 @@ function App() {
                           </Route>
                         </Route>
                         <Route path="/create-trip" element={<CreateTrip />} />
-                        <Route path="/profile" element={<ProfilePage />} />
+                        <Route path="/profile/:userID" element={<ProfilePage />} />
                       </Route>
                     </Routes>
                   </div>

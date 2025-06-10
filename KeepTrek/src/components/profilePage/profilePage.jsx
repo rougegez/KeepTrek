@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { UserAvatar } from "./avatar";
 import EditProfileModal from "./EditProfileModal";
 import { getUserProfile, updateUserProfile } from "@/APIs/users";
-import { CurrentUser } from "@/APIs/auth";
 import TopNavbar from "../topNavBar/TopNavbar";
-import TripsList from "../yourTrips/tripList";
-import { getUserTrips } from "@/APIs/trip";
-import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useParams } from "react-router-dom";
+import { useQuery } from "react-query";
+import { withSuspense } from "@/utils/withSuspense.jsx";
+import { Button } from "@/components/ui/button";
+import { Mail, Pencil } from "lucide-react";
+import { useAuth } from "@/contexts/AuthProvider";
 
 const ProfileLoadingSkeleton = () => {
   return (
@@ -38,58 +40,26 @@ const ProfileLoadingSkeleton = () => {
   );
 };
 
-export const ProfilePage = () => {
+function ProfilePage () {
+  const { userID } = useParams();
+  const { user } = useAuth();
+
+  const { data : userProfile , refetch } = useQuery(
+    ["userProfile", userID],
+  () => getUserProfile(userID),
+  {
+    suspense: true,
+  })
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [userProfile, setUserProfile] = useState(null);
-  const [trips, setTrips] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [userData, setUserData] = useState({
-    tripsPlanned: 0, // Number of all trips user is involved in
-    groupsJoined: 0, // Number of trips with more than 1 user
-  });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch user data
-        const userId = await CurrentUser();
-        const profile = await getUserProfile(userId);
 
-        if (!profile) {
-          throw new Error("No profile data received");
-        }
-        setUserProfile(profile);
-
-        // Fetch trips
-        const userTrips = await getUserTrips();
-        setTrips(userTrips);
-
-        // Calculate tripsPlanned and groupsJoined
-        const tripsPlanned = userTrips.length; // All trips the user is involved in
-        const groupsJoined = userTrips.filter(
-          (trip) => trip.users.length > 1
-        ).length; // Trips with more than 1 user
-
-        setUserData({ tripsPlanned, groupsJoined });
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setError(error.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   const handleProfileUpdate = async (updatedProfile) => {
     try {
       await updateUserProfile(updatedProfile);
-      setUserProfile((prev) => ({
-        ...prev,
-        ...updatedProfile,
-      }));
+      refetch()
     } catch (error) {
       console.error("Error updating profile:", error);
       setError(error.message);
@@ -97,7 +67,6 @@ export const ProfilePage = () => {
   };
 
   const renderContent = () => {
-    if (isLoading) return <ProfileLoadingSkeleton />;
     if (error) return <div className="text-red-500">Error: {error}</div>;
 
     return (
@@ -113,55 +82,31 @@ export const ProfilePage = () => {
               <h1 className="text-2xl font-bold text-gray-900">
                 {userProfile.username}
               </h1>
-              <div className="flex items-center justify-center mt-2 text-gray-500">
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  />
-                </svg>
+              <div className="flex gap-2 items-center justify-center mt-2 text-gray-500">
+                <Mail className="h-4 w-4 "/>
                 <span>{userProfile.email}</span>
               </div>
             </div>
-            <button
+            { user === userID && (
+            <Button
               onClick={() => setIsEditModalOpen(true)}
-              className="bg-[#55C6B0] hover:bg-[#4AB19C] text-white px-4 py-2 rounded-md flex items-center"
             >
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                />
-              </svg>
-              Edit Profile
-            </button>
+              <Pencil/> Edit Profile
+            </Button>
+            )}
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-2 gap-4 py-4">
             <div className="text-center p-4 bg-gray-50 rounded-lg">
               <div className="text-3xl font-bold text-[#55C6B0]">
-                {userData.tripsPlanned}
+                {userProfile.trips}
               </div>
               <div className="text-sm text-gray-500">Trips Planned</div>
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-lg">
               <div className="text-3xl font-bold text-[#55C6B0]">
-                {userData.groupsJoined}
+                {userProfile.groups}
               </div>
               <div className="text-sm text-gray-500">Groups Joined</div>
             </div>
@@ -169,12 +114,6 @@ export const ProfilePage = () => {
         </div>
 
         {/* Shared Trips Section */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            Your Shared Trips
-          </h2>
-          <TripsList trips={trips} />
-        </div>
       </main>
     );
   };
@@ -195,4 +134,4 @@ export const ProfilePage = () => {
   );
 };
 
-export default ProfilePage;
+export default withSuspense(ProfilePage);
