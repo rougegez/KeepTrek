@@ -524,7 +524,6 @@ function Itinerary() {
               locationBias={tripDetails?.viewport}
             />
             <HideMapButton />
-            <MapToggleButton />
           </div>
         )}
       </div>
