@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
-import { useQuery } from "react-query";
+import { useQuery, useMutation, useQueryClient } from "react-query";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import {
@@ -21,11 +21,25 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 export const GrpSchedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDates, setSelectedDates] = useState(new Set());
-  const [loading, setLoading] = useState(false); // New: Track submit loading state
+  const [durationFilter, setDurationFilter] = useState(null);
   const { tripID } = useParams();
-  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
+  const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
   const { user: currentUser } = useAuth();
-  const { data: tripDetails } = useQuery(['trip', tripID], () => getTrip(tripID));
+  const queryClient = useQueryClient();
+
+  const { data: tripDetails } = useQuery(["trip", tripID], () =>
+    getTrip(tripID)
+  );
+
+  const { data: userAvailability, isLoading: isAvailabilityLoading } = useQuery(
+    ["userAvailability", tripID],
+    () => getUserAvailability(tripID),
+    {
+      onSuccess: (data) => {
+        setSelectedDates(new Set(data));
+      },
+    }
+  );
 
   // Only compute userRole when both currentUser and tripDetails are available
   const userRole = useMemo(() => {
@@ -36,35 +50,30 @@ export const GrpSchedule = () => {
 
   const canModify = useMemo(() => canEdit(userRole), [userRole]);
 
-  // Load user's availability
-  useEffect(() => {
-    const loadUserAvailability = async () => {
-      try {
-        const userAvailability = await getUserAvailability(tripID);
-        setSelectedDates(new Set(userAvailability));
-      } catch (error) {
-        console.error("Error loading user availability:", error.message);
-      }
-    };
-    loadUserAvailability();
-  }, [tripID]);
-
-  // Submit selected dates
-  const handleSubmit = async () => {
-    try {
-      setLoading(true); // Show loading spinner
-      const result = await updateAvailability(Array.from(selectedDates), tripID);
-      console.log("Availability saved:", result);
-      toast.success("Availability successfully submitted!");
-      window.location.reload();
-    } catch (error) {
-      console.error("Error saving availability:", error.message);
-      toast.error("Failed to submit availability", {
-        description: <p>{error.message}</p>,
-      });
-    } finally {
-      setLoading(false); // Hide loading spinner
+  const { mutate: submitAvailability, isLoading: isSubmitting } = useMutation(
+    () => updateAvailability(Array.from(selectedDates), tripID),
+    {
+      onSuccess: () => {
+        toast.success("Availability successfully submitted!");
+        queryClient.invalidateQueries(["userAvailability", tripID]);
+        queryClient.invalidateQueries(["suggestedPeriods", tripID]);
+        queryClient.invalidateQueries(["rangeAvailabilityUsernames", tripID]);
+      },
+      onError: (error) => {
+        console.error("Error saving availability:", error.message);
+        toast.error("Failed to submit availability", {
+          description: <p>{error.message}</p>,
+        });
+      },
     }
+  );
+
+  const handleSubmit = () => {
+    submitAvailability(null, {
+      onSuccess: () => {
+        window.location.reload();
+      },
+    });
   };
 
   return (
@@ -92,7 +101,9 @@ export const GrpSchedule = () => {
                         selectedDates={selectedDates}
                         setSelectedDates={setSelectedDates}
                         handleSubmit={handleSubmit}
-                        loading={loading} // Pass loading state
+                        loading={isSubmitting}
+                        durationFilter={durationFilter}
+                        setDurationFilter={setDurationFilter}
                       />
                     </div>
                   </div>
@@ -110,8 +121,8 @@ export const GrpSchedule = () => {
               )}
             </div>
             {/* Period Cards Now Always Visible */}
-            <div className="max-w-md mx-auto p-4">
-              <AvailableTrips tripID={tripID} />
+            <div className="max-w-md md:max-w-5xl mx-auto p-5">
+              <AvailableTrips tripID={tripID} durationFilter={durationFilter} />
             </div>
           </main>
         </div>

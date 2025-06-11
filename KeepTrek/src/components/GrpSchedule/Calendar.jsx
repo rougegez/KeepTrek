@@ -13,6 +13,8 @@ const Calendar = ({
   showControls = true,
   compact = false,
   loading = false, // loading state passed from parent
+  durationFilter,
+  setDurationFilter,
 }) => {
   const isDragging = useRef(false);
   const [opacity, setOpacity] = useState(0);
@@ -135,7 +137,12 @@ const Calendar = ({
 
   // If in readOnly mode with a highlightRange, compute which dates to highlight.
   let highlightedDates = new Set();
-  if (readOnly && highlightRange && highlightRange.start_date && highlightRange.end_date) {
+  if (
+    readOnly &&
+    highlightRange &&
+    highlightRange.start_date &&
+    highlightRange.end_date
+  ) {
     const start = new Date(highlightRange.start_date);
     const end = new Date(highlightRange.end_date);
     const iter = new Date(start);
@@ -202,6 +209,27 @@ const Calendar = ({
           >
             Today
           </button>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium">
+              Filter by duration (days):
+            </span>
+            <select
+              value={durationFilter || ""}
+              onChange={(e) =>
+                setDurationFilter(
+                  e.target.value ? parseInt(e.target.value, 10) : null
+                )
+              }
+              className="px-3 py-1 text-sm rounded-md bg-gray-200 text-gray-700"
+            >
+              <option value="">All</option>
+              {Array.from({ length: 29 }, (_, i) => i + 2).map((days) => (
+                <option key={days} value={days}>
+                  {days}
+                </option>
+              ))}
+            </select>
+          </div>
           <button
             className="px-4 py-2 border rounded text-white hover:opacity-80 disabled:bg-gray-400"
             style={{ backgroundColor: "#4DB6AC" }}

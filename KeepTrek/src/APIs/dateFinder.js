@@ -36,9 +36,12 @@ export const updateAvailability = async (availableDates, tripID) => {
   return response.data;
 };
 
-export const getSuggestedPeriods = async (tripID) => {
+export const getSuggestedPeriods = async (tripID, duration) => {
   const response = await axios.get(
-    `/date-finder/trip/${tripID}/suggested-periods`
+    `/date-finder/trip/${tripID}/suggested-periods`,
+    {
+      params: { duration },
+    }
   );
   return response.data;
 };
