@@ -21,7 +21,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 export const GrpSchedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDates, setSelectedDates] = useState(new Set());
-  const [durationFilter, setDurationFilter] = useState(null);
+  const [durationFilter, setDurationFilter] = useState(5);
   const { tripID } = useParams();
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
   const { user: currentUser } = useAuth();
@@ -102,8 +102,6 @@ export const GrpSchedule = () => {
                         setSelectedDates={setSelectedDates}
                         handleSubmit={handleSubmit}
                         loading={isSubmitting}
-                        durationFilter={durationFilter}
-                        setDurationFilter={setDurationFilter}
                       />
                     </div>
                   </div>
@@ -122,7 +120,12 @@ export const GrpSchedule = () => {
             </div>
             {/* Period Cards Now Always Visible */}
             <div className="max-w-md md:max-w-5xl mx-auto p-5">
-              <AvailableTrips tripID={tripID} durationFilter={durationFilter} />
+              <AvailableTrips
+                tripID={tripID}
+                durationFilter={durationFilter}
+                setDurationFilter={setDurationFilter}
+                isParentLoading={isAvailabilityLoading}
+              />
             </div>
           </main>
         </div>

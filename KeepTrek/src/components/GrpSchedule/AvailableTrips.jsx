@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient, useQueries } from "react-query";
 import { Card } from "@/components/ui/card";
-import { Users } from "lucide-react";
+import { Users, Info } from "lucide-react";
 import AutoFillCalendar from "@/components/GrpSchedule/AutoFillCalendar";
 import {
   getSuggestedPeriods,
@@ -336,12 +336,17 @@ const getDuration = (start, end) => {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 };
 
-const AvailableTrips = ({ tripID, durationFilter }) => {
+const AvailableTrips = ({
+  tripID,
+  durationFilter,
+  setDurationFilter,
+  isParentLoading,
+}) => {
   const { data: periodsData, isLoading: isLoadingPeriods } = useQuery(
-    ["suggestedPeriods", tripID],
-    () => getSuggestedPeriods(tripID),
+    ["suggestedPeriods", tripID, durationFilter],
+    () => getSuggestedPeriods(tripID, durationFilter),
     {
-      keepPreviousData: true,
+      enabled: !isParentLoading,
     }
   );
 
@@ -428,16 +433,16 @@ const AvailableTrips = ({ tripID, durationFilter }) => {
     return { bestPeriod: best, otherPeriods: others };
   }, [periodsWithAccurateAvailability]);
 
+  const isLoadingSuggestions = availabilityQueries.some((q) => q.isLoading);
   const totalPeople = tripDetails?.users?.length ?? 0;
-  const isLoading =
-    isLoadingPeriods ||
-    isLoadingDetails ||
-    isLoadingSelectedPeriod ||
-    availabilityQueries.some((q) => q.isLoading);
+  const isLoading = isParentLoading || isLoadingPeriods || isLoadingDetails;
 
-  if (isLoadingPeriods || isLoadingDetails) {
+  if (isLoading) {
     return (
-      <div className="mt-8">
+      <div className="mt-8 flex flex-col items-center">
+        <h3 className="text-xl font-bold text-center mb-4">
+          Available trip dates
+        </h3>
         <LoadingSpinner />
       </div>
     );
@@ -448,29 +453,93 @@ const AvailableTrips = ({ tripID, durationFilter }) => {
       <h3 className="text-xl font-bold text-center mb-4">
         Available trip dates
       </h3>
+      <div className="flex justify-center items-center space-x-2 mb-4">
+        <span className="text-sm font-medium">Filter by duration (days):</span>
+        <select
+          value={durationFilter || ""}
+          onChange={(e) =>
+            setDurationFilter(
+              e.target.value ? parseInt(e.target.value, 10) : null
+            )
+          }
+          className="px-3 py-1 text-sm rounded-md bg-gray-200 text-gray-700"
+        >
+          <option value="">All</option>
+          {Array.from({ length: 29 }, (_, i) => i + 2).map((days) => (
+            <option key={days} value={days}>
+              {days}
+            </option>
+          ))}
+        </select>
+        <Tooltip>
+          <TooltipTrigger>
+            <Info className="h-4 w-4 text-gray-500" />
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Selecting "All" may take some time to load.</p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
       <div>
         <div className="space-y-4">
-          {bestPeriod ? (
+          {periodsWithAccurateAvailability.length > 0 ? (
             <>
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h3 className="text-lg font-semibold mb-2 text-blue-800">
-                  Best Suggestion
-                </h3>
-                <PeriodCard
-                  key={`${bestPeriod.start_date}-${bestPeriod.end_date}`}
-                  tripID={tripID}
-                  period={bestPeriod}
-                  totalPeople={totalPeople}
-                  selectedPeriod={localSelectedPeriod}
-                  onSelect={setLocalSelectedPeriod}
-                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <h3 className="flex items-center text-lg font-semibold mb-2 text-blue-800">
+                      <span>Best Suggestion</span>
+                      {isLoadingSuggestions && (
+                        <div className="ml-2">
+                          <LoadingSpinner />
+                        </div>
+                      )}
+                    </h3>
+                  </TooltipTrigger>
+                  {isLoadingSuggestions && (
+                    <TooltipContent>
+                      <p>
+                        Finding the best suggestion based on availability...
+                      </p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+                {bestPeriod && (
+                  <PeriodCard
+                    key={`${bestPeriod.start_date}-${bestPeriod.end_date}`}
+                    tripID={tripID}
+                    period={bestPeriod}
+                    totalPeople={totalPeople}
+                    selectedPeriod={localSelectedPeriod}
+                    onSelect={setLocalSelectedPeriod}
+                  />
+                )}
+                {!isLoadingSuggestions && !bestPeriod && (
+                  <p className="text-gray-500">
+                    No suggestions with available people found.
+                  </p>
+                )}
               </div>
 
               {otherPeriods.length > 0 && (
                 <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                  <h3 className="text-lg font-semibold mb-2 text-gray-800">
-                    Other Suggestions
-                  </h3>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <h3 className="flex items-center text-lg font-semibold mb-2 text-gray-800">
+                        <span>Other Suggestions</span>
+                        {isLoadingSuggestions && (
+                          <div className="ml-2">
+                            <LoadingSpinner />
+                          </div>
+                        )}
+                      </h3>
+                    </TooltipTrigger>
+                    {isLoadingSuggestions && (
+                      <TooltipContent>
+                        <p>Loading availability for other suggestions...</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {otherPeriods.map((period) => (
                       <PeriodCard
