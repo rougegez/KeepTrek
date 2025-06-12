@@ -76,6 +76,10 @@ const BlogEditor = () => {
                         </Button>
                     </div>
                 </div>
+                <Separator />
+                {content}
+                <Separator />
+                <div dangerouslySetInnerHTML={{ __html: content }} />
             </div>  
         </>
     )

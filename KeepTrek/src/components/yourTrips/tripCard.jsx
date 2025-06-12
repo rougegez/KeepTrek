@@ -33,6 +33,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useAuth } from "@/contexts/AuthProvider";
 import ShareModal from "@/components/ShareTrips/ShareModal";
 import GoogleMapImage from "@/components/MapboxMap/GoogleMapImage";
+import { createDraftGuide } from "@/APIs/guides";
 
 export default function TripCard({ trip, onDelete }) {
   const navigate = useNavigate();
@@ -162,6 +163,17 @@ export default function TripCard({ trip, onDelete }) {
     }
   }
 
+  const handleCreateGuide = async () => {
+    try {
+      const response = await createDraftGuide(trip.tripID);
+      if (response.status === 200) {
+        navigate(`/guides/${response.data.id}`);
+      }
+    } catch (error) {
+      console.error("Failed to create guide:", error);
+    }
+  }
+
   // calculate days
   const days =
     Math.ceil(
@@ -261,6 +273,12 @@ export default function TripCard({ trip, onDelete }) {
                       </DropdownMenuItem>
                       {isAdmin && (
                         <>
+                        <DropdownMenuItem
+                            onClick={handleCreateGuide}
+                          >
+                            <Share2 className="h-4 w-4 mr-2" />
+                            Create Guide
+                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={(e) => {
