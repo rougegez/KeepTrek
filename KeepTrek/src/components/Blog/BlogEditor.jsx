@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label.jsx'
 import { Separator } from '@/components/ui/separator.jsx'
 import { Button } from '@/components/ui/button.jsx'
 
+import styles from './Blog.module.css'
+
 const sample = `
 <h1>
     Hi there,
@@ -79,7 +81,7 @@ const BlogEditor = () => {
                 <Separator />
                 {content}
                 <Separator />
-                <div dangerouslySetInnerHTML={{ __html: content }} />
+                <div className={styles.tiptap} dangerouslySetInnerHTML={{ __html: content }} />
             </div>  
         </>
     )

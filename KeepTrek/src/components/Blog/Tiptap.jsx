@@ -19,6 +19,7 @@ import Superscript from "@tiptap/extension-superscript";
 import Subscript from "@tiptap/extension-subscript";
 
 import { cn } from "@/lib/utils";
+import styles from "./Blog.module.css"
 
 import {
     Bold,
@@ -540,7 +541,7 @@ export const Tiptap = ({ content = sample, onContentChange, editable = true, sho
         extensions: extensions,
         editorProps: {
             attributes: {
-                class: "prose prose-sm sm:prose-sm lg:prose-lg xl:prose-xl m-5 focus:outline-none min-w-full",
+                class: `${styles.tiptap} focus:outline-none min-w-full`, // prose prose-sm sm:prose-sm lg:prose-lg xl:prose-xl m-5
             },
         },
     })

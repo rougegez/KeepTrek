@@ -3,7 +3,6 @@
 /* Import League Spartan font */
 @import url("https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&display=swap");
 
-
 /* Setup for shadcn/ui https://ui.shadcn.com/docs/installation/vite */
 @tailwind base;
 @tailwind components;
@@ -31,58 +30,6 @@ label,
 button {
   font-family: "Baloo 2", sans-serif;
   font-weight: 400;
-}
-
-h1 {
-  font-size: 2rem;
-  font-weight: 650;
-}
-
-h2 {
-  font-size: 1.75rem;
-  font-weight: 600;
-}
-
-h3 {
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-h4 {
-  font-size: 1.25rem;
-  font-weight: 550;
-}
-
-/* Additional styling for blockquotes and lists */
-blockquote {
-  font-style: italic;
-  border-inline-start-width: 0.25rem;
-  border-inline-start-color: hsl(var(--border));
-  padding-inline-start: 1em;
-}
-
-ul,
-ol {
-  margin: 1rem 0;
-  padding-left: 2rem;
-}
-
-ul li {
-  list-style-type: disc;
-  margin-bottom: 0.5rem;
-}
-
-ol li {
-  list-style-type: decimal;
-  margin-bottom: 0.5rem;
-}
-
-hr {
-  height: 0;
-  color: inherit;
-  border-top-width: 1px;
-  margin-top: 1em;
-  margin-bottom: 1em;
 }
 
 /* Ensure consistent margin and padding across elements */
