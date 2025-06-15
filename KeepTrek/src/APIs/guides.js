@@ -9,3 +9,27 @@ export const getGuide = async (guideID) => {
     const response = await axios.get(`/guides/${guideID}`);
     return response.data;
 }
+
+export const getGuides = async (
+    self = false,
+    title = null,
+    location = null,
+    creator_id = null,
+    publish_date = null,
+    publish_date_end = null,
+    page = null,
+    page_size = null
+) => {
+    const params = {};
+    params.self = self;
+    if (title) params.title = title;
+    if (location) params.location = location;
+    if (creator_id) params.creator_id = creator_id;
+    if (publish_date) params.publish_date = publish_date;
+    if (publish_date_end) params.publish_date_end = publish_date_end;
+    if (page) params.page = page;
+    if (page_size) params.page_size = page_size;
+
+    const response = await axios.get('/guides', { params: params });
+    return response.data;
+}
