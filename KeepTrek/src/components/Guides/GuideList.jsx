@@ -31,7 +31,17 @@ export default function GuideList() {
 
     const [sortDate, setSortDate] = useState(false);
 
+    let sortedSelfGuides = [];
 
+    if (selfGuides && selfGuides.length > 0) {
+        sortedSelfGuides = sortDate
+            ? selfGuides.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) :
+            selfGuides.sort((a, b) => {
+                if (a.title.toLowerCase() < b.title.toLowerCase()) return -1;
+                if (a.title.toLowerCase() > b.title.toLowerCase()) return 1;
+                return 0;
+            });
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -77,13 +87,13 @@ export default function GuideList() {
                             </div>
                             <CollapsibleContent className="">
                                 {!isLoading ?
-                                    (selfGuides && selfGuides.length > 0) ? (
+                                    (sortedSelfGuides && sortedSelfGuides.length > 0) ? (
                                         <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 m-1">
                                             <AnimatePresence>
-                                                {selfGuides.map((guide) => (
-                                                    <>
-                                                        <GuideCard key={guide.id} guide={guide} self={true} />
-                                                    </>
+                                                {sortedSelfGuides.map((guide) => (
+                                                    <motion.div key={guide.id} layout>
+                                                        <GuideCard guide={guide} self={true} />
+                                                    </motion.div>
                                                 ))}
                                             </AnimatePresence>
                                         </motion.div>)

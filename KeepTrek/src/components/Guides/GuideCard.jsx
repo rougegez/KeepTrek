@@ -42,8 +42,8 @@ function GuideCard({ guide, self = false }) {
                     </div>
                     <CardHeader className="pb-2">
                         <CardTitle className="text-2xl font-semibold">{guide.title}</CardTitle>
-                        <CardDescription className="text-gray-700 text-sm line-clamp-3">
-                            {guide.description}
+                        <CardDescription className="text-gray-700 text-sm line-clamp-1">
+                            {guide.description ? guide.description : <span className="italic text-gray-500">No description yet</span>}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>

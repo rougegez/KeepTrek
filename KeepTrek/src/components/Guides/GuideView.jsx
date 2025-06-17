@@ -8,25 +8,31 @@ import { useQuery } from "react-query"
 import { useParams } from "react-router-dom"
 import { getGuide } from "@/APIs/guides.js"
 import { withSuspense } from "@/utils/withSuspense.jsx"
+import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx"
+import { normalizeMarkers } from "../MapboxMap/MapUtil.jsx"
+import { getUserProfile } from "@/APIs/users.js"
 
 function GuideView() {
     const { guideID } = useParams()
-    const { data: guideData, isLoading } = useQuery(
+    const { data: guideData } = useQuery(
         ["guide", guideID], () =>
         getGuide(guideID), {
         refetchOnWindowFocus: false,
         suspense: true
     })
 
+    const { data: creatorData } = useQuery(
+        ["userProfile", guideData?.creatorID],
+        () => getUserProfile(guideData?.creatorID), {
+        refetchOnWindowFocus: false,
+        suspense: true
+    })
 
     const [selectedPlace, setSelectedPlace] = useState(null)
     const [likeCount, setLikeCount] = useState(30)
     const [isLiked, setIsLiked] = useState(false)
     const [isSaved, setIsSaved] = useState(false)
 
-    const allPlaces = guideData.days.flatMap((day) =>
-        day.activities.map((activity) => ({ ...activity, day: day.day })),
-    )
 
     const handleLike = () => {
         setIsLiked(!isLiked)
@@ -83,19 +89,24 @@ function GuideView() {
                                 {/* Title Overlay */}
                                 <div className="absolute bottom-6 left-6 text-white">
                                     <h1 className="text-4xl font-bold mb-2">{guideData.title}</h1>
-                                    {/* <div className="flex items-center space-x-3 text-sm mb-2">
+                                    <div className="flex items-center space-x-3 text-sm mb-2">
                                         <Avatar className="h-6 w-6">
                                             <AvatarImage
-                                                src={guideData.author.avatar || "/placeholder.svg"}
-                                                alt={guideData.author.name}
+                                                src={creatorData.image}
                                             />
-                                            <AvatarFallback className="text-xs">{guideData.author.initials}</AvatarFallback>
+                                            <AvatarFallback>
+                                                {creatorData.username}
+                                            </AvatarFallback>
                                         </Avatar>
-                                        <span className="font-medium">{guideData.author.name}</span>
+                                        <span className="font-medium">{creatorData.username}</span>
                                     </div>
                                     <div className="text-sm text-white/80">
-                                        Posted on {guideData.date} • {guideData.views} views
-                                    </div> */}
+                                        {guideData.published ? 
+                                            <span>Posted on {guideData.date} • {guideData.views} views</span>
+                                            :
+                                            <span className="text-yellow-400">Created on {guideData.created_at} • {guideData.views} views • Not Published</span>
+                                        }
+                                    </div>
                                 </div>
                             </div>
 
@@ -174,6 +185,17 @@ function GuideView() {
                         {/* Right Panel - Map */}
                         <div className="bg-gray-100 min-h-screen sticky top-16">
                             {/* <MapView places={allPlaces} selectedPlace={selectedPlace} onPlaceSelect={setSelectedPlace} /> */}
+                            <MapboxMap
+                                height="100%"
+                                width="100%"
+                                itineraryDays={guideData.days}
+                                initCenter={guideData?.coordinates}
+                                initViewport={guideData?.viewport}
+                                handlePanTo={selectedPlace}
+                                disableSaveLocation={true}
+                                disableSearchBar={true}
+                                markers={normalizeMarkers(guideData.days)}
+                            />
                         </div>
                     </div>
                 </div>
