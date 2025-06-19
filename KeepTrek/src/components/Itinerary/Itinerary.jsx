@@ -72,6 +72,19 @@ function Itinerary() {
   const [showLeaveAlert, setShowLeaveAlert] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
+  useEffect(() => {
+    // Only run if gtag is available
+    if (window.gtag) {
+      window.gtag('js', new Date());
+      window.gtag('config', 'G-50Y0Q2BGEQ');
+    } else if (window.dataLayer) {
+      // fallback for when gtag is not defined but dataLayer is
+      function gtag(){window.dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-50Y0Q2BGEQ');
+    }
+  }, []);
+
   const { data: tripDetails } = useQuery(
     ["trip", tripID],
     () => getTrip(tripID),
