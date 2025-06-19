@@ -8,6 +8,7 @@ import {
   fetchAvailableTrips,
   updateAvailability,
   getUserAvailability,
+  getTripDuration,
 } from "@/APIs/dateFinder";
 import AvailableTrips from "@/components/GrpSchedule/AvailableTrips";
 import MobileHeader from "../MobileHeader";
@@ -21,7 +22,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 export const GrpSchedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDates, setSelectedDates] = useState(new Set());
-  const [durationFilter, setDurationFilter] = useState(5);
+  const [durationFilter, setDurationFilter] = useState(null);
   const { tripID } = useParams();
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
   const { user: currentUser } = useAuth();
@@ -30,18 +31,32 @@ export const GrpSchedule = () => {
   useEffect(() => {
     // Only run if gtag is available
     if (window.gtag) {
-      window.gtag('js', new Date());
-      window.gtag('config', 'G-50Y0Q2BGEQ');
+      window.gtag("js", new Date());
+      window.gtag("config", "G-50Y0Q2BGEQ");
     } else if (window.dataLayer) {
       // fallback for when gtag is not defined but dataLayer is
-      function gtag(){window.dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-50Y0Q2BGEQ');
+      function gtag() {
+        window.dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-50Y0Q2BGEQ");
     }
   }, []);
 
   const { data: tripDetails } = useQuery(["trip", tripID], () =>
     getTrip(tripID)
+  );
+
+  const { data: tripDuration } = useQuery(
+    ["tripDuration", tripID],
+    () => getTripDuration(tripID),
+    {
+      onSuccess: (duration) => {
+        if (durationFilter === null) {
+          setDurationFilter(duration);
+        }
+      },
+    }
   );
 
   const { data: userAvailability, isLoading: isAvailabilityLoading } = useQuery(

@@ -342,8 +342,12 @@ const AvailableTrips = ({
   setDurationFilter,
   isParentLoading,
 }) => {
-  const { data: periodsData, isLoading: isLoadingPeriods } = useQuery(
-    ["suggestedPeriods", tripID, durationFilter],
+  const [displayLimit, setDisplayLimit] = useState(13);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Single query to get all periods (no pagination on backend)
+  const { data: allPeriodsData, isLoading: isLoadingPeriods } = useQuery(
+    ["allSuggestedPeriods", tripID, durationFilter],
     () => getSuggestedPeriods(tripID, durationFilter),
     {
       enabled: !isParentLoading,
@@ -351,8 +355,8 @@ const AvailableTrips = ({
   );
 
   const allPeriods = useMemo(() => {
-    return periodsData?.suggested_periods || [];
-  }, [periodsData]);
+    return allPeriodsData?.suggested_periods || [];
+  }, [allPeriodsData]);
 
   const { data: tripDetails, isLoading: isLoadingDetails } = useQuery(
     ["tripDetails", tripID],
@@ -374,8 +378,74 @@ const AvailableTrips = ({
     setLocalSelectedPeriod(selectedPeriod);
   }, [selectedPeriod]);
 
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [durationFilter]);
+
+  // Get the best period first to include it in availability queries
+  const bestPeriodFromAll = useMemo(() => {
+    const allPeriodsWithAvailability = allPeriods
+      .map((period) => {
+        return {
+          ...period,
+          people_count: period.people_count || 0,
+        };
+      })
+      .filter(
+        (p) =>
+          !durationFilter ||
+          getDuration(p.start_date, p.end_date) === durationFilter
+      );
+
+    if (allPeriodsWithAvailability.length === 0) {
+      return null;
+    }
+
+    const sortedPeriods = [...allPeriodsWithAvailability].sort((a, b) => {
+      if (a.people_count !== b.people_count) {
+        return b.people_count - a.people_count;
+      }
+      return (
+        getDuration(b.start_date, b.end_date) -
+        getDuration(a.start_date, a.end_date)
+      );
+    });
+
+    return sortedPeriods.find((p) => p.people_count > 0);
+  }, [allPeriods, durationFilter]);
+
+  // Get paginated periods for display
+  const paginatedPeriods = useMemo(() => {
+    const filteredPeriods = allPeriods.filter(
+      (p) =>
+        !durationFilter ||
+        getDuration(p.start_date, p.end_date) === durationFilter
+    );
+
+    const startIndex = 0;
+    const endIndex = currentPage * displayLimit;
+    return filteredPeriods.slice(startIndex, endIndex);
+  }, [allPeriods, durationFilter, currentPage, displayLimit]);
+
+  // Combine best period with other periods for availability queries
+  const allPeriodsForAvailability = useMemo(() => {
+    const periods = [...paginatedPeriods];
+    if (
+      bestPeriodFromAll &&
+      !periods.find(
+        (p) =>
+          p.start_date === bestPeriodFromAll.start_date &&
+          p.end_date === bestPeriodFromAll.end_date
+      )
+    ) {
+      periods.unshift(bestPeriodFromAll);
+    }
+    return periods;
+  }, [paginatedPeriods, bestPeriodFromAll]);
+
   const availabilityQueries = useQueries(
-    allPeriods.map((period) => ({
+    allPeriodsForAvailability.map((period) => ({
       queryKey: [
         "rangeAvailabilityUsernames",
         tripID,
@@ -393,7 +463,7 @@ const AvailableTrips = ({
   );
 
   const periodsWithAccurateAvailability = useMemo(() => {
-    return allPeriods
+    return allPeriodsForAvailability
       .map((period, index) => {
         const queryResult = availabilityQueries[index];
         const usernames = queryResult.data;
@@ -409,26 +479,25 @@ const AvailableTrips = ({
           !durationFilter ||
           getDuration(p.start_date, p.end_date) === durationFilter
       );
-  }, [allPeriods, availabilityQueries, durationFilter]);
+  }, [allPeriodsForAvailability, availabilityQueries, durationFilter]);
 
   const { bestPeriod, otherPeriods } = useMemo(() => {
     if (periodsWithAccurateAvailability.length === 0) {
       return { bestPeriod: null, otherPeriods: [] };
     }
 
-    // Note: Backend already sorts, but we can re-sort here if needed after re-calculating availability
-    const sortedPeriods = [...periodsWithAccurateAvailability].sort((a, b) => {
-      if (a.people_count !== b.people_count) {
-        return b.people_count - a.people_count;
-      }
-      return (
-        getDuration(b.start_date, b.end_date) -
-        getDuration(a.start_date, a.end_date)
-      );
-    });
+    // Find the best period from the periods with accurate availability
+    const best = periodsWithAccurateAvailability.find(
+      (p) => p.people_count > 0
+    );
 
-    const best = sortedPeriods.find((p) => p.people_count > 0);
-    const others = sortedPeriods.filter((p) => p !== best);
+    // For other periods, exclude the best period
+    const others = periodsWithAccurateAvailability.filter(
+      (p) =>
+        !best ||
+        p.start_date !== best.start_date ||
+        p.end_date !== best.end_date
+    );
 
     return { bestPeriod: best, otherPeriods: others };
   }, [periodsWithAccurateAvailability]);
@@ -436,6 +505,19 @@ const AvailableTrips = ({
   const isLoadingSuggestions = availabilityQueries.some((q) => q.isLoading);
   const totalPeople = tripDetails?.users?.length ?? 0;
   const isLoading = isParentLoading || isLoadingPeriods || isLoadingDetails;
+
+  // Check if there are more results to load
+  const filteredTotalCount = allPeriods.filter(
+    (p) =>
+      !durationFilter ||
+      getDuration(p.start_date, p.end_date) === durationFilter
+  ).length;
+
+  const hasMoreResults = paginatedPeriods.length < filteredTotalCount;
+
+  const handleLoadMore = () => {
+    setCurrentPage((prev) => prev + 1);
+  };
 
   if (isLoading) {
     return (
@@ -464,7 +546,6 @@ const AvailableTrips = ({
           }
           className="px-3 py-1 text-sm rounded-md bg-gray-200 text-gray-700"
         >
-          <option value="">All</option>
           {Array.from({ length: 29 }, (_, i) => i + 2).map((days) => (
             <option key={days} value={days}>
               {days}
@@ -476,7 +557,7 @@ const AvailableTrips = ({
             <Info className="h-4 w-4 text-gray-500" />
           </TooltipTrigger>
           <TooltipContent>
-            <p>Selecting "All" may take some time to load.</p>
+            <p>Select a duration to filter suggestions.</p>
           </TooltipContent>
         </Tooltip>
       </div>
@@ -552,6 +633,16 @@ const AvailableTrips = ({
                       />
                     ))}
                   </div>
+                  {hasMoreResults && (
+                    <div className="mt-4 text-center">
+                      <button
+                        onClick={handleLoadMore}
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                      >
+                        Load More
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </>
