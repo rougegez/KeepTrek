@@ -11,13 +11,19 @@ export default function RegisterForm({ onSwitchToLogin }) {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [formError, setFormError] = useState("");
 
-  const { isLoading,  register , googleLogin, error } = useAuth();
+  const { isLoading, register, googleLogin, error } = useAuth();
 
   const handleRegister = (e) => {
     e.preventDefault();
+    if (!email || !password) {
+      setFormError("Email and password are required.");
+      return;
+    }
+    setFormError("");
     register({ email, username, password });
-  }
+  };
 
   return (
     <Card className="w-full max-w-md mx-auto p-8 border-none shadow-none space-y-6">
@@ -72,7 +78,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
         </div>
         <div className="space-y-2">
           <label htmlFor="email" className="text-sm font-medium">
-            Email
+            Email <span className="text-red-500">*</span>
           </label>
           <Input
             id="email"
@@ -85,7 +91,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
         </div>
         <div className="space-y-2">
           <label htmlFor="password" className="text-sm font-medium">
-            Password
+            Password <span className="text-red-500">*</span>
           </label>
           <Input
             id="password"
@@ -96,13 +102,20 @@ export default function RegisterForm({ onSwitchToLogin }) {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        {error && <p className="text-red-500 text-sm">{error?.response?.data?.detail[0].ctx?.reason ?? error?.response?.data?.detail ?? error}</p>}
+        {formError && <p className="text-red-500 text-sm">{formError}</p>}
+        {error && (
+          <p className="text-red-500 text-sm">
+            {error?.response?.data?.detail[0].ctx?.reason ??
+              error?.response?.data?.detail ??
+              error}
+          </p>
+        )}
         <Button
           type="submit"
           className="w-full bg-teal-500 hover:bg-teal-600 text-white"
           disabled={isLoading}
         >
-          {isLoading ? <LoadingSpinner/> : "Register"}
+          {isLoading ? <LoadingSpinner /> : "Register"}
         </Button>
       </form>
 
