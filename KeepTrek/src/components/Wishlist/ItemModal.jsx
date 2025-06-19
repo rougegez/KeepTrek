@@ -12,6 +12,18 @@ import { getUserProfile } from "@/APIs/users";
 import { UserAvatar, UserAvatarStack } from '../profilePage/avatar';
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+// Utility function to linkify URLs in text
+function linkify(text) {
+  if (!text) return '';
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  return text.split(urlRegex).map((part, i) => {
+    if (urlRegex.test(part)) {
+      return <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline break-all">{part}</a>;
+    }
+    return part;
+  });
+}
+
 export default function ItemModal({ 
   item, 
   isOpen, 
@@ -158,7 +170,7 @@ export default function ItemModal({
               <Notebook className="w-4 h-4" /> 
               <label className="block text-sm font-normal text-muted-foreground">Notes</label>
             </div>
-            <p className="">{item.notes}</p>
+            <p className="whitespace-pre-line break-words">{linkify(item.notes)}</p>
           </div>
         </ScrollArea>
       </DialogContent>
