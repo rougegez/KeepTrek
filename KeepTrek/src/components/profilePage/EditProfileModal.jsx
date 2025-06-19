@@ -168,7 +168,6 @@ export default function EditProfileModal({
             />
           </div>
 
-
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
           <DialogFooter>
