@@ -48,6 +48,18 @@ export const ProfilePage = () => {
     tripsPlanned: 0, // Number of all trips user is involved in
     groupsJoined: 0, // Number of trips with more than 1 user
   });
+  useEffect(() => {
+    // Only run if gtag is available
+    if (window.gtag) {
+      window.gtag('js', new Date());
+      window.gtag('config', 'G-50Y0Q2BGEQ');
+    } else if (window.dataLayer) {
+      // fallback for when gtag is not defined but dataLayer is
+      function gtag(){window.dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-50Y0Q2BGEQ');
+    }
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
