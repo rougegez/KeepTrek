@@ -79,6 +79,19 @@ const ScrollToNextSection = ({ targetId }) => {
 };
 
 export default function LandingPage() {
+  useEffect(() => {
+    // Only run if gtag is available
+    if (window.gtag) {
+      window.gtag('js', new Date());
+      window.gtag('config', 'G-50Y0Q2BGEQ');
+    } else if (window.dataLayer) {
+      // fallback for when gtag is not defined but dataLayer is
+      function gtag(){window.dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-50Y0Q2BGEQ');
+    }
+  }, []);
+  
   // Use a string to track which button's popup is active (or null)
   const [activePopup, setActivePopup] = useState(null);
   const popupRef = useRef(null);
@@ -169,6 +182,7 @@ export default function LandingPage() {
   ];
 
   return (
+    
     <div className="min-h-screen bg-white overflow-x-hidden snap-y snap-mandatory">
       {/* Fixed navbar wrapper */}
   <div className="fixed top-0 left-0 right-0 z-50">
