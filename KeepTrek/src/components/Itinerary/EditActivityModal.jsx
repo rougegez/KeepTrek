@@ -6,12 +6,14 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import MapSearchBar from "../MapboxMap/GoogleMapsSearchbar.jsx";
 import { Textarea } from '@/components/ui/textarea';
 import { fetchPlaceDetails } from '@/APIs/fetchPlaceDetails.js';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 import { useItinerary } from '../../hooks/useItinerary.jsx';
 
 const EditActivityModal = ({ isOpen, onClose, activityId, locationBias}) => {
   const {days, getDayAndActivity: getActivity , updateActivity, changeActivityDay} = useItinerary();
   const { date: foundDate, day: foundDay, activity: activity} = getActivity(activityId) || {};
+  const [durationError, setDurationError] = useState(false);
 
   if (!activity) return null;
 
@@ -75,12 +77,12 @@ const EditActivityModal = ({ isOpen, onClose, activityId, locationBias}) => {
         onClose();
       }
     }}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="rounded-lg max-w-lg sm:max-w-lg w-[90vw] max-w-sm p-4 sm:p-6 max-h-[80vh] sm:max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>Edit Activity</DialogTitle>
         </DialogHeader>
 
-
+        <ScrollArea className="h-[60vh] sm:h-auto pr-2">
         <div className="space-y-4">
           {/*Select Day*/}
           <div>
@@ -143,10 +145,39 @@ const EditActivityModal = ({ isOpen, onClose, activityId, locationBias}) => {
             <Input
               id="activity-duration"
               type="text"
+              inputMode="decimal"
+              pattern="^\\d{0,2}(\\.5)?$"
               placeholder="e.g. 0.5, 1, 1.5"
               value={activity.duration}
-              onChange={handleDurationChange}
+              className={durationError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''}
+              onChange={(e) => {
+                // Remove all non-numeric and non-dot characters
+                let value = e.target.value.replace(/[^\d.]/g, '');
+                // Only allow one dot
+                const parts = value.split('.');
+                if (parts.length > 2) {
+                  value = parts[0] + '.' + parts.slice(1).join('');
+                }
+                // Prevent leading dot
+                if (value.startsWith('.')) value = '';
+                // Prevent more than 2 digits before dot
+                if (parts[0].length > 2) value = value.slice(0, 2) + (parts[1] ? '.' + parts[1] : '');
+                // Only allow .5 as decimal
+                if (parts[1] && parts[1] !== '5') value = parts[0] + '.5';
+                // Prevent 24 or above
+                const num = parseFloat(value);
+                if (!isNaN(num) && num >= 24) {
+                  setDurationError(true);
+                  return;
+                } else {
+                  setDurationError(false);
+                }
+                updateActivity({ ...activity, duration: value });
+              }}
             />
+            {durationError && (
+              <div className="text-xs text-red-600 mt-1">Duration cannot be 24 hours or more.</div>
+            )}
           </div>
 
           {/* Input Title  */}
@@ -174,19 +205,6 @@ const EditActivityModal = ({ isOpen, onClose, activityId, locationBias}) => {
             />
           </div>
 
-          {/* Input Notes */}
-          <div>
-            <label htmlFor="activity-notes" className="block text-sm font-medium text-muted-foreground mb-1">Notes</label>
-            <Textarea
-              id="activity-notes"
-              className="w-full min-h-[80px] p-2 text-sm bg-white rounded-lg resize-none placeholder:text-muted-foreground/50"
-              value={activity.notes}
-              onChange={(e) =>
-                updateActivity({ ...activity, notes: e.target.value })
-              }
-            />
-          </div>
-
           <div className="flex justify-end gap-2">
 
             {/* Close Button */}
@@ -196,6 +214,7 @@ const EditActivityModal = ({ isOpen, onClose, activityId, locationBias}) => {
           </div>
 
         </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
