@@ -5,6 +5,11 @@ export const createDraftGuide = async (tripID) => {
     return response
 }
 
+export const deleteGuide = async (guideID) => {
+    const response = await axios.delete(`/guides/delete/${guideID}`);
+    return response
+}
+
 export const getGuide = async (guideID) => {
     const response = await axios.get(`/guides/${guideID}`);
     return response.data;

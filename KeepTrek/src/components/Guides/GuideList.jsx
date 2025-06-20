@@ -21,13 +21,17 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function GuideList() {
 
-    const { data: selfGuides, isLoading } = useQuery(
+    const { data: selfGuides, isLoading , refetch} = useQuery(
         ["selfGuides"],
         () => getGuides(self = true),
         {
             refetchOnWindowFocus: false,
         }
     )
+
+    const handleDeleteGuide = () => {
+        refetch();
+    }
 
     const [sortDate, setSortDate] = useState(false);
 
@@ -92,7 +96,7 @@ export default function GuideList() {
                                             <AnimatePresence>
                                                 {sortedSelfGuides.map((guide) => (
                                                     <motion.div key={guide.id} layout>
-                                                        <GuideCard guide={guide} self={true} />
+                                                        <GuideCard guide={guide} self={true} onDelete={handleDeleteGuide} />
                                                     </motion.div>
                                                 ))}
                                             </AnimatePresence>
