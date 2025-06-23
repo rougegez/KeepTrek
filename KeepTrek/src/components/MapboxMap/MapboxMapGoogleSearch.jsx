@@ -1,7 +1,5 @@
-'use client'
 
 import React, { useEffect, useState, useMemo, useRef } from 'react'
-import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import MapSearchBar from './GoogleMapsSearchbar'
 import { fetchPlaceDetails } from '@/APIs/fetchPlaceDetails.js'
@@ -19,7 +17,7 @@ import PinControl from '@/components/MapboxMap/PinControl.jsx'
 import LocationCard from '@/components/MapboxMap/LocationCard.jsx'
 import ResetMapButton from '@/components/MapboxMap/ResetMapButton.jsx'
 
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API_KEY
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_API_KEY
 
 const MapboxMap = ({
     height = '100%',
@@ -286,6 +284,7 @@ const MapboxMap = ({
                 onMove={evt => setViewState(evt.viewState)}
                 style={{ width: width, height: height }}
                 mapStyle="mapbox://styles/mapbox/streets-v12"
+                mapboxAccessToken={MAPBOX_TOKEN}
             >
 
                 <GeolocateControl position="bottom-right" />

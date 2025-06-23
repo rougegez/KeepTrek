@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import TopNavbar from "../topNavBar/TopNavbar.jsx";
-import { getGuides } from "@/APIs/guides.js"; // You need to implement this API
+import { getGuides } from "@/APIs/guides.js";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";
@@ -16,14 +16,13 @@ import {
     CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useQuery } from "react-query";
-import GuideCard from "./GuideCard.jsx"
-import { motion, AnimatePresence } from "framer-motion";
+import GuidesList from "./components/GuideList.jsx";
 
-export default function GuideList() {
+export default function GuidePage() {
 
-    const { data: selfGuides, isLoading , refetch} = useQuery(
+    const { data: selfGuides, isLoading, refetch } = useQuery(
         ["selfGuides"],
-        () => getGuides(self = true),
+        () => getGuides({self: true}),
         {
             refetchOnWindowFocus: false,
         }
@@ -34,18 +33,6 @@ export default function GuideList() {
     }
 
     const [sortDate, setSortDate] = useState(false);
-
-    let sortedSelfGuides = [];
-
-    if (selfGuides && selfGuides.length > 0) {
-        sortedSelfGuides = sortDate
-            ? selfGuides.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) :
-            selfGuides.sort((a, b) => {
-                if (a.title.toLowerCase() < b.title.toLowerCase()) return -1;
-                if (a.title.toLowerCase() > b.title.toLowerCase()) return 1;
-                return 0;
-            });
-    }
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -91,16 +78,14 @@ export default function GuideList() {
                             </div>
                             <CollapsibleContent className="">
                                 {!isLoading ?
-                                    (sortedSelfGuides && sortedSelfGuides.length > 0) ? (
-                                        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 m-1">
-                                            <AnimatePresence>
-                                                {sortedSelfGuides.map((guide) => (
-                                                    <motion.div key={guide.id} layout>
-                                                        <GuideCard guide={guide} self={true} onDelete={handleDeleteGuide} />
-                                                    </motion.div>
-                                                ))}
-                                            </AnimatePresence>
-                                        </motion.div>)
+                                    selfGuides && selfGuides.length > 0
+                                        ?
+                                        (<GuidesList 
+                                            guides={selfGuides} 
+                                            sort={sortDate} 
+                                            self={true}
+                                            onDelete={handleDeleteGuide}
+                                            />)
                                         : (
                                             <div className="text-center text-gray-500">
                                                 <p className="text-lg">You have no guides yet.</p>

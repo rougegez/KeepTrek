@@ -25,8 +25,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import BlogEditor from "./components/Blog/BlogEditor";
 import ItineraryView from "./components/Guides/guides.jsx";
 import GuideView from "./components/Guides/GuideView.jsx";
-import GuideList from "./components/Guides/GuideList";
-// import GuideEdit from "./components/Guides/GuideEdit.jsx";
+import GuidePage from "./components/Guides/GuidePage";
+import GuideEdit from "./components/Guides/GuideEdit.jsx";
+import MapboxMap from "./components/MapboxMap/MapboxMapGoogleSearch";
 // import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const queryClient = new QueryClient();
@@ -57,13 +58,7 @@ function App() {
                       <Route path="/" element={<LandingPage />} />
                       <Route path="/join/:inviteCode" element={<InvitePage />} />
                       <Route path="/AgodaPartnerVerification.html" element={<AgodaVerificationPage />} />
-                      <Route path="/guides">
-                        <Route index element={<GuideList />} />
-                        <Route path="/guides/sample" element={<ItineraryView />} />
-                        <Route path="/guides/view/:guideID" element={<GuideView/>}/>
-                        {/* <Route path="/guides/edit/:guideID" element={<GuideEdit />} /> */}
-                      </Route>
-                      <Route path="/blog" element={<BlogEditor/>} />
+                      <Route path="/blog" element={<BlogEditor />} />
                       {/* Protected Routes */}
                       <Route
                         element={
@@ -72,6 +67,12 @@ function App() {
                         }
                       >
                         <Route path="/yourTrips" element={<YourTrips />} />
+                        <Route path="/guides">
+                          <Route index element={<GuidePage />} />
+                          <Route path="sample" element={<ItineraryView />} />
+                          <Route path="view/:guideID" element={<GuideView />} />
+                          <Route path="edit/:guideID" element={<GuideEdit />} />
+                        </Route>
                         <Route element={<WhosOnlineWrapper />}>
                           <Route element={<ItinerarySocketWrapper />}>
                             <Route path="/expenses/:tripID" element={<MainExpensePage />} />

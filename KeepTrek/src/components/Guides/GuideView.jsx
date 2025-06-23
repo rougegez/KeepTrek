@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import MapView from "./map.jsx"
 import { Heart, Share2, Clock, MapPin, Bookmark } from "lucide-react"
 import TopNavbar from "../topNavBar/TopNavbar.jsx"
 import { useQuery } from "react-query"
@@ -118,7 +117,7 @@ function GuideView() {
                                 {/* Days */}
                                 <div className="space-y-8">
                                     {guideData.days.map((day) => (
-                                        <div key={day.day}>
+                                        <div key={day.date}>
                                             <h2 className="text-2xl font-bold text-gray-900 mb-6">{day.date}</h2>
 
                                             <div className="space-y-4">

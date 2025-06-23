@@ -18,8 +18,8 @@ import {
     Trash, 
     Copy 
 } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
-import Image from '../ui/image';
+import { NavLink , useNavigate } from 'react-router-dom';
+import Image from '../../ui/image';
 import { motion } from 'framer-motion';
 import {
     DropdownMenu,
@@ -27,15 +27,15 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator
-} from '../ui/dropdown-menu';
-import { Button } from '../ui/button';
-import DeleteAlert from '../ui/DeleteAlert';
+} from '../../ui/dropdown-menu';
+import { Button } from '../../ui/button';
+import DeleteAlert from '../../ui/DeleteAlert';
 import { deleteGuide } from '@/APIs/guides';
 import toastPromise from '@/utils/toastPromise';
 
-function GuideCard({ guide, self = false, onDelete }) {
+export default function GuideCard({ guide, self = false, onDelete }) {
 
-    const status = guide.status || 'draft'; // Default to 'draft' if status is not set
+    const status = guide.status || 'draft';
     const statusColors = {
         draft: 'bg-yellow-100 text-yellow-800',
         published: 'bg-green-100 text-green-800',
@@ -165,5 +165,3 @@ function GuideCard({ guide, self = false, onDelete }) {
         </>
     )
 }
-
-export default GuideCard;

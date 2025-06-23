@@ -15,7 +15,7 @@ export const getGuide = async (guideID) => {
     return response.data;
 }
 
-export const getGuides = async (
+export const getGuides = async ({
     self = false,
     title = null,
     location = null,
@@ -24,7 +24,7 @@ export const getGuides = async (
     publish_date_end = null,
     page = null,
     page_size = null
-) => {
+}) => {
     const params = {};
     params.self = self;
     if (title) params.title = title;
