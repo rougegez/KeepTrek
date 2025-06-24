@@ -31,8 +31,8 @@ export default function EditProfileModal({
     image: userProfile?.image || '',
   });
   const [error, setError] = useState("");
-  const [file, setFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [fileArr, setFileArr] = useState([]);
+  const [imagePreview, setImagePreview] = useState(userProfile?.image || null);
   const [open, setOpen] = useState(false);
   const [shouldDeleteAvatar, setShouldDeleteAvatar] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -44,30 +44,32 @@ export default function EditProfileModal({
   };
 
   const handleFileChange = (files) => {
-    const file = files[0];
-    if (file) {
-      setFile(file);
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
-      setOpen(false);
+    setFileArr(files);
+    if (files.length > 0) {
+      setImagePreview(files[0].src);
+      setShouldDeleteAvatar(false);
+    } else {
+      setImagePreview(null);
+      setShouldDeleteAvatar(true); // Mark for deletion if no files left
+      setNewUser(prev => ({ ...prev, image: '' }));
     }
   };
 
   const handleDeleteAvatar = () => {
     setShouldDeleteAvatar(true);
     setImagePreview(null);
-    setFile(null);
+    setFileArr([]);
     setNewUser(prev => ({ ...prev, image: '' }));
   };
 
   // Cleanup preview URL when component unmounts or modal closes
   useEffect(() => {
     return () => {
-      if (imagePreview) {
+      if (imagePreview && fileArr[0]?.type === 'file') {
         URL.revokeObjectURL(imagePreview);
       }
     };
-  }, [imagePreview]);
+  }, [imagePreview, fileArr]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -87,11 +89,14 @@ export default function EditProfileModal({
         if (fileName) {
           await deleteFile(userProfile.id, fileName);
         }
-      } else if (file) {
+        updatedUser.image = '';
+      } else if (fileArr.length > 0 && fileArr[0].type === 'file') {
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("file", fileArr[0].file);
         const avatarUrl = await uploadFile(userProfile.id, formData);
         updatedUser.image = avatarUrl;
+      } else if (fileArr.length > 0 && fileArr[0].type === 'url') {
+        updatedUser.image = fileArr[0].src;
       }
 
       await updateUserProfile(updatedUser);
@@ -122,7 +127,7 @@ export default function EditProfileModal({
                 <PopoverTrigger asChild>
                   <Button variant="ghost" className="relative h-32 w-32 mx-4 rounded-full p-0 hover:bg-slate-50">
                     <UserAvatar 
-                      src={imagePreview || newUser.image} 
+                      src={imagePreview} 
                       alt="Profile picture"
                       className="h-full w-full cursor-pointer"
                     />
@@ -136,14 +141,16 @@ export default function EditProfileModal({
                     <h4 className="font-medium leading-none">Upload New Avatar</h4>
                     <FileUploader
                       className="w-full"
-                      onValueChange={(files) => handleFileChange(files)}
+                      value={fileArr}
+                      onValueChange={handleFileChange}
+                      maxFileCount={1}
                     />
                   </div>
                 </PopoverContent>
               </Popover>
 
               <div className="w-10">
-                {(imagePreview || newUser.image) && (
+                {(imagePreview) && (
                   <Button
                     type="button"
                     variant="ghost"

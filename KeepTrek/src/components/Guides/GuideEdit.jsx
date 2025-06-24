@@ -1,7 +1,19 @@
 import { useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Heart, Share2, Clock, MapPin, Bookmark } from "lucide-react"
+import {
+    Heart,
+    Share2,
+    Clock,
+    MapPin,
+    Bookmark,
+    MoreHorizontal,
+    Pencil,
+    Trash,
+    ImageIcon,
+    Save,
+    Share
+} from "lucide-react"
 import TopNavbar from "../topNavBar/TopNavbar.jsx"
 import { useQuery } from "react-query"
 import { useParams } from "react-router-dom"
@@ -10,9 +22,19 @@ import { withSuspense } from "@/utils/withSuspense.jsx"
 import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx"
 import { normalizeMarkers } from "../MapboxMap/MapUtil.jsx"
 import { getUserProfile } from "@/APIs/users.js"
+import Image from "../ui/image.jsx"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu"
+import ImageUploadSheet from "./components/ImageUploadSheet.jsx"
 
 function GuideEdit({ }) {
     const { guideID } = useParams()
+
     const { data: guideData } = useQuery(
         ["guide", guideID], () =>
         getGuide(guideID), {
@@ -27,20 +49,8 @@ function GuideEdit({ }) {
         suspense: true
     })
 
+    const [isSheetOpen, setIsSheetOpen] = useState(false)
     const [selectedPlace, setSelectedPlace] = useState(null)
-    const [likeCount, setLikeCount] = useState(30)
-    const [isLiked, setIsLiked] = useState(false)
-    const [isSaved, setIsSaved] = useState(false)
-
-
-    const handleLike = () => {
-        setIsLiked(!isLiked)
-        setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1))
-    }
-
-    const handleSave = () => {
-        setIsSaved(!isSaved)
-    }
 
     return (
         <>
@@ -54,35 +64,54 @@ function GuideEdit({ }) {
                         <div className="bg-white">
                             {/* Hero Section */}
                             <div className="relative h-80 overflow-hidden">
-                                <img
-                                    src={guideData.hero_image || "/placeholder.svg"}
-                                    alt={guideData.title}
+                                <Image
+                                    src={guideData.hero_image}
                                     className="w-full h-full object-cover"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
                                 {/* Action Buttons */}
                                 <div className="absolute top-4 right-4 flex items-center space-x-2">
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        onClick={handleLike}
-                                        className={`bg-white/90 backdrop-blur-sm ${isLiked ? "text-red-500" : "text-gray-700"}`}
-                                    >
-                                        <Heart className={`h-4 w-4 mr-1 ${isLiked ? "fill-current" : ""}`} />
-                                        {likeCount}
-                                    </Button>
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        onClick={handleSave}
-                                        className={`bg-white/90 backdrop-blur-sm ${isSaved ? "text-teal-600" : "text-gray-700"}`}
-                                    >
-                                        <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
-                                    </Button>
-                                    <Button variant="secondary" size="sm" className="bg-white/90 backdrop-blur-sm text-gray-700">
-                                        <Share2 className="h-4 w-4" />
-                                    </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-6 w-6 p-0 bg-white/80 rounded-full cursor-pointer"
+                                            >
+                                                <MoreHorizontal className="h-3 w-3" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem
+                                                className="cursor-pointer"
+                                                onClick={() => setIsSheetOpen(true)}
+                                            >
+                                                <ImageIcon className="w-4 h-4 " />
+                                                Change Banner
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator/>
+                                            <DropdownMenuItem
+                                                className="text-green-500 cursor-pointer"
+                                            >
+                                                <Save className="w-4 h-4 text-green-500" />
+                                                Save Draft
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                className="text-purple-500 cursor-pointer"
+                                            >
+                                                <Share className="w-4 h-4 text-purple-500" />
+                                                Publish
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator/>
+                                            <DropdownMenuItem
+                                                className="text-red-500 cursor-pointer"
+                                            >
+                                                <Trash className="w-4 h-4 text-red-500" />
+                                                Discard Draft
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
 
                                 {/* Title Overlay */}
@@ -199,6 +228,12 @@ function GuideEdit({ }) {
                     </div>
                 </div>
             </div>
+
+            <ImageUploadSheet
+                open={isSheetOpen}
+                onOpenChange={setIsSheetOpen}
+                onSave={(image) => console.log(image)}
+                maxFileCount={3}/>
         </>
     )
 }
