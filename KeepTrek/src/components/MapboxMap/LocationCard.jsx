@@ -1,4 +1,4 @@
-import { useState , useRef} from 'react'
+import { useState, useRef } from 'react'
 import { X, MapPin, Clock, Globe, MapIcon, ChevronDown } from 'lucide-react'
 import {
     Card,
@@ -13,16 +13,17 @@ import {
 } from '@/components/ui/collapsible.jsx'
 import { Button } from "@/components/ui/button.jsx"
 import { getDayIndex } from '@/components/MapboxMap/MapUtil.jsx'
-import { 
-    DropdownMenu, 
-    DropdownMenuContent, 
-    DropdownMenuCheckboxItem, 
-    DropdownMenuTrigger }
-from '@/components/ui/dropdown-menu.jsx'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuCheckboxItem,
+    DropdownMenuTrigger
+}
+    from '@/components/ui/dropdown-menu.jsx'
 import { toast } from 'sonner'
 import Image from '../ui/image'
 
-function LocationCard({ place, onClick, onSaveLocation, disableSaveLocation, itineraryDays, onDaySelected , daySelected}) {
+function LocationCard({ place, onClick, onSaveLocation, disableSaveLocation, itineraryDays, onDaySelected, daySelected }) {
 
     const [selectedDay, setSelectedDay] = useState(daySelected ?? null)
     const [isDayDropdownOpen, setIsDayDropdownOpen] = useState(false)
@@ -64,7 +65,7 @@ function LocationCard({ place, onClick, onSaveLocation, disableSaveLocation, iti
                         </a>
                     </div>
                 )}
-                <CardTitle className="text-base md:text-lg pr-24 md:pr-8 truncate">{place.name}</CardTitle>
+                <CardTitle className="text-base md:text-lg pr-24 md:pr-8 truncate">{place.title}</CardTitle>
             </CardHeader>
             <CardContent className="pt-1 px-3 md:px-6 pb-3">
                 <div className="flex flex-col md:flex-row gap-2 md:gap-4">
@@ -72,7 +73,7 @@ function LocationCard({ place, onClick, onSaveLocation, disableSaveLocation, iti
                         {/* Address */}
                         <div className="flex items-start gap-1 md:gap-2 pr-28 md:pr-0">
                             <MapPin size={12} className="flex-shrink-0 mt-0.5" />
-                            <p className="text-gray-500 text-[10px] md:text-sm line-clamp-3 md:line-clamp-none">{place.address}</p>
+                            <p className="text-gray-500 text-[10px] md:text-sm line-clamp-3 md:line-clamp-none">{place.location}</p>
                         </div>
 
                         {/* Rating */}
@@ -150,25 +151,25 @@ function LocationCard({ place, onClick, onSaveLocation, disableSaveLocation, iti
                                     Save Location
                                 </Button>
                                 {(itineraryDays.length > 0) && (
-                                <DropdownMenu open={isDayDropdownOpen} onOpenChange={setIsDayDropdownOpen}>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button className="px-1 rounded-l-none mt-1 md:mt-2 w-full md:w-auto text-[10px] md:text-sm py-1 md:py-2 h-auto">
-                                            <ChevronDown />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        {itineraryDays.map((day, index) => (
-                                            <DropdownMenuCheckboxItem 
-                                                key={index} 
-                                                value={day} 
-                                                checked={day === selectedDay}
-                                                onCheckedChange={(checked) => handleDaySelected(checked, day)}
+                                    <DropdownMenu open={isDayDropdownOpen} onOpenChange={setIsDayDropdownOpen}>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button className="px-1 rounded-l-none mt-1 md:mt-2 w-full md:w-auto text-[10px] md:text-sm py-1 md:py-2 h-auto">
+                                                <ChevronDown />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            {itineraryDays.map((day, index) => (
+                                                <DropdownMenuCheckboxItem
+                                                    key={index}
+                                                    value={day}
+                                                    checked={day === selectedDay}
+                                                    onCheckedChange={(checked) => handleDaySelected(checked, day)}
                                                 >
-                                                {day}
-                                            </DropdownMenuCheckboxItem>
-                                        ))}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                                    {day}
+                                                </DropdownMenuCheckboxItem>
+                                            ))}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 )}
                             </div>
                         )}
@@ -179,6 +180,7 @@ function LocationCard({ place, onClick, onSaveLocation, disableSaveLocation, iti
                         <div className="hidden md:block w-52 h-32 overflow-hidden rounded-lg">
                             <a href={place.link} target="_blank" rel="noopener noreferrer">
                                 <Image
+                                    key={place.image}
                                     src={place.image}
                                     className="w-full h-full object-cover"
                                     loading="lazy"

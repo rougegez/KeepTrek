@@ -17,7 +17,8 @@ import {
 import TopNavbar from "../topNavBar/TopNavbar.jsx"
 import { useQuery } from "react-query"
 import { useParams } from "react-router-dom"
-import { getGuide } from "@/APIs/guides.js"
+import { getGuide , updateGuide } from "@/APIs/guides.js"
+import { uploadFile } from "@/APIs/users.js"
 import { withSuspense } from "@/utils/withSuspense.jsx"
 import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx"
 import { normalizeMarkers } from "../MapboxMap/MapUtil.jsx"
@@ -31,6 +32,11 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import ImageUploadSheet from "./components/ImageUploadSheet.jsx"
+import { useAuth } from "@/contexts/AuthProvider.jsx"
+import GuideEditActivityCard from "./components/GuideEditActivityCard.jsx"
+import EditableRichText from "../ui/EditableRichText.jsx"
+import EditableText from "../ui/EditableText.jsx"
+import toastPromise from "@/utils/toastPromise.js"
 
 function GuideEdit({ }) {
     const { guideID } = useParams()
@@ -49,8 +55,72 @@ function GuideEdit({ }) {
         suspense: true
     })
 
+    const { user: userID } = useAuth()
+
+    const [guide, setGuide] = useState(guideData)
+
     const [isSheetOpen, setIsSheetOpen] = useState(false)
-    const [selectedPlace, setSelectedPlace] = useState(null)
+    const [selectedPlace, setSelectedPlace] = useState({ random: null, clickLocation: {} })
+
+    const handleChangeHeroImage = (images) => {
+        if (!images || images.length === 0) {
+            setGuide((prev) => ({
+                ...prev,
+                hero_image: ""
+            }))
+        } else {
+            let heroImage = { hero_image: images[0].src, file: images[0]?.file ? images[0]?.file : null }
+            setGuide((prev) => ({ ...prev, ...heroImage }))
+        }
+    }
+
+    const handleSaveGuide = async () => {
+        const response = toastPromise(new Promise(async (resolve, reject) => {
+            try {
+                let newGuide = { ...guide };
+                // Handle hero image upload
+                if (newGuide?.file) {
+                    const formData = new FormData();
+                    formData.append("file", guide.file);
+                    const heroImageUrl = await uploadFile(userID, formData);
+                    newGuide.hero_image = heroImageUrl;
+                    delete newGuide.file;
+                }
+                // Handle activity image uploads
+                let updatedDays = await Promise.all(
+                    newGuide.days.map(async (day) => {
+                        const updatedActivities = await Promise.all(
+                            day.activities.map(async (activity) => {
+                                if (activity.file) {
+                                    const formData = new FormData();
+                                    formData.append("file", activity.file);
+                                    const url = await uploadFile(userID, formData);
+                                    const { file, ...rest } = activity;
+                                    return { ...rest, image: url };
+                                }
+                                delete activity.file
+                                return activity;
+                            })
+                        );
+                        return { ...day, activities: updatedActivities };
+                    })
+                );
+                newGuide.days = updatedDays;
+                const response = await updateGuide(guideID, newGuide);
+                resolve(response); // or resolve(response) if you update
+            } catch (err) {
+                reject(err);
+            }
+        }), {
+            loading : "Saving draft...",
+            success: "Draft saved successfully!",
+            error: (e) => {return {message: "Failed to save draft.", description: e.message || "Unexpected error occurred."}} 
+        })
+    }
+
+    const handleActivityLocationClick = (activity) => {
+        setSelectedPlace({ random: new Date().getTime(), clickLocation: activity });
+    }
 
     return (
         <>
@@ -65,7 +135,8 @@ function GuideEdit({ }) {
                             {/* Hero Section */}
                             <div className="relative h-80 overflow-hidden">
                                 <Image
-                                    src={guideData.hero_image}
+                                    key={guide.hero_image}
+                                    src={guide.hero_image}
                                     className="w-full h-full object-cover"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
@@ -90,22 +161,23 @@ function GuideEdit({ }) {
                                                 <ImageIcon className="w-4 h-4 " />
                                                 Change Banner
                                             </DropdownMenuItem>
-                                            <DropdownMenuSeparator/>
+                                            <DropdownMenuSeparator />
                                             <DropdownMenuItem
-                                                className="text-green-500 cursor-pointer"
+                                                className="text-green-500 hover:!text-green-500 cursor-pointer"
+                                                onClick={handleSaveGuide}
                                             >
                                                 <Save className="w-4 h-4 text-green-500" />
                                                 Save Draft
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
-                                                className="text-purple-500 cursor-pointer"
+                                                className="text-purple-500 hover:!text-purple-500 cursor-pointer"
                                             >
                                                 <Share className="w-4 h-4 text-purple-500" />
                                                 Publish
                                             </DropdownMenuItem>
-                                            <DropdownMenuSeparator/>
+                                            <DropdownMenuSeparator />
                                             <DropdownMenuItem
-                                                className="text-red-500 cursor-pointer"
+                                                className="text-red-500 hover:!text-red-500 cursor-pointer"
                                             >
                                                 <Trash className="w-4 h-4 text-red-500" />
                                                 Discard Draft
@@ -116,7 +188,16 @@ function GuideEdit({ }) {
 
                                 {/* Title Overlay */}
                                 <div className="absolute bottom-6 left-6 text-white">
-                                    <h1 className="text-4xl font-bold mb-2">{guideData.title}</h1>
+                                    <EditableText 
+                                        initialValue={guide.title}
+                                        placeholder="Double-click to edit the title"
+                                        onSave={(value) => setGuide((prev) => ({ ...prev, title: value }))}
+                                        className="w-full text-4xl font-bold mb-2"
+                                        classNames={{
+                                            textArea: "md:text-4xl",
+                                            placeholder: "text-white/70"
+                                        }}
+                                        />
                                     <div className="flex items-center space-x-3 text-sm mb-2">
                                         <Avatar className="h-6 w-6">
                                             <AvatarImage
@@ -141,67 +222,37 @@ function GuideEdit({ }) {
                             {/* Content */}
                             <div className="p-6">
                                 {/* Description */}
-                                <p className="text-gray-700 leading-relaxed mb-8">{guideData.description}</p>
+                                <EditableRichText
+                                    initialContent={guideData.description}
+                                    onSave={(content) => setGuide((prev) => ({ ...prev, description: content }))}
+                                    placeholder="Double-click to edit the description"
+                                    disabledExtensions={["image", "link", "heading", "horizontalRule", "textalign"]}
+                                    className="text-gray-700 leading-relaxed mb-6"
+                                />
 
                                 {/* Days */}
                                 <div className="space-y-8">
-                                    {guideData.days.map((day) => (
+                                    {guide.days.map((day, dayIndex) => (
                                         <div key={day.date}>
                                             <h2 className="text-2xl font-bold text-gray-900 mb-6">{day.date}</h2>
 
                                             <div className="space-y-4">
-                                                {day.activities.map((activity, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className={`group flex items-start space-x-4 p-4 rounded-xl cursor-pointer transition-all hover:bg-gray-50 border border-transparent hover:border-gray-200 ${selectedPlace?.name === activity.name
-                                                            ? "bg-teal-50 ring-2 ring-teal-200 border-teal-200"
-                                                            : ""
-                                                            }`}
-                                                        onClick={() => setSelectedPlace(activity)}
-                                                    >
-                                                        {/* Activity Number Badge */}
-                                                        <div className="flex-shrink-0">
-                                                            <div className="w-8 h-8 bg-gray-100 group-hover:bg-teal-100 rounded-full flex items-center justify-center text-sm font-semibold text-gray-600 group-hover:text-teal-600 transition-colors">
-                                                                {index + 1}
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Content */}
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-start justify-between mb-2">
-                                                                <h3 className="font-semibold text-gray-900 leading-tight">{activity.title}</h3>
-                                                                {/* Time & Duration - Only show if available */}
-                                                                {(activity.time || activity.duration) && (
-                                                                    <div className="flex-shrink-0 ml-4">
-                                                                        <div className="flex items-center space-x-2 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                                                                            <Clock className="h-3 w-3" />
-                                                                            <span>
-                                                                                {activity.time && activity.duration
-                                                                                    ? `${activity.time} • ${activity.duration}`
-                                                                                    : activity.time || activity.duration}
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-
-                                                            <p className="text-sm text-gray-600 leading-relaxed mb-2">{activity.description}</p>
-
-                                                            <div className="flex items-center text-xs text-gray-500">
-                                                                <MapPin className="h-3 w-3 mr-1" />
-                                                                <span>Click to view on map</span>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Image */}
-                                                        <div className="flex-shrink-0">
-                                                            <img
-                                                                src={activity.image || "/placeholder.svg"}
-                                                                alt={activity.name}
-                                                                className="w-64 h-40 object-cover rounded-lg shadow-sm"
-                                                            />
-                                                        </div>
-                                                    </div>
+                                                {day.activities.map((activity, activityIndex) => (
+                                                    <GuideEditActivityCard
+                                                        key={activityIndex}
+                                                        activity={activity}
+                                                        position={activityIndex + 1}
+                                                        selected={selectedPlace.clickLocation.title === activity.title}
+                                                        onSave={(updatedActivity) => {
+                                                            setGuide((prev) => {
+                                                                const updatedDays = [...prev.days];
+                                                                updatedDays[dayIndex].activities[activityIndex] = updatedActivity;
+                                                                return { ...prev, days: updatedDays };
+                                                            });
+                                                            console.log(guide)
+                                                        }}
+                                                        onClick={() => handleActivityLocationClick(activity)}
+                                                    />
                                                 ))}
                                             </div>
                                         </div>
@@ -232,8 +283,8 @@ function GuideEdit({ }) {
             <ImageUploadSheet
                 open={isSheetOpen}
                 onOpenChange={setIsSheetOpen}
-                onSave={(image) => console.log(image)}
-                maxFileCount={3}/>
+                onSave={handleChangeHeroImage}
+                maxFileCount={1} />
         </>
     )
 }

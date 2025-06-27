@@ -51,19 +51,13 @@ export function FileUploader(props) {
     )
 
     function onRemove(index) {
+        const removed = files[index]
+        if (removed?.type === 'file' && removed?.src) {
+            URL.revokeObjectURL(removed.src)
+        }
         const newFiles = files.filter((_, i) => i !== index)
         onValueChange?.(newFiles)
     }
-
-    React.useEffect(() => {
-        // Clean up object URLs
-        return () => {
-            files?.forEach(img => {
-                if (img.type === 'file' && img.src) URL.revokeObjectURL(img.src)
-            })
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
 
     return (
         <div className="relative flex flex-col gap-6 overflow-hidden">

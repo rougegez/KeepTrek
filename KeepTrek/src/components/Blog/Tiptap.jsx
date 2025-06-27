@@ -118,7 +118,7 @@ const MenuBar = ({ editor, disabledExtensions = [] }) => {
     }
 
     return (
-        <div className="flex flex-wrap max-w-full gap-x-4 overflow-auto" style={{ scrollbarWidth: 'none' }}>
+        <div className="flex flex-wrap max-w-full gap-x-4 overflow-auto cursor-default" style={{ scrollbarWidth: 'none' }}>
             <div className="shrink-0">
                 {/* Bold */}
                 {!disabledSet.has('bold') && (
@@ -306,116 +306,120 @@ const MenuBar = ({ editor, disabledExtensions = [] }) => {
 
             <Separator orientation="vertical" className="min-h-0 h-8" />
 
-            <div className="shrink-0">
-                {/* Link */}
-                {!disabledSet.has('link') && (
-                    <Popover
-                        open={isLinkOpen}
-                        onOpenChange={(open) => {
-                            setIsLinkOpen(open)
-                            if (!open) {
-                                setLink()
-                            }
-                        }}
-                    >
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <DataStatePropInterceptor>
-                                    <PopoverTrigger asChild >
+            {(!disabledSet.has('link') || !disabledSet.has('image')) && (
+                <>
+                    <div className="shrink-0">
+                        {/* Link */}
+                        {!disabledSet.has('link') && (
+                            <Popover
+                                open={isLinkOpen}
+                                onOpenChange={(open) => {
+                                    setIsLinkOpen(open)
+                                    if (!open) {
+                                        setLink()
+                                    }
+                                }}
+                            >
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
                                         <DataStatePropInterceptor>
+                                            <PopoverTrigger asChild >
+                                                <DataStatePropInterceptor>
 
-                                            <Toggle
-                                                pressed={editor.isActive("link")}
-                                                onPressedChange={() => { setHyperLink(editor.getAttributes('link').href) }}
-                                            >
-                                                <LinkIcon />
-                                            </Toggle>
+                                                    <Toggle
+                                                        pressed={editor.isActive("link")}
+                                                        onPressedChange={() => { setHyperLink(editor.getAttributes('link').href) }}
+                                                    >
+                                                        <LinkIcon />
+                                                    </Toggle>
+                                                </DataStatePropInterceptor>
+                                            </PopoverTrigger>
                                         </DataStatePropInterceptor>
-                                    </PopoverTrigger>
-                                </DataStatePropInterceptor>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <span>Insert Link</span>
-                            </TooltipContent>
-                        </Tooltip>
-                        <PopoverContent>
-                            <div className="grid gap-2">
-                                <div className="flex justify-between">
-                                    <h4 className="font-medium leading-none items-center my-auto">Insert Link</h4>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => { editor.chain().focus().unsetLink().run(); setIsLinkOpen(false); }}
-                                    >
-                                        <Trash color="#ef4444" />
-                                    </Button>
-                                </div>
-                                <div className="grid w-full max-w-sm items-center gap-1.5">
-                                    <Label htmlFor="linkto">Link to</Label>
-                                    <Input
-                                        id="linkto"
-                                        defaultValue={hyperlink}
-                                        onChange={(e) => setHyperLink(e.target.value)}
-                                        className="col-span-2 h-8"
-                                    />
-                                </div>
-                            </div>
-                        </PopoverContent>
-                    </Popover>
-                )}
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <span>Insert Link</span>
+                                    </TooltipContent>
+                                </Tooltip>
+                                <PopoverContent>
+                                    <div className="grid gap-2">
+                                        <div className="flex justify-between">
+                                            <h4 className="font-medium leading-none items-center my-auto">Insert Link</h4>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => { editor.chain().focus().unsetLink().run(); setIsLinkOpen(false); }}
+                                            >
+                                                <Trash color="#ef4444" />
+                                            </Button>
+                                        </div>
+                                        <div className="grid w-full max-w-sm items-center gap-1.5">
+                                            <Label htmlFor="linkto">Link to</Label>
+                                            <Input
+                                                id="linkto"
+                                                defaultValue={hyperlink}
+                                                onChange={(e) => setHyperLink(e.target.value)}
+                                                className="col-span-2 h-8"
+                                            />
+                                        </div>
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                        )}
 
-                {/* Image */}
-                {!disabledSet.has('image') && (
-                    <Popover
-                        open={isImageOpen}
-                        onOpenChange={(open) => {
-                            setIsImageOpen(open)
-                            if (!open) {
-                                setImage()
-                            }
-                        }}
-                    >
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <DataStatePropInterceptor>
-                                    <PopoverTrigger asChild >
+                        {/* Image */}
+                        {!disabledSet.has('image') && (
+                            <Popover
+                                open={isImageOpen}
+                                onOpenChange={(open) => {
+                                    setIsImageOpen(open)
+                                    if (!open) {
+                                        setImage()
+                                    }
+                                }}
+                            >
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
                                         <DataStatePropInterceptor>
-                                            <Toggle
-                                                pressed={editor.isActive("image")}
-                                                onPressedChange={() => { setImageLink(editor.getAttributes("image").src) }}
-                                            >
-                                                <ImageIcon />
-                                            </Toggle>
+                                            <PopoverTrigger asChild >
+                                                <DataStatePropInterceptor>
+                                                    <Toggle
+                                                        pressed={editor.isActive("image")}
+                                                        onPressedChange={() => { setImageLink(editor.getAttributes("image").src) }}
+                                                    >
+                                                        <ImageIcon />
+                                                    </Toggle>
+                                                </DataStatePropInterceptor>
+                                            </PopoverTrigger>
                                         </DataStatePropInterceptor>
-                                    </PopoverTrigger>
-                                </DataStatePropInterceptor>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <span>Insert Image</span>
-                            </TooltipContent>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <span>Insert Image</span>
+                                    </TooltipContent>
 
-                        </Tooltip>
-                        <PopoverContent>
-                            <div className="grid gap-2">
-                                <div className="flex justify-between">
-                                    <h4 className="font-medium leading-none my-2">Insert Image</h4>
-                                </div>
-                                <div className="grid w-full max-w-sm items-center gap-1.5">
-                                    <Label htmlFor="imageto">Image source</Label>
-                                    <Input
-                                        id="image"
-                                        defaultValue={imageLink}
-                                        onChange={(e) => setImageLink(e.target.value)}
-                                        className="col-span-2 h-8"
-                                    />
-                                </div>
-                            </div>
-                        </PopoverContent>
-                    </Popover>
-                )}
-            </div>
+                                </Tooltip>
+                                <PopoverContent>
+                                    <div className="grid gap-2">
+                                        <div className="flex justify-between">
+                                            <h4 className="font-medium leading-none my-2">Insert Image</h4>
+                                        </div>
+                                        <div className="grid w-full max-w-sm items-center gap-1.5">
+                                            <Label htmlFor="imageto">Image source</Label>
+                                            <Input
+                                                id="image"
+                                                defaultValue={imageLink}
+                                                onChange={(e) => setImageLink(e.target.value)}
+                                                className="col-span-2 h-8"
+                                            />
+                                        </div>
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                        )}
+                    </div>
 
-            <Separator orientation="vertical" className="min-h-0 h-8" />
+                    <Separator orientation="vertical" className="min-h-0 h-8" />
+                </>
+            )}
 
             {/* Headings */}
             {!disabledSet.has('heading') && (
@@ -771,7 +775,6 @@ const extensions = [
             class: "marker:text-[#374151]",
         }
     }),
-    ListItem,
     StarterKit.configure({
         heading: false,
         bulletList: false,

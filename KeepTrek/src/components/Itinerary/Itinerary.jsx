@@ -262,8 +262,6 @@ function Itinerary() {
   };
 
   const handleLocationClick = (clickLocation) => {
-    clickLocation.address = clickLocation.location;
-    clickLocation.name = clickLocation.title;
     const random = new Date().getTime();
     setSearchedPlace({ random, clickLocation });
   };
