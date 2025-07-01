@@ -196,6 +196,15 @@ export default function TripCard({ trip, onDelete }) {
       (1000 * 60 * 60 * 24)
     ) || 1;
 
+  // Helper to format date as DD/MM/YYYY
+  const formatDate = (dateStr) => {
+    const d = new Date(dateStr);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   return (
     <>
       <motion.div
@@ -233,8 +242,7 @@ export default function TripCard({ trip, onDelete }) {
               <div className="flex items-center space-x-2 text-md text-gray-500 mb-2">
                 <CalendarIcon className="w-4 h-4" />
                 <span>
-                  {new Date(trip.startDate).toLocaleDateString()} -{" "}
-                  {new Date(trip.endDate).toLocaleDateString()}
+                  {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
                 </span>
               </div>
               <div className="flex items-center space-x-2 text-sm text-gray-500">

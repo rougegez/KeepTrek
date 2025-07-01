@@ -217,6 +217,7 @@ export default function DebtsSummary() {
               className={`flex justify-between items-center p-3 ${
                 debt.paidBy === user ? 'hover:bg-gray-300 cursor-pointer' : ''
               } transition-colors duration-200 rounded-lg`}
+              onClick={debt.paidBy === user ? () => handleDebtClick(debt) : undefined}
             >
               <div className="flex items-center gap-4">
                 <div className="bg-gray-300 w-12 h-12 rounded-full flex flex-col items-center justify-center">

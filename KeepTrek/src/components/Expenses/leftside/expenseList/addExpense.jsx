@@ -50,6 +50,10 @@ export const AddExpense = () => {
 
         try {
             const amount = parseFloat(newExpense.amount);
+            if (amount < 0.01) {
+                toast.info("Amount must be at least RM 0.01");
+                return;
+            }
             let splits = [];
 
             if (newExpense.splitMethod === "equal") {

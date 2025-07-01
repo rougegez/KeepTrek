@@ -19,6 +19,18 @@ export default function YourTrips() {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sortDate, setSortDate] = useState(false); // State to manage sorting by date
+  useEffect(() => {
+    // Only run if gtag is available
+    if (window.gtag) {
+      window.gtag('js', new Date());
+      window.gtag('config', 'G-50Y0Q2BGEQ');
+    } else if (window.dataLayer) {
+      // fallback for when gtag is not defined but dataLayer is
+      function gtag(){window.dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-50Y0Q2BGEQ');
+    }
+  }, []);
 
   useEffect(() => {
     const fetchTrips = async () => {

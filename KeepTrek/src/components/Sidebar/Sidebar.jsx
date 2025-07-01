@@ -55,7 +55,7 @@ export const AppSidebar = ({ tripID }) => {
         >
           <a href="/" className="">
             <img
-              src="/assets/KeepTrekNew.png"
+              src="/assets/navbarlogo.png"
               alt="KeepTrek Logo"
               className="h-12"
             />

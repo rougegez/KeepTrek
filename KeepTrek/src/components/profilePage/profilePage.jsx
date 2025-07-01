@@ -53,6 +53,19 @@ function ProfilePage () {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [error, setError] = useState(null);
+  
+  useEffect(() => {
+    // Only run if gtag is available
+    if (window.gtag) {
+      window.gtag('js', new Date());
+      window.gtag('config', 'G-50Y0Q2BGEQ');
+    } else if (window.dataLayer) {
+      // fallback for when gtag is not defined but dataLayer is
+      function gtag(){window.dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-50Y0Q2BGEQ');
+    }
+  }, []);
 
 
 

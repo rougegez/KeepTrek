@@ -175,17 +175,6 @@ export default function EditProfileModal({
             />
           </div>
 
-          <div className="grid gap-2">
-            <label className="text-sm font-medium text-muted-foreground">
-              Email
-            </label>
-            <Input
-              type="email"
-              value={newUser.email}
-              onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
-            />
-          </div>
-
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
           <DialogFooter>
