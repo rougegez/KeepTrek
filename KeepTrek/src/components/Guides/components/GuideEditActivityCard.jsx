@@ -3,8 +3,9 @@ import { Clock, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import EditableRichText from "../../ui/EditableRichText";
 import EditableText from "@/components/ui/EditableText";
-import Image from "@/components/ui/image";
 import ImageUploadSheet from "./ImageUploadSheet";
+import CarouselView from "@/components/Blog/Carousel/CarouselView";
+import { formatTime } from "@/utils/timeFormat.jsx";
 
 function GuideEditActivityCard({ activity, position, selected, onClick, onSave }) {
 
@@ -14,9 +15,13 @@ function GuideEditActivityCard({ activity, position, selected, onClick, onSave }
         if (!images || images.length === 0) {
             onSave({ ...activity, image: null });
         } else {
-            let newActivity = { image: images[0].src, file: images[0]?.file ? images[0]?.file : null }
-            onSave({ ...activity, ...newActivity });    
+            let newImages = images.map(img => ({
+                src: img.src,
+                file: img.file || null
+            }));
+            onSave({ ...activity, image: newImages });
         }
+        setIsSheetOpen(false);
     }
 
     return (
@@ -32,7 +37,7 @@ function GuideEditActivityCard({ activity, position, selected, onClick, onSave }
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between mb-2">
+                <div className="flex items-start justify-between mb-2 ">
                     <EditableText
                         initialValue={activity.title}
                         placeholder="Click to edit activity title"
@@ -46,8 +51,8 @@ function GuideEditActivityCard({ activity, position, selected, onClick, onSave }
                                 <Clock className="h-3 w-3" />
                                 <span>
                                     {activity.time && activity.duration
-                                        ? `${activity.time} • ${activity.duration}`
-                                        : activity.time || activity.duration}
+                                        ? `${formatTime(activity.time)} • ${activity.duration} hours`
+                                        : `${activity.duration} hours` || formatTime(activity.time)}
                                 </span>
                             </div>
                         </div>
@@ -57,7 +62,7 @@ function GuideEditActivityCard({ activity, position, selected, onClick, onSave }
                 <EditableRichText
                     initialContent={activity.description}
                     onSave={(content) => onSave({ ...activity, description: content })}
-                    placeholder="Double-click to edit the description"
+                    placeholder="Click to edit the description"
                     disabledExtensions={["image", "link", "heading", "horizontalRule", "textalign"]}
                     className="text-sm text-gray-600 leading-relaxed mb-2"
                 />
@@ -72,20 +77,34 @@ function GuideEditActivityCard({ activity, position, selected, onClick, onSave }
             </div>
 
             {/* Image */}
-            <div >
-                <Image
-                    key={activity.image}
-                    src={activity.image}
-                    className="w-64 h-40 object-cover rounded-lg shadow-sm cursor-pointer"
-                    onClick={() => setIsSheetOpen(true)}
+            <div className="">
+                <CarouselView
+                    classNames={{
+                        carousel: "w-64 h-40 max-w-64 max-h-40",
+                        item: "basis-full",
+                        image: "w-64 h-40 max-w-64 max-h-40 rounded-lg",
+                        leftArrow: "opacity-65",
+                        rightArrow: "opacity-65"
+                    }}
+                    carouselProps={{
+                        plugins: [],
+                        opts: {
+                            loop: true,
+                            align: 'start'
+                        }
+                    }}
+                    images={activity.image ? activity.image.map((img) => { return img.src || img }) : activity.image}
+                    onImageClick={() => setIsSheetOpen(true)}
                 />
             </div>
 
             <ImageUploadSheet
+                key={activity.id + isSheetOpen}
+                imgs={activity.image ? activity.image.map((img) => { return { src: img.src || img, type: 'blob' } }) : activity.image}
                 open={isSheetOpen}
                 onOpenChange={setIsSheetOpen}
                 onSave={handleSaveImage}
-                maxFileCount={1}
+                maxFileCount={3}
             />
         </div>
     );

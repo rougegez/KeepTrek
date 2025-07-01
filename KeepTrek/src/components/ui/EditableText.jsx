@@ -63,7 +63,7 @@ function EditableText({
             ) : (
                 <span
                     className={cn("cursor-pointer inline-block w-full", classNames.text)}
-                    onDoubleClick={() => setEditMode(true)}
+                    onClick={() => setEditMode(true)}
                 >
                     {(!value || value.trim() === "") ? (
                         <span className={cn("text-[#666666] italic pointer-events-none select-none", classNames.placeholder)}>

@@ -17,7 +17,7 @@ import {
 import TopNavbar from "../topNavBar/TopNavbar.jsx"
 import { useQuery } from "react-query"
 import { useParams } from "react-router-dom"
-import { getGuide , updateGuide } from "@/APIs/guides.js"
+import { getGuide, updateGuide } from "@/APIs/guides.js"
 import { uploadFile } from "@/APIs/users.js"
 import { withSuspense } from "@/utils/withSuspense.jsx"
 import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx"
@@ -75,7 +75,7 @@ function GuideEdit({ }) {
     }
 
     const handleSaveGuide = async () => {
-        const response = toastPromise(new Promise(async (resolve, reject) => {
+        toastPromise(new Promise(async (resolve, reject) => {
             try {
                 let newGuide = { ...guide };
                 // Handle hero image upload
@@ -91,15 +91,20 @@ function GuideEdit({ }) {
                     newGuide.days.map(async (day) => {
                         const updatedActivities = await Promise.all(
                             day.activities.map(async (activity) => {
-                                if (activity.file) {
-                                    const formData = new FormData();
-                                    formData.append("file", activity.file);
-                                    const url = await uploadFile(userID, formData);
-                                    const { file, ...rest } = activity;
-                                    return { ...rest, image: url };
-                                }
-                                delete activity.file
-                                return activity;
+                                let newImages = await Promise.all(
+                                    activity.image && activity.image.length > 0 ?
+                                        activity.image.map(async (img) => {
+                                            if (img.file) {
+                                                const formData = new FormData();
+                                                formData.append("file", img.file);
+                                                const url = await uploadFile(userID, formData);
+                                                return url
+                                            }
+                                            return img.src || img;
+                                        })
+                                        : []
+                                );
+                                return { ...activity, image: newImages };
                             })
                         );
                         return { ...day, activities: updatedActivities };
@@ -107,14 +112,14 @@ function GuideEdit({ }) {
                 );
                 newGuide.days = updatedDays;
                 const response = await updateGuide(guideID, newGuide);
-                resolve(response); // or resolve(response) if you update
+                resolve(response)
             } catch (err) {
                 reject(err);
             }
         }), {
-            loading : "Saving draft...",
+            loading: "Saving draft...",
             success: "Draft saved successfully!",
-            error: (e) => {return {message: "Failed to save draft.", description: e.message || "Unexpected error occurred."}} 
+            error: (e) => { return { message: "Failed to save draft.", description: e.message || "Unexpected error occurred." } }
         })
     }
 
@@ -188,16 +193,16 @@ function GuideEdit({ }) {
 
                                 {/* Title Overlay */}
                                 <div className="absolute bottom-6 left-6 text-white">
-                                    <EditableText 
+                                    <EditableText
                                         initialValue={guide.title}
-                                        placeholder="Double-click to edit the title"
+                                        placeholder="Click to edit the title"
                                         onSave={(value) => setGuide((prev) => ({ ...prev, title: value }))}
                                         className="w-full text-4xl font-bold mb-2"
                                         classNames={{
                                             textArea: "md:text-4xl",
                                             placeholder: "text-white/70"
                                         }}
-                                        />
+                                    />
                                     <div className="flex items-center space-x-3 text-sm mb-2">
                                         <Avatar className="h-6 w-6">
                                             <AvatarImage
@@ -225,7 +230,7 @@ function GuideEdit({ }) {
                                 <EditableRichText
                                     initialContent={guideData.description}
                                     onSave={(content) => setGuide((prev) => ({ ...prev, description: content }))}
-                                    placeholder="Double-click to edit the description"
+                                    placeholder="Click to edit the description"
                                     disabledExtensions={["image", "link", "heading", "horizontalRule", "textalign"]}
                                     className="text-gray-700 leading-relaxed mb-6"
                                 />

@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function GuidesList({ guides, self=false, sort, onDelete}) {
 
   const sortedGuides = sort
-    ? guides.sort((a, b) => new Date(b.startDate) - new Date(a.startDate)) : 
+    ? guides.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) : 
     guides.sort((a, b) => {
-      if (a.tripName.toLowerCase() < b.tripName.toLowerCase()) return -1;
-      if (a.tripName.toLowerCase() > b.tripName.toLowerCase()) return 1;
+      if (a.title.toLowerCase() < b.title.toLowerCase()) return -1;
+      if (a.title.toLowerCase() > b.title.toLowerCase()) return 1;
       return 0;
     });
 

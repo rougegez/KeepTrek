@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
     Carousel,
     CarouselContent,
@@ -11,8 +11,23 @@ import { Card } from '@/components/ui/card'
 import Image from '@/components/ui/image'
 import ImageUploadSheet from '@/components/Guides/components/ImageUploadSheet'
 import Autoplay from 'embla-carousel-autoplay'
+import { cn } from '@/lib/utils'
 
-export default function CarouselEdit({ file, onFileChange, preview }) {
+export default function CarouselEdit({
+    file,
+    onFileChange,
+    preview,
+    classNames = {
+        carousel: null,
+        content: null,
+        item: null,
+        imageDiv: null,
+        image: null,
+        leftArrow: null,
+        rightArrow: null,
+    },
+    ...props
+}) {
     const carouselProps = preview ? {
         plugins: [
             Autoplay(),
@@ -32,7 +47,7 @@ export default function CarouselEdit({ file, onFileChange, preview }) {
     const [images, setImages] = useState(file ?? [])
 
     // Preview images: use .src from each file object
-    const imagePreview = images.map(img => img.src || img.url)
+    const imagePreview = images.map(img => img.src || img.url || img)
 
     const handleSaveImages = (newImages) => {
         setImages(newImages)
@@ -45,12 +60,14 @@ export default function CarouselEdit({ file, onFileChange, preview }) {
     return (
         <>
             <Carousel
+                className={cn("w-full", classNames.carousel)}
                 {...carouselProps}
+                {...props}
             >
-                <CarouselContent>
+                <CarouselContent className={cn("-ml-1", classNames.content)}>
                     {!preview &&
-                        <CarouselItem className="pl-1 md:basis-1/2 lg:basis-1/3 object-contain">
-                            <div className="relative w-full aspect-video">
+                        <CarouselItem className={cn("pl-1 basis-1/3 object-contain", classNames.item)}>
+                            <div className={cn("relative w-full aspect-video", classNames.imageDiv)}>
                                 <Card
                                     className="cursor-pointer hover:bg-muted/50 transition-colors h-full"
                                     onClick={() => setIsOpen(true)}
@@ -63,11 +80,12 @@ export default function CarouselEdit({ file, onFileChange, preview }) {
                         </CarouselItem>
                     }
                     {(imagePreview && imagePreview.length > 0) && imagePreview.map((image, idx) => (
-                        <CarouselItem key={image + idx} className="pl-1 md:basis-1/2 lg:basis-1/3 object-contain">
-                            <div className="relative w-full aspect-video">
+                        <CarouselItem key={image + idx} className={cn("pl-1 basis-1/3 object-contain", classNames.item)}>
+                            <div className={cn("relative w-full aspect-video", classNames.imageDiv)}>
                                 <Image
+                                    key={image}
                                     src={image}
-                                    className="absolute inset-0 w-full h-full object-cover"
+                                    className={cn("object-cover", classNames.image)}
                                 />
                             </div>
                         </CarouselItem>
@@ -75,12 +93,15 @@ export default function CarouselEdit({ file, onFileChange, preview }) {
                 </CarouselContent>
                 {imagePreview.length !== 0 &&
                     <>
-                        <CarouselPrevious className="left-4" />
-                        <CarouselNext className="right-4" />
+                        <CarouselPrevious className={cn("left-4", classNames.leftArrow)} />
+                        <CarouselNext className={cn("right-4", classNames.rightArrow)} />
                     </>
                 }
             </Carousel>
+
             <ImageUploadSheet
+                key={images + isOpen}
+                imgs={images.map((img) => ({ src: img.src || img, type: img.type || 'blob' }))}
                 open={isOpen}
                 onOpenChange={setIsOpen}
                 onSave={handleSaveImages}

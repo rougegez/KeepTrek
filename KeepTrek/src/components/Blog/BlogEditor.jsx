@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator.jsx'
 import { Button } from '@/components/ui/button.jsx'
 
 import styles from './Blog.module.css'
+import CarouselView from './Carousel/CarouselView.jsx'
 
 const sample = `
 <h1>
@@ -39,52 +40,67 @@ const sample = `
 
 const BlogEditor = () => {
 
-    const [previewMode, setPreviewMode] = useState(false)
-    const [images, setImages] = useState([])
-    const [content, setContent] = useState(sample)
+  const [previewMode, setPreviewMode] = useState(false)
+  const [images, setImages] = useState([])
+  const [content, setContent] = useState(sample)
 
-    return (
-        <>
-            <TopNavbar />
-            <CarouselEdit file={images} onFileChange={(file) => setImages(file)} preview={previewMode} />
-            <div className="mx-48">
-                <TipTap 
-                    content={content} 
-                    onContentChange={(setContent)}
-                    editable={!previewMode}  />
-                <Separator />
-                <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2 py-4">
-                        <Switch
-                            id="previewMode"
-                            checked={previewMode}
-                            onCheckedChange={setPreviewMode}
-                        />
-                        <Label
-                            htmlFor="previewMode">
-                            Preview Mode
-                        </Label>
-                    </div>
-                    <div className="flex items-center gap-2 py-4">
-                        <Button
-                            variant="destructive"
-                            onClick={() => alert('Blog discard!')}  > 
-                            Discard
-                        </Button>
-                        <Button
-                            onClick={() => console.log(content, images)}
-                        >
-                            Publish
-                        </Button>
-                    </div>
-                </div>
-                <Separator />
-                {content}
-                <Separator />
-                <div className={styles.tiptap} dangerouslySetInnerHTML={{ __html: content }} />
-            </div>  
-        </>
-    )
+  return (
+    <>
+      <TopNavbar />
+      <CarouselEdit
+        file={images}
+        onFileChange={(file) => setImages(file)}
+        preview={previewMode}
+        classNames={{
+          item: "pl-1 md:basis-1/2 lg:basis-1/3 object-contain",
+          image: "w-full h-full"
+        }}
+      />
+      <CarouselView
+        images={images.map(img => img.src || img)}
+        classNames={{
+          item: "pl-1 md:basis-1/2 lg:basis-1/3 object-contain",
+          image: "w-full h-full"
+        }}
+        />
+      <div className="mx-48">
+        <TipTap
+          content={content}
+          onContentChange={(setContent)}
+          editable={!previewMode} />
+        <Separator />
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2 py-4">
+            <Switch
+              id="previewMode"
+              checked={previewMode}
+              onCheckedChange={setPreviewMode}
+            />
+            <Label
+              htmlFor="previewMode">
+              Preview Mode
+            </Label>
+          </div>
+          <div className="flex items-center gap-2 py-4">
+            <Button
+              variant="destructive"
+              onClick={() => alert('Blog discard!')}  >
+              Discard
+            </Button>
+            <Button
+              onClick={() => console.log(content, images)}
+            >
+              Publish
+            </Button>
+          </div>
+        </div>
+        <Separator />
+        {content}
+        <Separator />
+        <div className={styles.tiptap} dangerouslySetInnerHTML={{ __html: content }} />
+      </div>
+    </>
+  )
 }
 
 export default BlogEditor

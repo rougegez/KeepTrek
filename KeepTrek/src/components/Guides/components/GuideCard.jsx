@@ -85,7 +85,9 @@ export default function GuideCard({ guide, self = false, onDelete }) {
                         <CardHeader className="pb-2">
                             <CardTitle className="text-2xl font-semibold">{guide.title}</CardTitle>
                             <CardDescription className="text-gray-700 text-sm line-clamp-1">
-                                {guide.description ? guide.description : <span className="italic text-gray-500">No description yet</span>}
+                                {guide.description ? 
+                                    <div dangerouslySetInnerHTML={{__html : guide.description}} /> 
+                                    : <span className="italic text-gray-500">No description yet</span>}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>

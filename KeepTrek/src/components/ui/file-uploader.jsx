@@ -26,6 +26,7 @@ export function FileUploader(props) {
         maxFileCount = 1,
         multiple = false,
         disabled = false,
+        showPreview = true,
         className,
         ...dropzoneProps
     } = props
@@ -108,7 +109,7 @@ export function FileUploader(props) {
                     </div>
                 )}
             </Dropzone>
-            {files?.length ? (
+            {(files?.length > 0 && showPreview) && (
                 <ScrollArea className="h-fit w-full px-3">
                     <div className="flex max-h-48 flex-col gap-4">
                         {files?.map((img, index) => (
@@ -121,7 +122,7 @@ export function FileUploader(props) {
                         ))}
                     </div>
                 </ScrollArea>
-            ) : null}
+            )}
         </div>
     )
 }

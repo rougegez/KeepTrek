@@ -35,11 +35,11 @@ function EditableRichText({ initialContent, placeholder, disabledExtensions = []
             ) : (
               <div
                 className={`${styles.tiptap} cursor-pointer`}
-                onDoubleClick={() => setEditMode(true)}
+                onClick={() => setEditMode(true)}
               >
                 {(!content || content === "<p></p>" || content.trim() === "") ? (
                   <span className="text-[#666666] italic pointer-events-none select-none">
-                    {placeholder || "Double-click to edit..."}
+                    {placeholder || "Click to edit..."}
                   </span>
                 ) : (
                   <span dangerouslySetInnerHTML={{ __html: content }} />
