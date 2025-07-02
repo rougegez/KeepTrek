@@ -17,7 +17,7 @@ import {
 import TopNavbar from "../topNavBar/TopNavbar.jsx"
 import { useQuery } from "react-query"
 import { useParams } from "react-router-dom"
-import { getGuide, updateGuide } from "@/APIs/guides.js"
+import { getGuide, updateGuide, deleteGuide } from "@/APIs/guides.js"
 import { uploadFile } from "@/APIs/users.js"
 import { withSuspense } from "@/utils/withSuspense.jsx"
 import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx"
@@ -37,9 +37,12 @@ import GuideEditActivityCard from "./components/GuideEditActivityCard.jsx"
 import EditableRichText from "../ui/EditableRichText.jsx"
 import EditableText from "../ui/EditableText.jsx"
 import toastPromise from "@/utils/toastPromise.js"
+import DeleteAlert from "../ui/DeleteAlert.jsx"
+import { useNavigate } from "react-router-dom"
 
 function GuideEdit({ }) {
     const { guideID } = useParams()
+    const navigate = useNavigate()
 
     const { data: guideData } = useQuery(
         ["guide", guideID], () =>
@@ -61,6 +64,7 @@ function GuideEdit({ }) {
 
     const [isSheetOpen, setIsSheetOpen] = useState(false)
     const [selectedPlace, setSelectedPlace] = useState({ random: null, clickLocation: {} })
+    const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
     const handleChangeHeroImage = (images) => {
         if (!images || images.length === 0) {
@@ -75,7 +79,7 @@ function GuideEdit({ }) {
     }
 
     const handleSaveGuide = async () => {
-        toastPromise(new Promise(async (resolve, reject) => {
+        await toastPromise(new Promise(async (resolve, reject) => {
             try {
                 let newGuide = { ...guide };
                 // Handle hero image upload
@@ -126,6 +130,21 @@ function GuideEdit({ }) {
     const handleActivityLocationClick = (activity) => {
         setSelectedPlace({ random: new Date().getTime(), clickLocation: activity });
     }
+
+    const handleDeleteGuide = async () => {
+        const response = await toastPromise(
+            deleteGuide(guideID),
+            {
+                loading: 'Deleting guide...',
+                success: 'Guide deleted successfully!',
+                error: (error) => ({
+                    message: 'Failed to delete guide',
+                    description: error?.message || 'An error occurred while deleting the guide.'
+                })
+            }
+        );
+        if (response.status === 200) navigate('/guides')
+    };
 
     return (
         <>
@@ -183,6 +202,7 @@ function GuideEdit({ }) {
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem
                                                 className="text-red-500 hover:!text-red-500 cursor-pointer"
+                                                onClick={() => setShowDeleteAlert(true)}
                                             >
                                                 <Trash className="w-4 h-4 text-red-500" />
                                                 Discard Draft
@@ -207,7 +227,7 @@ function GuideEdit({ }) {
                                         <Avatar className="h-6 w-6">
                                             <AvatarImage
                                                 src={creatorData.image}
-                                            />
+                                            /> 
                                             <AvatarFallback>
                                                 {creatorData.username}
                                             </AvatarFallback>
@@ -290,6 +310,14 @@ function GuideEdit({ }) {
                 onOpenChange={setIsSheetOpen}
                 onSave={handleChangeHeroImage}
                 maxFileCount={1} />
+
+            <DeleteAlert
+                isOpen={showDeleteAlert}
+                onClose={setShowDeleteAlert}
+                onConfirm={handleDeleteGuide}
+                itemName="Guide"
+                itemType="guide"
+            />
         </>
     )
 }
