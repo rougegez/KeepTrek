@@ -107,7 +107,7 @@ function GuideView() {
                                     </div>
                                     <div className="text-sm text-white/80">
                                         {guideData.published ?
-                                            <span>Posted on {guideData.date} • {guideData.views} views</span>
+                                            <span>Posted on {guideData.publish_date[guideData.publish_date.length-1]} • {guideData.views} views</span>
                                             :
                                             <span className="text-yellow-400">Created on {guideData.created_at} • {guideData.views} views • Not Published</span>
                                         }

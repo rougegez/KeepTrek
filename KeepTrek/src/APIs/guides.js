@@ -20,6 +20,11 @@ export const getGuide = async (guideID) => {
     return response.data;
 }
 
+export const publishGuide = async (guideID) => {
+    const response = await axios.patch(`/guides/publish/${guideID}`);
+    return response
+}
+
 export const getGuides = async ({
     self = false,
     title = null,

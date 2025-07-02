@@ -17,7 +17,7 @@ import {
 import TopNavbar from "../topNavBar/TopNavbar.jsx"
 import { useQuery } from "react-query"
 import { useParams } from "react-router-dom"
-import { getGuide, updateGuide, deleteGuide } from "@/APIs/guides.js"
+import { getGuide, updateGuide, deleteGuide, publishGuide } from "@/APIs/guides.js"
 import { uploadFile } from "@/APIs/users.js"
 import { withSuspense } from "@/utils/withSuspense.jsx"
 import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx"
@@ -146,6 +146,41 @@ function GuideEdit({ }) {
         if (response.status === 200) navigate('/guides')
     };
 
+    const handlePublishGuide = async () => {
+        if (guideData.published) {
+            const response = await toastPromise(
+                publishGuide(guideID),
+                {
+                    loading: 'Unlisting guide...',
+                    success: 'Guide unlisted successfully!',
+                    error: (error) => ({
+                        message: 'Failed to unlist guide',
+                        description: error?.message || 'An error occurred while unlisting the guide.'
+                    })
+                }
+            );
+            if (response.status === 200) {
+                setGuide((prev) => ({ ...prev, published: false }));
+                return;
+            }
+        } else {
+            const response = await toastPromise(
+                publishGuide(guideID),
+                {
+                    loading: 'Publishing guide...',
+                    success: 'Guide published successfully!',
+                    error: (error) => ({
+                        message: 'Failed to publish guide',
+                        description: error?.message || 'An error occurred while publishing the guide.'
+                    })
+                }
+            );
+            if (response.status === 200) {
+                setGuide((prev) => ({ ...prev, published: !prev.published }));
+            }
+        }
+    }
+
     return (
         <>
             <TopNavbar />
@@ -194,10 +229,11 @@ function GuideEdit({ }) {
                                                 Save Draft
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
-                                                className="text-purple-500 hover:!text-purple-500 cursor-pointer"
+                                                className={`${guide.published ? "text-yellow-500 hover:!text-yellow-500" : "text-purple-500 hover:!text-purple-500"} cursor-pointer`}
+                                                onClick={handlePublishGuide}
                                             >
-                                                <Share className="w-4 h-4 text-purple-500" />
-                                                Publish
+                                                <Share className={`w-4 h-4 ${guide.published ? "text-yellow-500" : "text-purple-500"}`} />
+                                                {guide.published ? "Unlist" : "Publish"}
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem
@@ -227,7 +263,7 @@ function GuideEdit({ }) {
                                         <Avatar className="h-6 w-6">
                                             <AvatarImage
                                                 src={creatorData.image}
-                                            /> 
+                                            />
                                             <AvatarFallback>
                                                 {creatorData.username}
                                             </AvatarFallback>
@@ -236,7 +272,7 @@ function GuideEdit({ }) {
                                     </div>
                                     <div className="text-sm text-white/80">
                                         {guideData.published ?
-                                            <span>Posted on {guideData.date} • {guideData.views} views</span>
+                                            <span>Posted on {guideData.publish_date[guideData.publish_date.length-1]} • {guideData.views} views</span>
                                             :
                                             <span className="text-yellow-400">Created on {guideData.created_at} • {guideData.views} views • Not Published</span>
                                         }

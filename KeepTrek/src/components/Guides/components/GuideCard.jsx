@@ -35,10 +35,15 @@ import toastPromise from '@/utils/toastPromise';
 
 export default function GuideCard({ guide, self = false, onDelete }) {
 
-    const status = guide.status || 'draft';
+    let status = guide.published
+    if (guide.publish_date.length > 0 && !guide.published) {
+        status = 'unlisted'
+    }
+
     const statusColors = {
-        draft: 'bg-yellow-100 text-yellow-800',
-        published: 'bg-green-100 text-green-800',
+        false: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 hover:text-yellow-900',
+        true: 'bg-green-100 text-green-800 hover:bg-green-200 hover:text-green-900',
+        unlisted: 'bg-gray-100 text-gray-800 hover:bg-gray-200 hover:text-gray-900'
     };
 
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
@@ -78,7 +83,7 @@ export default function GuideCard({ guide, self = false, onDelete }) {
                             />
                             {self && (
                                 <Badge className={`absolute top-2 right-2 ${statusColors[status]}`}>
-                                    {guide.published ? 'Published' : 'Draft'}
+                                    {guide.published ? 'Published' : guide.publish_date.length > 0 ? 'Unlisted' : 'Draft'}
                                 </Badge>
                             )}
                         </div>
