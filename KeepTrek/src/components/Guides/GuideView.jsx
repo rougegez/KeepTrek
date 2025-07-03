@@ -5,15 +5,19 @@ import { Heart, Share2, Clock, MapPin, Bookmark } from "lucide-react"
 import TopNavbar from "../topNavBar/TopNavbar.jsx"
 import { useQuery } from "react-query"
 import { useParams } from "react-router-dom"
-import { getGuide } from "@/APIs/guides.js"
+import { getGuide, likeGuide, saveGuide } from "@/APIs/guides.js"
 import { withSuspense } from "@/utils/withSuspense.jsx"
 import MapboxMap from "../MapboxMap/MapboxMapGoogleSearch.jsx"
 import { normalizeMarkers } from "../MapboxMap/MapUtil.jsx"
 import { getUserProfile } from "@/APIs/users.js"
 import GuideViewActivityCard from "./components/GuideViewActivityCard.jsx"
 import Image from "@/components/ui/Image.jsx"
+import { useAuth } from "@/contexts/AuthProvider.jsx"
+import { toast } from "sonner"
 
 function GuideView() {
+
+    const { user } = useAuth()
     const { guideID } = useParams()
     const { data: guideData } = useQuery(
         ["guide", guideID], () =>
@@ -29,23 +33,46 @@ function GuideView() {
         suspense: true
     })
 
-    const [selectedPlace, setSelectedPlace] = useState({random: null, clickLocation: {}})
-    const [likeCount, setLikeCount] = useState(30)
-    const [isLiked, setIsLiked] = useState(false)
-    const [isSaved, setIsSaved] = useState(false)
+    const { data: userData } = useQuery(
+        ["userProfile", user],
+        () => getUserProfile(), {
+        refetchOnWindowFocus: false,
+        suspense: true
+    })
+
+    const [selectedPlace, setSelectedPlace] = useState({ random: null, clickLocation: {} })
+    const [likeCount, setLikeCount] = useState(guideData.likes)
+    const [isLiked, setIsLiked] = useState(userData?.likes.includes(guideID))
+    const [isSaved, setIsSaved] = useState(userData.saved.includes(guideID))
 
 
-    const handleLike = () => {
-        setIsLiked(!isLiked)
-        setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1))
+    const handleLike = async () => {
+        const currentLike = guideData
+        const currentLikeCount = likeCount
+        setIsLiked(!currentLike)
+        setLikeCount(currentLike ? currentLikeCount - 1 : currentLikeCount + 1)
+        await likeGuide(guideID).catch((error) => {
+            toast.error(`Failed to ${!currentLike ? "like" : "unlike"} the guide`, {
+                description: error?.message || `An error occurred while ${!currentLike ? "liking" : "unliking"} the guide.`
+            })
+            setIsLiked(currentLike)
+            setLikeCount(currentLikeCount)
+        })
     }
 
-    const handleSave = () => {
-        setIsSaved(!isSaved)
+    const handleSave = async () => {
+        const currentSaved = isSaved
+        setIsSaved(!currentSaved)
+        await saveGuide(guideID).catch((error) => {
+            toast.error(`Failed to ${!currentSaved ? "save" : "unsave"} the guide`, {
+                description: error?.message || `An error occurred while ${!currentSaved ? "saving" : "unsaving"} the guide.`
+            })
+            setIsSaved(currentSaved)
+        })
     }
 
     const handleActivityLocationClick = (activity) => {
-        setSelectedPlace({random: new Date().getTime(), clickLocation: activity})
+        setSelectedPlace({ random: new Date().getTime(), clickLocation: activity })
     }
 
     return (
@@ -107,7 +134,7 @@ function GuideView() {
                                     </div>
                                     <div className="text-sm text-white/80">
                                         {guideData.published ?
-                                            <span>Posted on {guideData.publish_date[guideData.publish_date.length-1]} • {guideData.views} views</span>
+                                            <span>Posted on {guideData.publish_date[guideData.publish_date.length - 1]} • {guideData.views} views</span>
                                             :
                                             <span className="text-yellow-400">Created on {guideData.created_at} • {guideData.views} views • Not Published</span>
                                         }
@@ -118,7 +145,7 @@ function GuideView() {
                             {/* Content */}
                             <div className="p-6">
                                 {/* Description */}
-                                <div 
+                                <div
                                     className="text-gray-700 leading-relaxed mb-6"
                                     dangerouslySetInnerHTML={{ __html: guideData.description }}
                                 />
@@ -148,7 +175,6 @@ function GuideView() {
 
                         {/* Right Panel - Map */}
                         <div className="bg-gray-100 min-h-screen sticky top-16">
-                            {/* <MapView places={allPlaces} selectedPlace={selectedPlace} onPlaceSelect={setSelectedPlace} /> */}
                             <MapboxMap
                                 height="100%"
                                 width="100%"

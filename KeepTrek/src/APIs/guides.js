@@ -48,3 +48,13 @@ export const getGuides = async ({
     const response = await axios.get('/guides', { params: params });
     return response.data;
 }
+
+export const likeGuide = async (guideID) => {
+    const response = await axios.patch(`/guides/like/${guideID}`);
+    return response;
+}
+
+export const saveGuide = async (guideID) => {
+    const response = await axios.patch(`/guides/save/${guideID}`);
+    return response;
+}
