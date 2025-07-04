@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import CarouselView from "@/components/Blog/Carousel/CarouselView";
 import CarouselDialog from "@/components/Guides/components/CarouselDialog";
 import { formatTime } from "@/utils/timeFormat.jsx";
+import styles from "@/components/Blog/Blog.module.css";
 
 function GuideViewActivityCard({ activity, position, selected, onClick }) {
 
@@ -41,7 +42,7 @@ function GuideViewActivityCard({ activity, position, selected, onClick }) {
                     </div>
 
                     <div
-                        className="text-sm text-gray-600 mb-2"
+                        className={`${styles.tiptap} text-sm text-gray-600 mb-2`}
                         dangerouslySetInnerHTML={{ __html: activity.description }}
                     />
 

@@ -14,6 +14,7 @@ import GuideViewActivityCard from "./components/GuideViewActivityCard.jsx"
 import Image from "@/components/ui/Image.jsx"
 import { useAuth } from "@/contexts/AuthProvider.jsx"
 import { toast } from "sonner"
+import styles from "@/components/Blog/Blog.module.css"
 
 function GuideView() {
 
@@ -146,7 +147,7 @@ function GuideView() {
                             <div className="p-6">
                                 {/* Description */}
                                 <div
-                                    className="text-gray-700 leading-relaxed mb-6"
+                                    className={`${styles.tiptap} text-gray-700 leading-relaxed mb-6`}
                                     dangerouslySetInnerHTML={{ __html: guideData.description }}
                                 />
 
