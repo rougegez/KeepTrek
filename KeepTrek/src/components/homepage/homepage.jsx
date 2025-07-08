@@ -1,9 +1,9 @@
 "use client"
 import TopNavbar from "../topNavBar/TopNavbar"
-import Hero from "./components/Hero"
-import RecentTrips from "./components/RecentTrips"
-import Guides from "./components/Guides"
-import Stats from "./components/Stats"
+import Hero from "./components/hero.jsx"
+import RecentTrips from "./components/recentTrips.jsx"
+import Guides from "./components/guides.jsx"
+import Stats from "./components/stats.jsx"
 
 
 export default function Homepage() {
