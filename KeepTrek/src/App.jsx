@@ -23,6 +23,8 @@ import ItinerarySocketWrapper from "@/components/Itinerary/ItinerarySocketWrappe
 import { Analytics } from "@vercel/analytics/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import BlogEditor from "./components/Blog/BlogEditor";
+import Homepage from "./components/homepage/homepage.jsx";
+import AuthRedirect from "./components/AuthRedirect.jsx";
 // import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const queryClient = new QueryClient();
@@ -47,7 +49,7 @@ function App() {
                   <div className="flex-grow">
                     <Routes>
                       {/* Public Routes */}
-                      <Route path="/" element={<LandingPage />} />
+                      <Route path="/" element={<AuthRedirect />} />
                       <Route
                         path="/join/:inviteCode"
                         element={<InvitePage />}
@@ -59,6 +61,7 @@ function App() {
                       {/* <Route path="/blog" element={<BlogEditor/>} /> */}
                       {/* Protected Routes */}
                       <Route element={<PrivateRoute />}>
+                        <Route path="/home" element={<Homepage />} />
                         <Route path="/yourTrips" element={<YourTrips />} />
                         <Route element={<WhosOnlineWrapper />}>
                           <Route element={<ItinerarySocketWrapper />}>
