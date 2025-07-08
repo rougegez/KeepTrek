@@ -4,32 +4,53 @@ import { Calendar, MapPin, Users, DollarSign, MoreHorizontal } from "lucide-reac
 import { getUserTrips } from "@/APIs/trip.js";
 import GoogleMapImage from "@/components/MapboxMap/GoogleMapImage";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getTripData } from "@/APIs/expenses";
+import { useAuth } from "@/contexts/AuthProvider";
+import { useNavigate } from "react-router-dom";
 
 export default function RecentTrips() {
   const [trips, setTrips] = useState([]);
+  const [tripExpenses, setTripExpenses] = useState({});
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchTrips = async () => {
+    const fetchTripsAndExpenses = async () => {
       try {
         setIsLoading(true);
         const userTrips = await getUserTrips();
-        setTrips(userTrips);
+        // Sort and take 4 most recent
+        const recent = userTrips
+          .slice()
+          .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
+          .slice(0, 4);
+        setTrips(recent);
+        // Fetch expenses for each trip
+        const expensesArr = await Promise.all(
+          recent.map(async (trip) => {
+            try {
+              const data = await getTripData(trip.tripID);
+              return { tripID: trip.tripID, userExpense: data.user_expense };
+            } catch {
+              return { tripID: trip.tripID, userExpense: null };
+            }
+          })
+        );
+        const expensesObj = {};
+        expensesArr.forEach(({ tripID, userExpense }) => {
+          expensesObj[tripID] = userExpense;
+        });
+        setTripExpenses(expensesObj);
         setIsLoading(false);
       } catch (err) {
         setError(err.response?.data?.detail || "Failed to fetch trips.");
         setIsLoading(false);
       }
     };
-    fetchTrips();
-  }, []);
-
-  // Sort by startDate descending and take the 4 most recent
-  const recentTrips = trips
-    .slice()
-    .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
-    .slice(0, 4);
+    fetchTripsAndExpenses();
+  }, [user]);
 
   if (isLoading) {
     return <RecentTripsLoadingSkeleton />;
@@ -39,9 +60,21 @@ export default function RecentTrips() {
     return <div className="text-red-500 text-center py-8">{error}</div>;
   }
 
-  if (recentTrips.length === 0) {
+  if (trips.length === 0) {
     return <div className="text-gray-500 text-center py-8">No recent trips found.</div>;
   }
+
+  const handleNewImage = (tripID, newImage) => {
+    setTrips((prevTrips) =>
+      prevTrips.map((trip) =>
+        trip.tripID === tripID ? { ...trip, image: newImage } : trip
+      )
+    );
+  };
+
+  const handleViewTrip = (tripID) => {
+    navigate(`/itinerary/${tripID}`);
+  };
 
   return (
     <section className="py-20">
@@ -61,7 +94,7 @@ export default function RecentTrips() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {recentTrips.map((trip, index) => (
+          {trips.map((trip, index) => (
             <motion.div
               key={trip.tripID}
               initial={{ opacity: 0, y: 20 }}
@@ -78,7 +111,7 @@ export default function RecentTrips() {
                   className="object-cover w-full h-full absolute inset-0"
                   onNewImage={(newImage) => handleNewImage(trip.tripID, newImage)}
                 />
-                <div className="absolute inset-0 bg-gradient-to-br from-teal-400 to-purple-500 opacity-60"></div>
+                <div className="absolute inset-0 "></div>
                 <div className="absolute top-4 right-4">
                   <button className="p-2 text-white hover:bg-white/20 rounded transition-colors">
                     <MoreHorizontal className="h-4 w-4" />
@@ -112,12 +145,17 @@ export default function RecentTrips() {
                     </div>
                     <div className="flex items-center">
                       <DollarSign className="h-4 w-4 mr-1" />
-                      {trip.budget ? `RM${trip.budget}` : "-"}
+                      {tripExpenses[trip.tripID] !== undefined && tripExpenses[trip.tripID] !== null
+                        ? `RM${Number(tripExpenses[trip.tripID]).toFixed(2)}`
+                        : "-"}
                     </div>
                   </div>
                 </div>
 
-                <button className="w-full mt-4 bg-gradient-to-r from-teal-500 to-purple-500 hover:from-teal-600 hover:to-purple-600 text-white py-2 px-4 rounded-md font-medium transition-all">
+                <button
+                  className="w-full mt-4 bg-gradient-to-r from-teal-500 to-purple-500 hover:from-teal-600 hover:to-purple-600 text-white py-2 px-4 rounded-md font-medium transition-all"
+                  onClick={() => handleViewTrip(trip.tripID)}
+                >
                   {formatTripStatus(trip) === "Completed" ? "View Trip" : "Continue Planning"}
                 </button>
               </div>
