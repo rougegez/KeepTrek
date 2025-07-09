@@ -23,6 +23,7 @@ import ItinerarySocketWrapper from "@/components/Itinerary/ItinerarySocketWrappe
 import { Analytics } from "@vercel/analytics/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import BlogEditor from "./components/Blog/BlogEditor";
+import ItineraryView from "./components/Guides/guides.jsx";
 import Homepage from "./components/homepage/homepage.jsx";
 import AuthRedirect from "./components/AuthRedirect.jsx";
 // import { SpeedInsights } from "@vercel/speed-insights/next"
@@ -50,14 +51,9 @@ function App() {
                     <Routes>
                       {/* Public Routes */}
                       <Route path="/" element={<AuthRedirect />} />
-                      <Route
-                        path="/join/:inviteCode"
-                        element={<InvitePage />}
-                      />
-                      <Route
-                        path="/AgodaPartnerVerification.html"
-                        element={<AgodaVerificationPage />}
-                      />
+                      <Route path="/join/:inviteCode" element={<InvitePage />} />
+                      <Route path="/AgodaPartnerVerification.html" element={<AgodaVerificationPage />} />
+                      <Route path="/guides" element={<ItineraryView/>}/>
                       {/* <Route path="/blog" element={<BlogEditor/>} /> */}
                       {/* Protected Routes */}
                       <Route element={<PrivateRoute />}>
