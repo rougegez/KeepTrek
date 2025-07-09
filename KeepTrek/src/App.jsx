@@ -28,6 +28,9 @@ import GuideView from "./components/Guides/GuideView.jsx";
 import GuidePage from "./components/Guides/GuidePage";
 import GuideEdit from "./components/Guides/GuideEdit.jsx";
 import MapboxMap from "./components/MapboxMap/MapboxMapGoogleSearch";
+
+import Homepage from "./components/homepage/homepage.jsx";
+import AuthRedirect from "./components/AuthRedirect.jsx";
 // import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const queryClient = new QueryClient();
@@ -52,18 +55,14 @@ function App() {
                   <div className="flex-grow">
                     <Routes>
                       {/* Public Routes */}
-                      <Route path="/" element={<LandingPage />} />
-                      <Route
-                        path="/join/:inviteCode"
-                        element={<InvitePage />}
-                      />
-                      <Route
-                        path="/AgodaPartnerVerification.html"
-                        element={<AgodaVerificationPage />}
-                      />
+                      <Route path="/" element={<AuthRedirect />} />
+                      <Route path="/join/:inviteCode" element={<InvitePage />} />
+                      <Route path="/AgodaPartnerVerification.html" element={<AgodaVerificationPage />} />
+                      <Route path="/guides" element={<ItineraryView/>}/>
                       <Route path="/blog" element={<BlogEditor/>} />
                       {/* Protected Routes */}
                       <Route element={<PrivateRoute />}>
+                        <Route path="/home" element={<Homepage />} />
                         <Route path="/yourTrips" element={<YourTrips />} />
                         <Route path="/guides">
                           <Route index element={<GuidePage />} />
