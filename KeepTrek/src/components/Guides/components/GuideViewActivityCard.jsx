@@ -16,11 +16,43 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { useMediaQuery } from "react-responsive";
+import { getItinerary, updateItinerary } from "@/APIs/itinerary";
+import { toast } from "sonner";
 
 function GuideViewActivityCard({ activity, position, selected, onClick, tripsWithDays, selectedTrip, setSelectedTrip, selectedTripDays, setSelectedTripDays }) {
 
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
     const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
+
+    // Handler to add activity to a trip's day
+    const handleAddToTripDay = async (tripID, dayDate) => {
+      try {
+        // 1. Fetch the itinerary for the trip
+        const itinerary = await getItinerary(tripID);
+        // 2. Find the correct day
+        const days = itinerary.days ? [...itinerary.days] : [];
+        const dayIdx = days.findIndex((d) => d.date === dayDate);
+        if (dayIdx === -1) {
+          toast.error("Day not found in trip");
+          return;
+        }
+        // 3. Prepare the activity object (clone, new id)
+        const newActivity = {
+          ...activity,
+          id: `${Date.now()}`,
+        };
+        days[dayIdx].activities = Array.isArray(days[dayIdx].activities)
+          ? [...days[dayIdx].activities, newActivity]
+          : [newActivity];
+        // 4. Update the itinerary
+        const payload = { days };
+        console.log('Calling updateItinerary with:', tripID, payload);
+        // await updateItinerary(tripID, payload);
+        // toast.success("Activity added to your trip!");
+      } catch (err) {
+        toast.error("Failed to add activity", { description: err?.message });
+      }
+    };
 
     return (
         <>
@@ -175,7 +207,9 @@ function GuideViewActivityCard({ activity, position, selected, onClick, tripsWit
                             <DropdownMenuSubContent>
                               {trip.days && trip.days.length > 0 ? (
                                 trip.days.map((day) => (
-                                  <DropdownMenuItem key={day.day_number}>
+                                  <DropdownMenuItem key={day.day_number}
+                                    onClick={() => handleAddToTripDay(trip.tripID, day.date)}
+                                  >
                                     {day.date}
                                   </DropdownMenuItem>
                                 ))
