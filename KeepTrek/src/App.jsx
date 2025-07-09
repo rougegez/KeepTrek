@@ -24,6 +24,9 @@ import { Analytics } from "@vercel/analytics/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import BlogEditor from "./components/Blog/BlogEditor";
 // import { SpeedInsights } from "@vercel/speed-insights/next"
+import AddActivityPage from "./components/Admin/AddActivityPage";
+import AdminLoginPage from "./components/Admin/AdminLoginPage";
+import AdminDashboard from "./components/Admin/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +59,7 @@ function App() {
                         path="/AgodaPartnerVerification.html"
                         element={<AgodaVerificationPage />}
                       />
+                      <Route path="/admin/login" element={<AdminLoginPage />} />
                       {/* <Route path="/blog" element={<BlogEditor/>} /> */}
                       {/* Protected Routes */}
                       <Route element={<PrivateRoute />}>
@@ -83,6 +87,11 @@ function App() {
                         </Route>
                         <Route path="/create-trip" element={<CreateTrip />} />
                         <Route path="/profile" element={<ProfilePage />} />
+                      </Route>
+                      {/* Admin Route */}
+                      <Route element={<PrivateRoute adminOnly={true} />}>
+                        <Route path="/admin" element={<AdminDashboard />} />
+                        <Route path="/admin/add-activity" element={<AddActivityPage />} />
                       </Route>
                     </Routes>
                   </div>
