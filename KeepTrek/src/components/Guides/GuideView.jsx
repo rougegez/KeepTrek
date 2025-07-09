@@ -36,7 +36,7 @@ function GuideView() {
 
     const { data: userData } = useQuery(
         ["userProfile", user],
-        () => getUserProfile(), {
+        () => getUserProfile(user), {
         refetchOnWindowFocus: false,
         suspense: true
     })
