@@ -410,7 +410,7 @@ function Itinerary() {
                   {canModify && (
                     <>
                       <InviteButton tripID={tripID} userRole={userRole} />
-                      <BrowseActivity location={tripDetails.location} />
+                      {tripDetails && <BrowseActivity location={tripDetails.location} />}
                     </>
                   )}
                   {userRole === UserRole.ADMIN && (
