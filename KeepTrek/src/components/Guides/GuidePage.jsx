@@ -19,6 +19,7 @@ import {
     ChevronRight,
     Heart,
 } from "lucide-react"
+import { useDebouncedCallback } from 'use-debounce'
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -43,6 +44,11 @@ import { useAuth } from "@/contexts/AuthProvider.jsx"
 export default function GuidePage() {
     // State management
     const [activeTab, setActiveTab] = useState("all")
+    // Local UI state for debounce/filter sheet
+    const [searchInput, setSearchInput] = useState("")
+    const [pendingLocations, setPendingLocations] = useState([])
+    const [pendingDuration, setPendingDuration] = useState([1, 30])
+    // Actual filter state
     const [searchQuery, setSearchQuery] = useState("")
     const [sortBy, setSortBy] = useState("recent")
     const [selectedLocations, setSelectedLocations] = useState([])
@@ -57,6 +63,28 @@ export default function GuidePage() {
     // Auth
     const { user } = useAuth()
 
+    // Debounced search
+    const debouncedSetSearchQuery = useDebouncedCallback((val) => {
+        setSearchQuery(val)
+        setCurrentPage(1)
+    }, 500)
+
+    // Update search input and debounce
+    const handleSearchInput = (e) => {
+        setSearchInput(e.target.value)
+        debouncedSetSearchQuery(e.target.value)
+    }
+
+    // When filter sheet closes, apply pending filters
+    const handleFilterSheetChange = (open) => {
+        setShowFilters(open)
+        if (!open) {
+            setSelectedLocations(pendingLocations)
+            setDurationRange(pendingDuration)
+            setCurrentPage(1)
+        }
+    }
+
     // Build query parameters for API calls
     const buildQueryParams = () => {
         const params = {
@@ -70,6 +98,11 @@ export default function GuidePage() {
 
         if (selectedLocations.length === 1) {
             params.location = selectedLocations[0]
+        }
+
+        // Add duration range to backend query
+        if (durationRange[0] !== 1 || durationRange[1] !== 30) {
+            params.duration = durationRange
         }
 
         return params
@@ -94,7 +127,7 @@ export default function GuidePage() {
         isLoading: isAllLoading,
         refetch: refetchAllGuides,
     } = useQuery(
-        ["searchedGuides", currentPage, searchQuery, selectedLocations],
+        ["searchedGuides", currentPage, searchQuery, selectedLocations, durationRange],
         () => getGuides({ self: false, ...buildQueryParams() }),
         {
             refetchOnWindowFocus: false,
@@ -120,7 +153,7 @@ export default function GuidePage() {
             }
 
             const savedGuides = await getGuides({ guide_id: userProfile.saved, self: false })
-            return { items: savedGuides }
+            return savedGuides
         },
         {
             enabled: !!userProfile?.saved,
@@ -128,16 +161,11 @@ export default function GuidePage() {
         },
     )
 
-    // Client-side filtering for duration (since backend doesn't support it yet)
+    // Remove client-side duration filtering, only sort client-side
     const filteredGuides = useMemo(() => {
         if (!searchedGuidesData?.items) return []
 
-        let filtered = searchedGuidesData.items
-
-        // Duration filter (client-side)
-        filtered = filtered.filter(
-            (guide) => guide.duration.days >= durationRange[0] && guide.duration.days <= durationRange[1],
-        )
+        let filtered = [...searchedGuidesData.items]
 
         // Sort (client-side for additional sorting options)
         switch (sortBy) {
@@ -153,7 +181,7 @@ export default function GuidePage() {
         }
 
         return filtered
-    }, [searchedGuidesData, durationRange, sortBy])
+    }, [searchedGuidesData, sortBy])
 
     const handleLocationToggle = (location) => {
         setSelectedLocations((prev) => (prev.includes(location) ? prev.filter((l) => l !== location) : [...prev, location]))
@@ -161,9 +189,9 @@ export default function GuidePage() {
     }
 
     const clearFilters = () => {
-        setSearchQuery("")
-        setSelectedLocations([])
-        setDurationRange([1, 30])
+        setSearchInput("")
+        setPendingLocations([])
+        setPendingDuration([1, 30])
         setCurrentPage(1)
     }
 
@@ -272,9 +300,9 @@ export default function GuidePage() {
                                 <div className="relative flex-1">
                                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                                     <Input
-                                        placeholder="Search guides by title, description, or location..."
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        placeholder="Search guides by title"
+                                        value={searchInput}
+                                        onChange={handleSearchInput}
                                         className="pl-10 h-12 border-gray-200 focus:border-primary-500 focus:ring-primary-500"
                                     />
                                 </div>
@@ -295,7 +323,7 @@ export default function GuidePage() {
                                     </Select>
 
                                     {/* Filter Sheet */}
-                                    <Sheet open={showFilters} onOpenChange={setShowFilters}>
+                                    <Sheet open={showFilters} onOpenChange={handleFilterSheetChange}>
                                         <SheetTrigger asChild>
                                             <Button className="h-12">
                                                 <SlidersHorizontal className="w-4 h-4 mr-2" />
@@ -325,8 +353,8 @@ export default function GuidePage() {
                                                             <div key={locationObj.location} className="flex items-center space-x-2">
                                                                 <Checkbox
                                                                     id={locationObj.location}
-                                                                    checked={selectedLocations.includes(locationObj.location)}
-                                                                    onCheckedChange={() => handleLocationToggle(locationObj.location)}
+                                                                    checked={pendingLocations.includes(locationObj.location)}
+                                                                    onCheckedChange={() => setPendingLocations((prev) => prev.includes(locationObj.location) ? prev.filter((l) => l !== locationObj.location) : [...prev, locationObj.location])}
                                                                 />
                                                                 <label
                                                                     htmlFor={locationObj.location}
@@ -350,8 +378,8 @@ export default function GuidePage() {
                                                     </h3>
                                                     <div className="px-2">
                                                         <Slider
-                                                            value={durationRange}
-                                                            onValueChange={setDurationRange}
+                                                            value={pendingDuration}
+                                                            onValueChange={setPendingDuration}
                                                             max={30}
                                                             min={1}
                                                             step={1}
@@ -359,10 +387,10 @@ export default function GuidePage() {
                                                         />
                                                         <div className="flex justify-between text-sm text-gray-500 mt-2">
                                                             <span>
-                                                                {durationRange[0]} day{durationRange[0] !== 1 ? "s" : ""}
+                                                                {pendingDuration[0]} day{pendingDuration[0] !== 1 ? "s" : ""}
                                                             </span>
                                                             <span>
-                                                                {durationRange[1]} day{durationRange[1] !== 1 ? "s" : ""}
+                                                                {pendingDuration[1]} day{pendingDuration[1] !== 1 ? "s" : ""}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -373,7 +401,11 @@ export default function GuidePage() {
                                                 {/* Clear Filters */}
                                                 <Button
                                                     variant="outline"
-                                                    onClick={clearFilters}
+                                                    onClick={() => {
+                                                        setSearchInput("")
+                                                        setPendingLocations([])
+                                                        setPendingDuration([1, 30])
+                                                    }}
                                                     className="w-full bg-transparent"
                                                     disabled={activeFiltersCount === 0}
                                                 >

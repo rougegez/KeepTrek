@@ -31,23 +31,60 @@ export const getGuides = async ({
     title = null,
     location = null,
     creator_id = null,
+    duration = null,
     publish_date = null,
     publish_date_end = null,
     page = null,
     page_size = null
 }) => {
-    const params = {};
-    params.self = self;
-    if (guide_id) params.guide_id = guide_id;
-    if (title) params.title = title;
-    if (location) params.location = location;
-    if (creator_id) params.creator_id = creator_id;
-    if (publish_date) params.publish_date = publish_date;
-    if (publish_date_end) params.publish_date_end = publish_date_end;
-    if (page) params.page = page;
-    if (page_size) params.page_size = page_size;
+    const params = new URLSearchParams();
+    params.append('self', self);
+    if (guide_id) params.append('guide_id', guide_id);
+    if (title) params.append('title', title);
+    if (location) {
+        if (typeof location === 'string') {
+            params.append('location', location);
+        } else if (Array.isArray(location)) {
+            for (const loc of location) {
+                params.append('location', loc);
+            }
+        }
+    }
+    if (creator_id) {
+        if (typeof creator_id === 'string') {
+            params.append('creator_id', creator_id);
+        }
+        else if (Array.isArray(creator_id)) {
+            for (const id of creator_id) {
+                params.append('creator_id', id);
+            }
+        }
+    }
+    if (duration) {
+        if (typeof duration === 'string' || typeof duration === 'number') {
+            params.append('duration', duration);
+        }
+        else if (Array.isArray(duration)) {
+            for (const dur of duration) {
+                params.append('duration', dur);
+            }
+        }
+    }
+    if (publish_date) params.append('publish_date', publish_date);
+    if (publish_date_end) params.append('publish_date_end', publish_date_end);
+    if (page) params.append('page', page);
+    if (page_size) params.append('page_size', page_size);
+    // params.self = self;
+    // if (guide_id) params.guide_id = guide_id;
+    // if (title) params.title = title;
+    // if (location) params.location = location;
+    // if (creator_id) params.creator_id = creator_id;
+    // if (publish_date) params.publish_date = publish_date;
+    // if (publish_date_end) params.publish_date_end = publish_date_end;
+    // if (page) params.page = page;
+    // if (page_size) params.page_size = page_size;
 
-    const response = await axios.get('/guides', { params: params });
+    const response = await axios.get('/guides/', { params: params });
     return response.data;
 }
 
