@@ -40,7 +40,7 @@ function GuideView() {
 
     const { data: userData } = useQuery(
         ["userProfile", user],
-        () => getUserProfile(), {
+        () => getUserProfile(user), {
         refetchOnWindowFocus: false,
         suspense: true
     })
@@ -52,6 +52,8 @@ function GuideView() {
     const [tripsWithDays, setTripsWithDays] = useState([])
     const [selectedTrip, setSelectedTrip] = useState(null)
     const [selectedTripDays, setSelectedTripDays] = useState([])
+    const [likePending, setLikePending] = useState(false)
+    const [savePending, setSavePending] = useState(false)
 
     const isMobile = useMediaQuery({ query: "(max-width: 1170px)" });
     const [isMapExpanded, setIsMapExpanded] = useState(true);
@@ -59,48 +61,54 @@ function GuideView() {
     const getMapHeight = () => (isMapExpanded ? "65vh" : "10vh");
 
     const MapToggleButton = () => (
-      <Button
-        className="absolute right-4 -bottom-5 z-[100] rounded-full p-2 bg-white border border-gray-200 text-muted-foreground shadow-lg"
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsMapExpanded(!isMapExpanded);
-        }}
-        style={{ width: isMobile ? "44px" : "36px", height: isMobile ? "44px" : "36px", boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)" }}
-        aria-label={isMapExpanded ? "Collapse Map" : "Expand Map"}
-        title={isMapExpanded ? "Collapse Map" : "Expand Map"}
-      >
-        {isMapExpanded ? (
-          <Clock size={isMobile ? 24 : 20} />
-        ) : (
-          <Clock size={isMobile ? 24 : 20} />
-        )}
-      </Button>
+        <Button
+            className="absolute right-4 -bottom-5 z-[100] rounded-full p-2 bg-white border border-gray-200 text-muted-foreground shadow-lg"
+            onClick={(e) => {
+                e.stopPropagation();
+                setIsMapExpanded(!isMapExpanded);
+            }}
+            style={{ width: isMobile ? "44px" : "36px", height: isMobile ? "44px" : "36px", boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)" }}
+            aria-label={isMapExpanded ? "Collapse Map" : "Expand Map"}
+            title={isMapExpanded ? "Collapse Map" : "Expand Map"}
+        >
+            {isMapExpanded ? (
+                <Clock size={isMobile ? 24 : 20} />
+            ) : (
+                <Clock size={isMobile ? 24 : 20} />
+            )}
+        </Button>
     );
 
 
     const handleLike = async () => {
-        const currentLike = guideData
-        const currentLikeCount = likeCount
-        setIsLiked(!currentLike)
-        setLikeCount(currentLike ? currentLikeCount - 1 : currentLikeCount + 1)
+        if (likePending) return;
+        setLikePending(true);
+        const currentLike = isLiked;
+        const currentLikeCount = likeCount;
+        setIsLiked(!currentLike);
+        setLikeCount(currentLike ? currentLikeCount - 1 : currentLikeCount + 1);
         await likeGuide(guideID).catch((error) => {
             toast.error(`Failed to ${!currentLike ? "like" : "unlike"} the guide`, {
                 description: error?.message || `An error occurred while ${!currentLike ? "liking" : "unliking"} the guide.`
-            })
-            setIsLiked(currentLike)
-            setLikeCount(currentLikeCount)
-        })
+            });
+            setIsLiked(currentLike);
+            setLikeCount(currentLikeCount);
+        });
+        setLikePending(false);
     }
 
     const handleSave = async () => {
-        const currentSaved = isSaved
-        setIsSaved(!currentSaved)
+        if (savePending) return;
+        setSavePending(true);
+        const currentSaved = isSaved;
+        setIsSaved(!currentSaved);
         await saveGuide(guideID).catch((error) => {
             toast.error(`Failed to ${!currentSaved ? "save" : "unsave"} the guide`, {
                 description: error?.message || `An error occurred while ${!currentSaved ? "saving" : "unsaving"} the guide.`
             })
-            setIsSaved(currentSaved)
-        })
+            setIsSaved(currentSaved);
+        });
+        setSavePending(false);
     }
 
     const handleActivityLocationClick = (activity) => {
@@ -109,14 +117,14 @@ function GuideView() {
 
     useEffect(() => {
         getMyTripsWithDays()
-          .then(data => {
-            setTripsWithDays(data);
-            console.log("Trips with days:", data);
-          })
-          .catch(error => {
-            console.error("Error fetching trips with days:", error);
-          });
-      }, []);
+            .then(data => {
+                setTripsWithDays(data);
+                console.log("Trips with days:", data);
+            })
+            .catch(error => {
+                console.error("Error fetching trips with days:", error);
+            });
+    }, []);
 
 
     return (
@@ -125,218 +133,220 @@ function GuideView() {
             <div className="min-h-screen bg-gray-50">
                 <div className="max-w-full mx-auto">
                     {isMobile ? (
-                      <>
-                        <motion.div
-                          className="fixed w-full z-40 bg-background"
-                          initial={{ height: "75vh" }}
-                          animate={{ height: getMapHeight(), transition: { duration: 0.2, ease: "easeInOut" } }}
-                          style={{ top: "3.5rem", flexShrink: 1 }}
-                        >
-                          <MapboxMap
-                            height="100%"
-                            width="100%"
-                            itineraryDays={guideData.days}
-                            initCenter={guideData?.coordinates}
-                            initViewport={guideData?.viewport}
-                            handlePanTo={selectedPlace}
-                            disableSaveLocation={true}
-                            disableSearchBar={true}
-                            markers={normalizeMarkers(guideData.days)}
-                          />
-                          <MapToggleButton />
-                        </motion.div>
-                        <motion.div
-                          className="w-full bg-background relative z-30 overflow-y-auto"
-                          animate={{ marginTop: `calc(${getMapHeight()} + 3.5rem)`, transition: { duration: 0.3, ease: "easeInOut" } }}
-                          style={{ flexShrink: 0, height: "calc(100vh - 3.5rem)" }}
-                        >
-                          <ScrollArea className="h-[calc(100vh-3.5rem)] px-2 pt-6">
-                            <div className="space-y-8">
-                              {/* Hero Section */}
-                              <div className="relative h-56 overflow-hidden rounded-lg">
-                                <Image
-                                  key={guideData.hero_image}
-                                  src={guideData.hero_image}
-                                  className="w-full h-full object-cover"
+                        <>
+                            <motion.div
+                                className="fixed w-full z-40 bg-background"
+                                initial={{ height: "75vh" }}
+                                animate={{ height: getMapHeight(), transition: { duration: 0.2, ease: "easeInOut" } }}
+                                style={{ top: "3.5rem", flexShrink: 1 }}
+                            >
+                                <MapboxMap
+                                    height="100%"
+                                    width="100%"
+                                    itineraryDays={guideData.days}
+                                    initCenter={guideData?.coordinates}
+                                    initViewport={guideData?.viewport}
+                                    handlePanTo={selectedPlace}
+                                    disableSaveLocation={true}
+                                    disableSearchBar={true}
+                                    markers={normalizeMarkers(guideData.days)}
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                                {/* Action Buttons */}
-                                <div className="absolute top-2 right-2 flex items-center space-x-2">
-                                  <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={handleLike}
-                                    className={`bg-white/90 backdrop-blur-sm ${isLiked ? "text-red-500" : "text-gray-700"}`}
-                                  >
-                                    <Heart className={`h-4 w-4 mr-1 ${isLiked ? "fill-current" : ""}`} />
-                                    {likeCount}
-                                  </Button>
-                                  <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={handleSave}
-                                    className={`bg-white/90 backdrop-blur-sm ${isSaved ? "text-teal-600" : "text-gray-700"}`}
-                                  >
-                                    <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
-                                  </Button>
-                                  <Button variant="secondary" size="sm" className="bg-white/90 backdrop-blur-sm text-gray-700">
-                                    <Share2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                                {/* Title Overlay */}
-                                <div className="absolute bottom-4 left-4 text-white">
-                                  <h1 className="text-2xl font-bold mb-1">{guideData.title}</h1>
-                                  <div className="flex items-center space-x-2 text-xs mb-1">
-                                    <Avatar className="h-5 w-5">
-                                      <AvatarImage src={creatorData.image} />
-                                      <AvatarFallback>{creatorData.username}</AvatarFallback>
-                                    </Avatar>
-                                    <span className="font-medium">{creatorData.username}</span>
-                                  </div>
-                                  <div className="text-xs text-white/80">
-                                    {guideData.published ? (
-                                      <span>Posted on {guideData.publish_date[guideData.publish_date.length - 1]} • {guideData.views} views</span>
-                                    ) : (
-                                      <span className="text-yellow-400">Created on {guideData.created_at} • {guideData.views} views • Not Published</span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                              {/* Description */}
-                              <div
-                                className={`${styles.tiptap} text-gray-700 leading-relaxed mb-4`}
-                                dangerouslySetInnerHTML={{ __html: guideData.description }}
-                              />
-                              {/* Days */}
-                              <div className="space-y-6">
-                                {guideData.days.map((day) => (
-                                  <div key={day.date}>
-                                    <h2 className="text-xl font-bold text-gray-900 mb-4">{day.date}</h2>
-                                    <div className="space-y-3">
-                                      {day.activities.map((activity, index) => (
-                                        <GuideViewActivityCard
-                                          key={index}
-                                          activity={activity}
-                                          position={index + 1}
-                                          selected={selectedPlace?.title === activity.title}
-                                          onClick={() => handleActivityLocationClick(activity)}
-                                          tripsWithDays={tripsWithDays}
-                                          selectedTrip={selectedTrip}
-                                          setSelectedTrip={setSelectedTrip}
-                                          selectedTripDays={selectedTripDays}
-                                          setSelectedTripDays={setSelectedTripDays}
+                                <MapToggleButton />
+                            </motion.div>
+                            <motion.div
+                                className="w-full bg-background relative z-30 overflow-y-auto"
+                                animate={{ marginTop: `calc(${getMapHeight()} + 3.5rem)`, transition: { duration: 0.3, ease: "easeInOut" } }}
+                                style={{ flexShrink: 0, height: "calc(100vh - 3.5rem)" }}
+                            >
+                                <ScrollArea className="h-[calc(100vh-3.5rem)] px-2 pt-6">
+                                    <div className="space-y-8">
+                                        {/* Hero Section */}
+                                        <div className="relative h-56 overflow-hidden rounded-lg">
+                                            <Image
+                                                key={guideData.hero_image}
+                                                src={guideData.hero_image}
+                                                className="w-full h-full object-cover"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                                            {/* Action Buttons */}
+                                            <div className="absolute top-4 right-4 flex items-center space-x-2">
+                                                <Button
+                                                    variant="secondary"
+                                                    size="sm"
+                                                    onClick={handleLike}
+                                                    disabled={likePending}
+                                                    className={`bg-white/90 backdrop-blur-sm ${isLiked ? "text-red-500" : "text-gray-700"}`}
+                                                >
+                                                    <Heart className={`h-4 w-4 mr-1 ${isLiked ? "fill-current" : ""}`} />
+                                                    {likeCount}
+                                                </Button>
+                                                <Button
+                                                    variant="secondary"
+                                                    size="sm"
+                                                    onClick={handleSave}
+                                                    disabled={savePending}
+                                                    className={`bg-white/90 backdrop-blur-sm ${isSaved ? "text-teal-600" : "text-gray-700"}`}
+                                                >
+                                                    <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
+                                                </Button>
+                                                <Button variant="secondary" size="sm" className="bg-white/90 backdrop-blur-sm text-gray-700">
+                                                    <Share2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                            {/* Title Overlay */}
+                                            <div className="absolute bottom-4 left-4 text-white">
+                                                <h1 className="text-2xl font-bold mb-1">{guideData.title}</h1>
+                                                <div className="flex items-center space-x-2 text-xs mb-1">
+                                                    <Avatar className="h-5 w-5">
+                                                        <AvatarImage src={creatorData.image} />
+                                                        <AvatarFallback>{creatorData.username}</AvatarFallback>
+                                                    </Avatar>
+                                                    <span className="font-medium">{creatorData.username}</span>
+                                                </div>
+                                                <div className="text-xs text-white/80">
+                                                    {guideData.published ? (
+                                                        <span>Posted on {guideData.publish_date[guideData.publish_date.length - 1]} • {guideData.views} views</span>
+                                                    ) : (
+                                                        <span className="text-yellow-400">Created on {guideData.created_at} • {guideData.views} views • Not Published</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {/* Description */}
+                                        <div
+                                            className={`${styles.tiptap} text-gray-700 leading-relaxed mb-4`}
+                                            dangerouslySetInnerHTML={{ __html: guideData.description }}
                                         />
-                                      ))}
+                                        {/* Days */}
+                                        <div className="space-y-6">
+                                            {guideData.days.map((day) => (
+                                                <div key={day.date}>
+                                                    <h2 className="text-xl font-bold text-gray-900 mb-4">{day.date}</h2>
+                                                    <div className="space-y-3">
+                                                        {day.activities.map((activity, index) => (
+                                                            <GuideViewActivityCard
+                                                                key={index}
+                                                                activity={activity}
+                                                                position={index + 1}
+                                                                selected={selectedPlace?.title === activity.title}
+                                                                onClick={() => handleActivityLocationClick(activity)}
+                                                                tripsWithDays={tripsWithDays}
+                                                                selectedTrip={selectedTrip}
+                                                                setSelectedTrip={setSelectedTrip}
+                                                                selectedTripDays={selectedTripDays}
+                                                                setSelectedTripDays={setSelectedTripDays}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </ScrollArea>
-                        </motion.div>
-                      </>
+                                </ScrollArea>
+                            </motion.div>
+                        </>
                     ) : (
-                      <div className="grid grid-cols-1 lg:grid-cols-2">
-                        {/* Left Panel - Itinerary Details */}
-                        <div className="bg-white">
-                          {/* Hero Section */}
-                          <div className="relative h-80 overflow-hidden">
-                            <Image
-                              key={guideData.hero_image}
-                              src={guideData.hero_image}
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                            {/* Action Buttons */}
-                            <div className="absolute top-4 right-4 flex items-center space-x-2">
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={handleLike}
-                                className={`bg-white/90 backdrop-blur-sm ${isLiked ? "text-red-500" : "text-gray-700"}`}
-                              >
-                                <Heart className={`h-4 w-4 mr-1 ${isLiked ? "fill-current" : ""}`} />
-                                {likeCount}
-                              </Button>
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={handleSave}
-                                className={`bg-white/90 backdrop-blur-sm ${isSaved ? "text-teal-600" : "text-gray-700"}`}
-                              >
-                                <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
-                              </Button>
-                              <Button variant="secondary" size="sm" className="bg-white/90 backdrop-blur-sm text-gray-700">
-                                <Share2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                            {/* Title Overlay */}
-                            <div className="absolute bottom-6 left-6 text-white">
-                              <h1 className="text-4xl font-bold mb-2">{guideData.title}</h1>
-                              <div className="flex items-center space-x-3 text-sm mb-2">
-                                <Avatar className="h-6 w-6">
-                                  <AvatarImage src={creatorData.image} />
-                                  <AvatarFallback>{creatorData.username}</AvatarFallback>
-                                </Avatar>
-                                <span className="font-medium">{creatorData.username}</span>
-                              </div>
-                              <div className="text-sm text-white/80">
-                                {guideData.published ? (
-                                  <span>Posted on {guideData.publish_date[guideData.publish_date.length - 1]} • {guideData.views} views</span>
-                                ) : (
-                                  <span className="text-yellow-400">Created on {guideData.created_at} • {guideData.views} views • Not Published</span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          {/* Content */}
-                          <div className="p-6">
-                            {/* Description */}
-                            <div
-                              className={`${styles.tiptap} text-gray-700 leading-relaxed mb-6`}
-                              dangerouslySetInnerHTML={{ __html: guideData.description }}
-                            />
-                            {/* Days */}
-                            <div className="space-y-8">
-                              {guideData.days.map((day) => (
-                                <div key={day.date}>
-                                  <h2 className="text-2xl font-bold text-gray-900 mb-6">{day.date}</h2>
-                                  <div className="space-y-4">
-                                    {day.activities.map((activity, index) => (
-                                      <GuideViewActivityCard
-                                        key={index}
-                                        activity={activity}
-                                        position={index + 1}
-                                        selected={selectedPlace?.title === activity.title}
-                                        onClick={() => handleActivityLocationClick(activity)}
-                                        tripsWithDays={tripsWithDays}
-                                        selectedTrip={selectedTrip}
-                                        setSelectedTrip={setSelectedTrip}
-                                        selectedTripDays={selectedTripDays}
-                                        setSelectedTripDays={setSelectedTripDays}
-                                      />
-                                    ))}
-                                  </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-2">
+                            {/* Left Panel - Itinerary Details */}
+                            <div className="bg-white">
+                                {/* Hero Section */}
+                                <div className="relative h-80 overflow-hidden">
+                                    <Image
+                                        key={guideData.hero_image}
+                                        src={guideData.hero_image}
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                                    {/* Action Buttons */}
+                                    <div className="absolute top-4 right-4 flex items-center space-x-2">
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={handleLike}
+                                            className={`bg-white/90 backdrop-blur-sm ${isLiked ? "text-red-500" : "text-gray-700"}`}
+                                        >
+                                            <Heart className={`h-4 w-4 mr-1 ${isLiked ? "fill-current" : ""}`} />
+                                            {likeCount}
+                                        </Button>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={handleSave}
+                                            className={`bg-white/90 backdrop-blur-sm ${isSaved ? "text-teal-600" : "text-gray-700"}`}
+                                        >
+                                            <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
+                                        </Button>
+                                        <Button variant="secondary" size="sm" className="bg-white/90 backdrop-blur-sm text-gray-700">
+                                            <Share2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                    {/* Title Overlay */}
+                                    <div className="absolute bottom-6 left-6 text-white">
+                                        <h1 className="text-4xl font-bold mb-2">{guideData.title}</h1>
+                                        <div className="flex items-center space-x-3 text-sm mb-2">
+                                            <Avatar className="h-6 w-6">
+                                                <AvatarImage src={creatorData.image} />
+                                                <AvatarFallback>{creatorData.username}</AvatarFallback>
+                                            </Avatar>
+                                            <span className="font-medium">{creatorData.username}</span>
+                                        </div>
+                                        <div className="text-sm text-white/80">
+                                            {guideData.published ? (
+                                                <span>Posted on {guideData.publish_date[guideData.publish_date.length - 1]} • {guideData.views} views</span>
+                                            ) : (
+                                                <span className="text-yellow-400">Created on {guideData.created_at} • {guideData.views} views • Not Published</span>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
-                              ))}
+                                {/* Content */}
+                                <div className="p-6">
+                                    {/* Description */}
+                                    <div
+                                        className={`${styles.tiptap} text-gray-700 leading-relaxed mb-6`}
+                                        dangerouslySetInnerHTML={{ __html: guideData.description }}
+                                    />
+                                    {/* Days */}
+                                    <div className="space-y-8">
+                                        {guideData.days.map((day) => (
+                                            <div key={day.date}>
+                                                <h2 className="text-2xl font-bold text-gray-900 mb-6">{day.date}</h2>
+                                                <div className="space-y-4">
+                                                    {day.activities.map((activity, index) => (
+                                                        <GuideViewActivityCard
+                                                            key={index}
+                                                            activity={activity}
+                                                            position={index + 1}
+                                                            selected={selectedPlace?.title === activity.title}
+                                                            onClick={() => handleActivityLocationClick(activity)}
+                                                            tripsWithDays={tripsWithDays}
+                                                            selectedTrip={selectedTrip}
+                                                            setSelectedTrip={setSelectedTrip}
+                                                            selectedTripDays={selectedTripDays}
+                                                            setSelectedTripDays={setSelectedTripDays}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
-                          </div>
+                            {/* Right Panel - Map */}
+                            <div className="bg-gray-100 min-h-screen sticky top-16">
+                                <MapboxMap
+                                    height="100%"
+                                    width="100%"
+                                    itineraryDays={guideData.days}
+                                    initCenter={guideData?.coordinates}
+                                    initViewport={guideData?.viewport}
+                                    handlePanTo={selectedPlace}
+                                    disableSaveLocation={true}
+                                    disableSearchBar={true}
+                                    markers={normalizeMarkers(guideData.days)}
+                                />
+                            </div>
                         </div>
-                        {/* Right Panel - Map */}
-                        <div className="bg-gray-100 min-h-screen sticky top-16">
-                          <MapboxMap
-                            height="100%"
-                            width="100%"
-                            itineraryDays={guideData.days}
-                            initCenter={guideData?.coordinates}
-                            initViewport={guideData?.viewport}
-                            handlePanTo={selectedPlace}
-                            disableSaveLocation={true}
-                            disableSearchBar={true}
-                            markers={normalizeMarkers(guideData.days)}
-                          />
-                        </div>
-                      </div>
                     )}
                 </div>
             </div>
