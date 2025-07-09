@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Heart, Share2, Clock, MapPin, Bookmark } from "lucide-react"
+import { Heart, Share2, Clock, MapPin, Bookmark, ChevronDown } from "lucide-react"
 import TopNavbar from "../topNavBar/TopNavbar.jsx"
 import { useQuery } from "react-query"
 import { useParams } from "react-router-dom"
@@ -62,7 +62,7 @@ function GuideView() {
 
     const MapToggleButton = () => (
         <Button
-            className="absolute right-4 -bottom-5 z-[100] rounded-full p-2 bg-white border border-gray-200 text-muted-foreground shadow-lg"
+            className="absolute right-4 -bottom-5 z-[100] rounded-full p-2 bg-white border border-gray-200 text-muted-foreground shadow-lg transition-transform"
             onClick={(e) => {
                 e.stopPropagation();
                 setIsMapExpanded(!isMapExpanded);
@@ -71,11 +71,10 @@ function GuideView() {
             aria-label={isMapExpanded ? "Collapse Map" : "Expand Map"}
             title={isMapExpanded ? "Collapse Map" : "Expand Map"}
         >
-            {isMapExpanded ? (
-                <Clock size={isMobile ? 24 : 20} />
-            ) : (
-                <Clock size={isMobile ? 24 : 20} />
-            )}
+            <ChevronDown
+                size={isMobile ? 24 : 20}
+                className={`transition-transform duration-300 ${isMapExpanded ? "rotate-180" : "rotate-0"}`}
+            />
         </Button>
     );
 

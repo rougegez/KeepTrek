@@ -53,7 +53,13 @@ export default function RecentTrips() {
   }, [user]);
 
   if (isLoading) {
-    return <RecentTripsLoadingSkeleton />;
+    return (
+      <section className="py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <RecentTripsLoadingSkeleton />
+        </div>
+      </section>
+    );
   }
 
   if (error) {
@@ -88,7 +94,9 @@ export default function RecentTrips() {
           >
             Your Recent Trips
           </motion.h2>
-          <button className="border border-teal-600 text-teal-600 hover:bg-teal-50 bg-transparent px-4 py-2 rounded-md font-medium transition-colors">
+          <button 
+          className="border border-teal-600 text-teal-600 hover:bg-teal-50 bg-transparent px-4 py-2 rounded-md font-medium transition-colors"
+          onClick={() => navigate('/yourTrips')}>
             View All Trips
           </button>
         </div>
@@ -187,25 +195,28 @@ const RecentTripsLoadingSkeleton = () => {
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
       {[1, 2, 3, 4].map((index) => (
-        <div key={index} className="bg-slate-100 rounded-lg shadow overflow-hidden">
-          <Skeleton className="w-full h-48" />
-          <div className="p-6">
-            <div className="flex justify-end mb-4">
-              <Skeleton className="h-6 w-24 rounded-full" />
+        <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden animate-pulse">
+          <div className="w-full h-48 bg-gray-200" />
+          <div className="p-4">
+            <div className="flex items-center mb-3">
+              <div className="h-6 w-24 rounded-full bg-gray-200" />
             </div>
-            <Skeleton className="h-7 w-3/4 mb-4" />
+            <div className="h-7 w-3/4 mb-4 bg-gray-200 rounded" />
             <div className="flex items-center space-x-2 mb-3">
-              <Skeleton className="h-4 w-4" />
-              <Skeleton className="h-4 w-32" />
+              <div className="h-4 w-4 bg-gray-200 rounded" />
+              <div className="h-4 w-32 bg-gray-200 rounded" />
             </div>
-            <div className="flex items-center space-x-2 mb-4">
-              <Skeleton className="h-4 w-4" />
-              <Skeleton className="h-4 w-24" />
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <div className="h-4 w-4 bg-gray-200 rounded mr-2" />
+                <div className="h-4 w-16 bg-gray-200 rounded" />
+              </div>
+              <div className="flex items-center">
+                <div className="h-4 w-4 bg-gray-200 rounded mr-2" />
+                <div className="h-4 w-12 bg-gray-200 rounded" />
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-24" />
-            </div>
+            <div className="h-10 w-full bg-gray-200 rounded" />
           </div>
         </div>
       ))}

@@ -102,7 +102,11 @@ export default function GuideCard({ guide, self = false, onDelete }) {
                             </div>
                             <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
                                 <Clock className="w-4 h-4" />
-                                <span>{guide.duration.days}D {guide.duration.nights}N</span>
+                                <span>
+                                  {guide.duration?.days != null ? `${guide.duration.days}D` : "-"}
+                                  {" "}
+                                  {guide.duration?.nights != null ? `${guide.duration.nights}N` : ""}
+                                </span>
                             </div>
                             <div className="flex items-center space-x-2 text-sm text-gray-500">
                                 <Calendar className="w-4 h-4" />
