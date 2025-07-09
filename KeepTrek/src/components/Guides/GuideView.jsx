@@ -45,31 +45,39 @@ function GuideView() {
     const [likeCount, setLikeCount] = useState(guideData.likes)
     const [isLiked, setIsLiked] = useState(userData?.likes.includes(guideID))
     const [isSaved, setIsSaved] = useState(userData.saved.includes(guideID))
+    const [likePending, setLikePending] = useState(false)
+    const [savePending, setSavePending] = useState(false)
 
 
     const handleLike = async () => {
-        const currentLike = guideData
-        const currentLikeCount = likeCount
-        setIsLiked(!currentLike)
-        setLikeCount(currentLike ? currentLikeCount - 1 : currentLikeCount + 1)
+        if (likePending) return;
+        setLikePending(true);
+        const currentLike = isLiked;
+        const currentLikeCount = likeCount;
+        setIsLiked(!currentLike);
+        setLikeCount(currentLike ? currentLikeCount - 1 : currentLikeCount + 1);
         await likeGuide(guideID).catch((error) => {
             toast.error(`Failed to ${!currentLike ? "like" : "unlike"} the guide`, {
                 description: error?.message || `An error occurred while ${!currentLike ? "liking" : "unliking"} the guide.`
-            })
-            setIsLiked(currentLike)
-            setLikeCount(currentLikeCount)
-        })
+            });
+            setIsLiked(currentLike);
+            setLikeCount(currentLikeCount);
+        });
+        setLikePending(false);
     }
 
     const handleSave = async () => {
-        const currentSaved = isSaved
-        setIsSaved(!currentSaved)
+        if (savePending) return;
+        setSavePending(true);
+        const currentSaved = isSaved;
+        setIsSaved(!currentSaved);
         await saveGuide(guideID).catch((error) => {
             toast.error(`Failed to ${!currentSaved ? "save" : "unsave"} the guide`, {
                 description: error?.message || `An error occurred while ${!currentSaved ? "saving" : "unsaving"} the guide.`
             })
-            setIsSaved(currentSaved)
-        })
+            setIsSaved(currentSaved);
+        });
+        setSavePending(false);
     }
 
     const handleActivityLocationClick = (activity) => {
@@ -101,6 +109,7 @@ function GuideView() {
                                         variant="secondary"
                                         size="sm"
                                         onClick={handleLike}
+                                        disabled={likePending}
                                         className={`bg-white/90 backdrop-blur-sm ${isLiked ? "text-red-500" : "text-gray-700"}`}
                                     >
                                         <Heart className={`h-4 w-4 mr-1 ${isLiked ? "fill-current" : ""}`} />
@@ -110,6 +119,7 @@ function GuideView() {
                                         variant="secondary"
                                         size="sm"
                                         onClick={handleSave}
+                                        disabled={savePending}
                                         className={`bg-white/90 backdrop-blur-sm ${isSaved ? "text-teal-600" : "text-gray-700"}`}
                                     >
                                         <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
