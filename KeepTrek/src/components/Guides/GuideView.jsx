@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Heart, Share2, Clock, MapPin, Bookmark } from "lucide-react"
@@ -15,6 +15,7 @@ import Image from "@/components/ui/image.jsx"
 import { useAuth } from "@/contexts/AuthProvider.jsx"
 import { toast } from "sonner"
 import styles from "@/components/Blog/Blog.module.css"
+import { getMyTripsWithDays } from "@/APIs/guides";
 
 function GuideView() {
 
@@ -75,6 +76,17 @@ function GuideView() {
     const handleActivityLocationClick = (activity) => {
         setSelectedPlace({ random: new Date().getTime(), clickLocation: activity })
     }
+
+    useEffect(() => {
+        getMyTripsWithDays()
+          .then(data => {
+            console.log("Trips with days:", data);
+          })
+          .catch(error => {
+            console.error("Error fetching trips with days:", error);
+          });
+      }, []);
+
 
     return (
         <>
