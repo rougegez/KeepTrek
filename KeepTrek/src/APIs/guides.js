@@ -27,6 +27,7 @@ export const publishGuide = async (guideID) => {
 
 export const getGuides = async ({
     self = false,
+    guide_id = null,
     title = null,
     location = null,
     creator_id = null,
@@ -37,6 +38,7 @@ export const getGuides = async ({
 }) => {
     const params = {};
     params.self = self;
+    if (guide_id) params.guide_id = guide_id;
     if (title) params.title = title;
     if (location) params.location = location;
     if (creator_id) params.creator_id = creator_id;
@@ -47,6 +49,11 @@ export const getGuides = async ({
 
     const response = await axios.get('/guides', { params: params });
     return response.data;
+}
+
+export const getFilterData = async () => {
+    const response = await axios.get("/guides/filter")
+    return response.data
 }
 
 export const likeGuide = async (guideID) => {
