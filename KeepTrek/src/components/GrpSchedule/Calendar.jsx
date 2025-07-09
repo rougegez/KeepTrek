@@ -135,7 +135,12 @@ const Calendar = ({
 
   // If in readOnly mode with a highlightRange, compute which dates to highlight.
   let highlightedDates = new Set();
-  if (readOnly && highlightRange && highlightRange.start_date && highlightRange.end_date) {
+  if (
+    readOnly &&
+    highlightRange &&
+    highlightRange.start_date &&
+    highlightRange.end_date
+  ) {
     const start = new Date(highlightRange.start_date);
     const end = new Date(highlightRange.end_date);
     const iter = new Date(start);

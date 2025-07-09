@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -29,6 +29,18 @@ export default function CreateTrip() {
   const [placeId, setPlaceId] = useState("");
   const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false);
+  useEffect(() => {
+    // Only run if gtag is available
+    if (window.gtag) {
+      window.gtag('js', new Date());
+      window.gtag('config', 'G-50Y0Q2BGEQ');
+    } else if (window.dataLayer) {
+      // fallback for when gtag is not defined but dataLayer is
+      function gtag(){window.dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-50Y0Q2BGEQ');
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

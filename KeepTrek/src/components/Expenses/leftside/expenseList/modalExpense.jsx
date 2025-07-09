@@ -30,6 +30,12 @@ export const ModalExpense = ({ isOpen, onClose, selectedExpense, setSelectedExpe
     };
     const handleEditExpense = async (updatedExpense) => {
         try {
+          // Validate amount
+          if (updatedExpense.amount < 0.01) {
+            toast.info("Amount must be at least RM 0.01");
+            return;
+          }
+
           // Validate splits and prepare the updated splits object
           let updatedSplits = updatedExpense.splits;
       

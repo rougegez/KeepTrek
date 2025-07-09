@@ -15,29 +15,28 @@ import Wishlist from "./components/Wishlist/Wishlist.jsx";
 import { ProfilePage } from "./components/profilePage/profilePage.jsx";
 // import { TripDetailsPage } from "./components/TripDetails/TripDetailsPage.jsx";
 import { GrpSchedule } from "./components/GrpSchedule/GrpSchedule.jsx";
-import InvitePage from './components/Invite/InvitePage';
-import { Toaster } from '@/components/ui/sonner';
+import InvitePage from "./components/Invite/InvitePage";
+import { Toaster } from "@/components/ui/sonner";
 import { WhosOnlineWrapper } from "./components/CreateTrip/WhosOnlineWrapper";
-import { MapProvider } from 'react-map-gl/mapbox'
+import { MapProvider } from "react-map-gl/mapbox";
 import ItinerarySocketWrapper from "@/components/Itinerary/ItinerarySocketWrapper";
-import { Analytics } from '@vercel/analytics/react';
+import { Analytics } from "@vercel/analytics/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import BlogEditor from "./components/Blog/BlogEditor";
 import ItineraryView from "./components/Guides/guides.jsx";
+import Homepage from "./components/homepage/homepage.jsx";
+import AuthRedirect from "./components/AuthRedirect.jsx";
 // import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const queryClient = new QueryClient();
 
 function AgodaVerificationPage() {
   return (
-    <div>
-      agoda-partner-site-verification: AgodaPartnerVerification.html
-    </div>
+    <div>agoda-partner-site-verification: AgodaPartnerVerification.html</div>
   );
 }
 
 function App() {
-
   return (
     <>
       <Analytics />
@@ -51,26 +50,34 @@ function App() {
                   <div className="flex-grow">
                     <Routes>
                       {/* Public Routes */}
-                      <Route path="/" element={<LandingPage />} />
+                      <Route path="/" element={<AuthRedirect />} />
                       <Route path="/join/:inviteCode" element={<InvitePage />} />
                       <Route path="/AgodaPartnerVerification.html" element={<AgodaVerificationPage />} />
                       <Route path="/guides" element={<ItineraryView/>}/>
                       {/* <Route path="/blog" element={<BlogEditor/>} /> */}
                       {/* Protected Routes */}
-                      <Route
-                        element={
-                          <PrivateRoute
-                          />
-                        }
-                      >
+                      <Route element={<PrivateRoute />}>
+                        <Route path="/home" element={<Homepage />} />
                         <Route path="/yourTrips" element={<YourTrips />} />
                         <Route element={<WhosOnlineWrapper />}>
                           <Route element={<ItinerarySocketWrapper />}>
-                            <Route path="/expenses/:tripID" element={<MainExpensePage />} />
-                            <Route path="/itinerary/:tripID" element={<Itinerary />} />
+                            <Route
+                              path="/expenses/:tripID"
+                              element={<MainExpensePage />}
+                            />
+                            <Route
+                              path="/itinerary/:tripID"
+                              element={<Itinerary />}
+                            />
                             {/* <Route path="/trip-details" element={<TripDetailsPage />} /> */}
-                            <Route path="/schedule/:tripID" element={<GrpSchedule />} />
-                            <Route path="/wishlist/:tripID" element={<Wishlist />} />
+                            <Route
+                              path="/schedule/:tripID"
+                              element={<GrpSchedule />}
+                            />
+                            <Route
+                              path="/wishlist/:tripID"
+                              element={<Wishlist />}
+                            />
                           </Route>
                         </Route>
                         <Route path="/create-trip" element={<CreateTrip />} />
@@ -83,9 +90,8 @@ function App() {
             </TooltipProvider>
           </MapProvider>
         </AuthProvider>
-      </QueryClientProvider >
-      <Toaster
-        position='top-center' closeButton />
+      </QueryClientProvider>
+      <Toaster position="top-center" closeButton />
     </>
   );
 }

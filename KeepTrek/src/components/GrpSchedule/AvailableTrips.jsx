@@ -1,8 +1,9 @@
 // AvailableTrips.jsx
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient, useQueries } from "react-query";
 import { Card } from "@/components/ui/card";
-import { Users } from "lucide-react";
-import AutoFillCalendar from "@/components/GrpSchedule/AutoFillCalendar"; // Updated import!
+import { Users, Info } from "lucide-react";
+import AutoFillCalendar from "@/components/GrpSchedule/AutoFillCalendar";
 import {
   getSuggestedPeriods,
   fetchTripDetails,
@@ -12,43 +13,15 @@ import {
 } from "@/APIs/dateFinder";
 import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-const AvailabilityIcon = ({ tripID, period, totalPeople }) => {
-  const [usernames, setUsernames] = useState(null);
-  const [loading, setLoading] = useState(true);
+const AvailabilityIcon = ({ period, totalPeople, usernames, isLoading }) => {
   const [isOpen, setIsOpen] = useState(false);
   const popupRef = useRef(null);
-
-  useEffect(() => {
-    const fetchUsernames = async () => {
-      try {
-        const fetchedUsernames = await getRangeAvailabilityUsernames(
-          tripID,
-          period.start_date,
-          period.end_date
-        );
-        setUsernames(fetchedUsernames);
-      } catch (error) {
-        console.error("Error fetching usernames:", error);
-        setUsernames(["Error loading usernames"]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUsernames();
-  }, [tripID, period.start_date, period.end_date]);
-
-  const handleClick = () => {
-    setIsOpen((prev) => !prev);
-  };
-
-  const getAvailabilityColor = (peopleCount) => {
-    const percentage = (peopleCount / totalPeople) * 100;
-    if (percentage >= 80) return "text-green-500";
-    else if (percentage <= 50) return "text-red-500";
-    else return "text-[#C1A00E]";
-  };
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
@@ -66,17 +39,40 @@ const AvailabilityIcon = ({ tripID, period, totalPeople }) => {
     };
   }, [isOpen]);
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center space-x-2">
+        <LoadingSpinner />
+        <span className="text-sm text-gray-500">Loading...</span>
+      </div>
+    );
+  }
+
+  const peopleCount = usernames?.length ?? 0;
+
+  const handleClick = () => {
+    setIsOpen((prev) => !prev);
+  };
+
+  const getAvailabilityColor = (peopleCount) => {
+    if (totalPeople === 0) return "text-gray-500";
+    const percentage = (peopleCount / totalPeople) * 100;
+    if (percentage >= 80) return "text-green-500";
+    if (percentage <= 50) return "text-red-500";
+    return "text-yellow-500";
+  };
+
   return (
     <div className="relative flex flex-col items-start">
       <button
         onClick={handleClick}
         className={`flex items-center text-sm font-medium space-x-2 underline focus:outline-none ${getAvailabilityColor(
-          period.people_count
+          peopleCount
         )}`}
       >
         <Users className="w-4 h-4" />
         <span>
-          {period.people_count}/{totalPeople} Available
+          {peopleCount}/{totalPeople} Available
         </span>
       </button>
       {isOpen && (
@@ -84,34 +80,61 @@ const AvailabilityIcon = ({ tripID, period, totalPeople }) => {
           ref={popupRef}
           className="absolute top-full mt-2 bg-white shadow-lg p-3 rounded-md w-56 z-10 border border-gray-200"
         >
-          {loading ? (
-            <LoadingSpinner />
-          ) : (
-            <ul>
-              {usernames?.map((username, index) => (
-                <li key={index} className="text-sm text-gray-700">
-                  {username}
-                </li>
-              ))}
-            </ul>
-          )}
+          <ul>
+            {usernames?.map((username, index) => (
+              <li key={index} className="text-sm text-gray-700">
+                {username}
+              </li>
+            )) ?? <li>No one is available.</li>}
+          </ul>
         </div>
       )}
     </div>
   );
 };
 
-const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) => {
-  const [isUpdating, setIsUpdating] = useState(false);
-  // Determine if this period is selected.
+const PeriodCard = ({
+  tripID,
+  period,
+  totalPeople,
+  selectedPeriod,
+  onSelect,
+}) => {
+  const queryClient = useQueryClient();
   const isSelected =
-    selectedPeriod.start_date === period.start_date &&
-    selectedPeriod.end_date === period.end_date;
+    selectedPeriod?.start_date === period.start_date &&
+    selectedPeriod?.end_date === period.end_date;
 
   // Edit mode states.
   const [isEditing, setIsEditing] = useState(false);
   const [editedDates, setEditedDates] = useState(new Set());
-  const [editCurrentDate, setEditCurrentDate] = useState(new Date(period.start_date));
+  const [editCurrentDate, setEditCurrentDate] = useState(
+    new Date(period.start_date)
+  );
+
+  const { mutate: updatePeriod, isLoading: isUpdating } = useMutation(
+    ({ newPeriod, shouldCloseEditor }) => updateTripPeriod(tripID, newPeriod),
+    {
+      onSuccess: (data, { newPeriod, shouldCloseEditor }) => {
+        toast.success("Trip period updated successfully!");
+        onSelect({
+          start_date: newPeriod.startDate,
+          end_date: newPeriod.endDate,
+        });
+        if (shouldCloseEditor) {
+          setIsEditing(false);
+        }
+        queryClient.invalidateQueries(["selectedPeriod", tripID]);
+        queryClient.invalidateQueries(["suggestedPeriods", tripID]);
+      },
+      onError: (error) => {
+        console.error("Error updating trip period:", error.message);
+        toast.error("Failed to update trip period.", {
+          description: <p>{error.message}</p>,
+        });
+      },
+    }
+  );
 
   // Helper: initialize editedDates to include every day from period.start_date to period.end_date.
   const initializeEditedDates = () => {
@@ -136,7 +159,8 @@ const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) =
     const sortedDates = Array.from(editedDates).sort();
     const firstDate = new Date(sortedDates[0]);
     const lastDate = new Date(sortedDates[sortedDates.length - 1]);
-    const diffDays = Math.round((lastDate - firstDate) / (1000 * 60 * 60 * 24)) + 1;
+    const diffDays =
+      Math.round((lastDate - firstDate) / (1000 * 60 * 60 * 24)) + 1;
     return diffDays === editedDates.size;
   };
 
@@ -167,25 +191,20 @@ const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) =
   const getDisplayRange = () => {
     if (isEditing && editedDates.size > 0) {
       const sortedDates = Array.from(editedDates).sort();
-      return { start: sortedDates[0], end: sortedDates[sortedDates.length - 1] };
+      return {
+        start: sortedDates[0],
+        end: sortedDates[sortedDates.length - 1],
+      };
     }
     return { start: period.start_date, end: period.end_date };
   };
 
   const { start: displayStart, end: displayEnd } = getDisplayRange();
 
-  // Merged handleSelect: if not editing, enter edit mode; if editing, confirm update.
-  const handleSelect = async () => {
-    if (!isEditing) {
-      // Enter edit mode and initialize dates.
-      setEditedDates(initializeEditedDates());
-      setIsEditing(true);
-      return;
-    }
-    // When in editing mode, if range is valid, submit update.
-    if (isEditing && validRange) {
-      setIsUpdating(true);
-      try {
+  const handleSelect = () => {
+    if (isEditing) {
+      // "Update" action
+      if (validRange) {
         const datesArray = Array.from(editedDates).sort();
         const newStartDate = datesArray[0];
         const newEndDate = datesArray[datesArray.length - 1];
@@ -193,20 +212,12 @@ const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) =
           startDate: newStartDate,
           endDate: newEndDate,
         };
-        const result = await updateTripPeriod(tripID, newPeriod);
-        onSelect({ start_date: newStartDate, end_date: newEndDate });
-        toast.success("Trip period updated successfully!");
-        console.log("Updated Trip:", result);
-        setIsEditing(false);
-      } catch (error) {
-        console.error("Error updating trip period:", error.message);
-        toast.error("Failed to update trip period.", {
-          description: <p>{error.message}</p>,
-        }
-        );
-      } finally {
-        setIsUpdating(false);
+        updatePeriod({ newPeriod, shouldCloseEditor: true });
       }
+    } else {
+      // "Select" or "Edit" action
+      setIsEditing(true);
+      setEditedDates(initializeEditedDates());
     }
   };
 
@@ -217,7 +228,15 @@ const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) =
     const diffTime = endDate - startDate;
     const days = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
     const nights = days - 1;
-    return `${days} ${days > 1 ? "Days" : "Day"} ${nights} ${nights !== 1 ? "Nights" : "Night"}`;
+    return `${days} ${days > 1 ? "Days" : "Day"} ${nights} ${
+      nights !== 1 ? "Nights" : "Night"
+    }`;
+  };
+
+  const getButtonText = () => {
+    if (isEditing) return isUpdating ? "Updating..." : "Update";
+    if (isSelected) return "Edit";
+    return "Select & Edit";
   };
 
   // Render buttons based on editing state.
@@ -229,11 +248,13 @@ const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) =
           className={`px-4 py-2 border rounded text-white hover:opacity-80 ${
             isUpdating
               ? "bg-[#22544f] cursor-not-allowed"
-              : (isSelected ? "bg-[#22544f]" : "bg-[#4DB6AC]")
+              : isSelected
+              ? "bg-[#22544f]"
+              : "bg-[#4DB6AC]"
           }`}
           disabled={isUpdating}
         >
-          {isUpdating ? "Updating..." : (isSelected ? "Selected" : "Select")}
+          {getButtonText()}
         </button>
       );
     } else {
@@ -254,7 +275,7 @@ const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) =
             }`}
             disabled={isUpdating || !validRange}
           >
-            {isUpdating ? "Updating..." : "Confirm"}
+            {getButtonText()}
           </button>
         </div>
       );
@@ -262,28 +283,40 @@ const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) =
   };
 
   return (
-    <div className="mb-8">
-      <Card className="p-4 flex flex-col">
-        <div className="flex justify-between items-center">
-          <div className="font-medium">
-            {new Date(displayStart).toLocaleDateString("en-GB")} -{" "}
-            {new Date(displayEnd).toLocaleDateString("en-GB")}
-          </div>
-          {renderButtons()}
-        </div>
-        <div className="mt-2 text-sm text-black">
+    <Card
+      className={`p-4 flex justify-between items-center gap-4 ${
+        isEditing ? "flex-col" : "flex-col sm:flex-row"
+      }`}
+    >
+      <div className="flex-grow">
+        <h4 className="font-semibold text-lg">
+          {new Date(displayStart).toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+          })}{" "}
+          -{" "}
+          {new Date(displayEnd).toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          })}
+        </h4>
+        <p className="text-sm text-gray-600">
           {getDurationText(displayStart, displayEnd)}
-        </div>
-        <div className="mt-4">
-          {/* Hide availability if the selected range does not match the original period */}
-          {displayStart === period.start_date && displayEnd === period.end_date && (
-            <AvailabilityIcon tripID={tripID} period={period} totalPeople={totalPeople} />
-          )}
-        </div>
-      </Card>
-      {isEditing && (
+        </p>
         <div className="mt-2">
-          {/* Use the AutoFillCalendar with autofill behavior for AvailableTrips */}
+          <AvailabilityIcon
+            tripID={tripID}
+            period={period}
+            totalPeople={totalPeople}
+            usernames={period.usernames}
+            isLoading={period.isLoading}
+          />
+        </div>
+      </div>
+      <div className="flex-shrink-0">{renderButtons()}</div>
+      {isEditing && (
+        <div className="w-full sm:w-auto mt-4 sm:mt-0">
           <AutoFillCalendar
             currentDate={editCurrentDate}
             setCurrentDate={setEditCurrentDate}
@@ -292,117 +325,335 @@ const PeriodCard = ({ tripID, period, totalPeople, selectedPeriod, onSelect }) =
           />
         </div>
       )}
-    </div>
+    </Card>
   );
 };
 
-const AvailableTrips = ({ tripID }) => {
-  const [suggestedPeriods, setSuggestedPeriods] = useState(null);
-  const [totalPeople, setTotalPeople] = useState(0);
-  const [selectedPeriod, setSelectedPeriod] = useState({ start_date: "", end_date: "" });
+const getDuration = (start, end) => {
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  const diffTime = Math.abs(endDate - startDate);
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+};
+
+const AvailableTrips = ({
+  tripID,
+  durationFilter,
+  setDurationFilter,
+  isParentLoading,
+}) => {
+  const [displayLimit, setDisplayLimit] = useState(13);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Single query to get all periods (no pagination on backend)
+  const { data: allPeriodsData, isLoading: isLoadingPeriods } = useQuery(
+    ["allSuggestedPeriods", tripID, durationFilter],
+    () => getSuggestedPeriods(tripID, durationFilter),
+    {
+      enabled: !isParentLoading,
+    }
+  );
+
+  const allPeriods = useMemo(() => {
+    return allPeriodsData?.suggested_periods || [];
+  }, [allPeriodsData]);
+
+  const { data: tripDetails, isLoading: isLoadingDetails } = useQuery(
+    ["tripDetails", tripID],
+    () => fetchTripDetails(tripID)
+  );
+
+  const { data: selectedPeriod, isLoading: isLoadingSelectedPeriod } = useQuery(
+    ["selectedPeriod", tripID],
+    () => getSelectedPeriod(tripID),
+    {
+      initialData: { start_date: null, end_date: null },
+    }
+  );
+
+  const [localSelectedPeriod, setLocalSelectedPeriod] =
+    useState(selectedPeriod);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const tripData = await fetchTripDetails(tripID);
-        setTotalPeople(tripData.users.length);
-        const periodsData = await getSuggestedPeriods(tripID);
-        setSuggestedPeriods(periodsData);
-        const currentPeriod = await getSelectedPeriod(tripID);
-        if (currentPeriod) {
-          const allPeriods = [
-            ...(periodsData.other_five_seven_day_periods || []),
-            ...(periodsData.most_people_period ? [periodsData.most_people_period] : []),
-            ...(periodsData.longest_period_min_2_people ? [periodsData.longest_period_min_2_people] : []),
-          ];
-          const matchingPeriod = allPeriods.find(
-            (period) =>
-              period &&
-              period.start_date === currentPeriod.start_date &&
-              period.end_date === currentPeriod.end_date
-          );
-          if (matchingPeriod) {
-            setSelectedPeriod({
-              start_date: currentPeriod.start_date,
-              end_date: currentPeriod.end_date,
-            });
-          } else {
-            setSelectedPeriod({ start_date: "", end_date: "" });
-          }
-        } else {
-          setSelectedPeriod({ start_date: "", end_date: "" });
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
+    setLocalSelectedPeriod(selectedPeriod);
+  }, [selectedPeriod]);
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [durationFilter]);
+
+  // Get the best period first to include it in availability queries
+  const bestPeriodFromAll = useMemo(() => {
+    const allPeriodsWithAvailability = allPeriods
+      .map((period) => {
+        return {
+          ...period,
+          people_count: period.people_count || 0,
+        };
+      })
+      .filter(
+        (p) =>
+          !durationFilter ||
+          getDuration(p.start_date, p.end_date) === durationFilter
+      );
+
+    if (allPeriodsWithAvailability.length === 0) {
+      return null;
+    }
+
+    const sortedPeriods = [...allPeriodsWithAvailability].sort((a, b) => {
+      if (a.people_count !== b.people_count) {
+        return b.people_count - a.people_count;
       }
-    };
-    fetchData();
-  }, [tripID]);
+      return (
+        getDuration(b.start_date, b.end_date) -
+        getDuration(a.start_date, a.end_date)
+      );
+    });
 
-  // Check if at least one period card exists.
-  const hasPeriodCards =
-    suggestedPeriods &&
-    (suggestedPeriods.most_people_period ||
-      suggestedPeriods.longest_period_min_2_people ||
-      (suggestedPeriods.other_five_seven_day_periods &&
-        suggestedPeriods.other_five_seven_day_periods.length > 0));
+    return sortedPeriods.find((p) => p.people_count > 0);
+  }, [allPeriods, durationFilter]);
 
-  if (!suggestedPeriods) {
+  // Get paginated periods for display
+  const paginatedPeriods = useMemo(() => {
+    const filteredPeriods = allPeriods.filter(
+      (p) =>
+        !durationFilter ||
+        getDuration(p.start_date, p.end_date) === durationFilter
+    );
+
+    const startIndex = 0;
+    const endIndex = currentPage * displayLimit;
+    return filteredPeriods.slice(startIndex, endIndex);
+  }, [allPeriods, durationFilter, currentPage, displayLimit]);
+
+  // Combine best period with other periods for availability queries
+  const allPeriodsForAvailability = useMemo(() => {
+    const periods = [...paginatedPeriods];
+    if (
+      bestPeriodFromAll &&
+      !periods.find(
+        (p) =>
+          p.start_date === bestPeriodFromAll.start_date &&
+          p.end_date === bestPeriodFromAll.end_date
+      )
+    ) {
+      periods.unshift(bestPeriodFromAll);
+    }
+    return periods;
+  }, [paginatedPeriods, bestPeriodFromAll]);
+
+  const availabilityQueries = useQueries(
+    allPeriodsForAvailability.map((period) => ({
+      queryKey: [
+        "rangeAvailabilityUsernames",
+        tripID,
+        period.start_date,
+        period.end_date,
+      ],
+      queryFn: () =>
+        getRangeAvailabilityUsernames(
+          tripID,
+          period.start_date,
+          period.end_date
+        ),
+      staleTime: 5 * 60 * 1000,
+    }))
+  );
+
+  const periodsWithAccurateAvailability = useMemo(() => {
+    return allPeriodsForAvailability
+      .map((period, index) => {
+        const queryResult = availabilityQueries[index];
+        const usernames = queryResult.data;
+        return {
+          ...period,
+          people_count: usernames?.length ?? 0,
+          usernames: usernames,
+          isLoading: queryResult.isLoading,
+        };
+      })
+      .filter(
+        (p) =>
+          !durationFilter ||
+          getDuration(p.start_date, p.end_date) === durationFilter
+      );
+  }, [allPeriodsForAvailability, availabilityQueries, durationFilter]);
+
+  const { bestPeriod, otherPeriods } = useMemo(() => {
+    if (periodsWithAccurateAvailability.length === 0) {
+      return { bestPeriod: null, otherPeriods: [] };
+    }
+
+    // Find the best period from the periods with accurate availability
+    const best = periodsWithAccurateAvailability.find(
+      (p) => p.people_count > 0
+    );
+
+    // For other periods, exclude the best period
+    const others = periodsWithAccurateAvailability.filter(
+      (p) =>
+        !best ||
+        p.start_date !== best.start_date ||
+        p.end_date !== best.end_date
+    );
+
+    return { bestPeriod: best, otherPeriods: others };
+  }, [periodsWithAccurateAvailability]);
+
+  const isLoadingSuggestions = availabilityQueries.some((q) => q.isLoading);
+  const totalPeople = tripDetails?.users?.length ?? 0;
+  const isLoading = isParentLoading || isLoadingPeriods || isLoadingDetails;
+
+  // Check if there are more results to load
+  const filteredTotalCount = allPeriods.filter(
+    (p) =>
+      !durationFilter ||
+      getDuration(p.start_date, p.end_date) === durationFilter
+  ).length;
+
+  const hasMoreResults = paginatedPeriods.length < filteredTotalCount;
+
+  const handleLoadMore = () => {
+    setCurrentPage((prev) => prev + 1);
+  };
+
+  if (isLoading) {
     return (
-      <div className="mt-8">
+      <div className="mt-8 flex flex-col items-center">
+        <h3 className="text-xl font-bold text-center mb-4">
+          Available trip dates
+        </h3>
         <LoadingSpinner />
       </div>
     );
   }
 
-  // If no period cards exist, render nothing.
-  if (!hasPeriodCards) {
-    return null;
-  }
-
   return (
-    <div className="max-w-md mx-auto ">
-      <h3 className="text-xl font-bold">Available trip dates</h3>    
-      <div className="max-w-md mx-auto">
-        {suggestedPeriods.most_people_period && (
-          <div>
-            <PeriodCard
-              tripID={tripID}
-              period={suggestedPeriods.most_people_period}
-              totalPeople={totalPeople}
-              selectedPeriod={selectedPeriod}
-              onSelect={setSelectedPeriod}
-            />
-          </div>
-        )}
+    <div className="mt-8">
+      <h3 className="text-xl font-bold text-center mb-4">
+        Available trip dates
+      </h3>
+      <div className="flex justify-center items-center space-x-2 mb-4">
+        <span className="text-sm font-medium">Filter by duration (days):</span>
+        <select
+          value={durationFilter || ""}
+          onChange={(e) =>
+            setDurationFilter(
+              e.target.value ? parseInt(e.target.value, 10) : null
+            )
+          }
+          className="px-3 py-1 text-sm rounded-md bg-gray-200 text-gray-700"
+        >
+          {Array.from({ length: 29 }, (_, i) => i + 2).map((days) => (
+            <option key={days} value={days}>
+              {days}
+            </option>
+          ))}
+        </select>
+        <Tooltip>
+          <TooltipTrigger>
+            <Info className="h-4 w-4 text-gray-500" />
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Select a duration to filter suggestions.</p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+      <div>
+        <div className="space-y-4">
+          {periodsWithAccurateAvailability.length > 0 ? (
+            <>
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <h3 className="flex items-center text-lg font-semibold mb-2 text-blue-800">
+                      <span>Best Suggestion</span>
+                      {isLoadingSuggestions && (
+                        <div className="ml-2">
+                          <LoadingSpinner />
+                        </div>
+                      )}
+                    </h3>
+                  </TooltipTrigger>
+                  {isLoadingSuggestions && (
+                    <TooltipContent>
+                      <p>
+                        Finding the best suggestion based on availability...
+                      </p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+                {bestPeriod && (
+                  <PeriodCard
+                    key={`${bestPeriod.start_date}-${bestPeriod.end_date}`}
+                    tripID={tripID}
+                    period={bestPeriod}
+                    totalPeople={totalPeople}
+                    selectedPeriod={localSelectedPeriod}
+                    onSelect={setLocalSelectedPeriod}
+                  />
+                )}
+                {!isLoadingSuggestions && !bestPeriod && (
+                  <p className="text-gray-500">
+                    No suggestions with available people found.
+                  </p>
+                )}
+              </div>
 
-        {suggestedPeriods.longest_period_min_2_people && (
-          <div>
-            <PeriodCard
-              tripID={tripID}
-              period={suggestedPeriods.longest_period_min_2_people}
-              totalPeople={totalPeople}
-              selectedPeriod={selectedPeriod}
-              onSelect={setSelectedPeriod}
-            />
-          </div>
-        )}
-
-        {suggestedPeriods.other_five_seven_day_periods &&
-          suggestedPeriods.other_five_seven_day_periods.length > 0 && (
-            <div>
-              {suggestedPeriods.other_five_seven_day_periods.map((period, index) => (
-                <PeriodCard
-                  key={index}
-                  tripID={tripID}
-                  period={period}
-                  totalPeople={totalPeople}
-                  selectedPeriod={selectedPeriod}
-                  onSelect={setSelectedPeriod}
-                />
-              ))}
-            </div>
+              {otherPeriods.length > 0 && (
+                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <h3 className="flex items-center text-lg font-semibold mb-2 text-gray-800">
+                        <span>Other Suggestions</span>
+                        {isLoadingSuggestions && (
+                          <div className="ml-2">
+                            <LoadingSpinner />
+                          </div>
+                        )}
+                      </h3>
+                    </TooltipTrigger>
+                    {isLoadingSuggestions && (
+                      <TooltipContent>
+                        <p>Loading availability for other suggestions...</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {otherPeriods.map((period) => (
+                      <PeriodCard
+                        key={`${period.start_date}-${period.end_date}`}
+                        tripID={tripID}
+                        period={period}
+                        totalPeople={totalPeople}
+                        selectedPeriod={localSelectedPeriod}
+                        onSelect={setLocalSelectedPeriod}
+                      />
+                    ))}
+                  </div>
+                  {hasMoreResults && (
+                    <div className="mt-4 text-center">
+                      <button
+                        onClick={handleLoadMore}
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                      >
+                        Load More
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="text-center text-gray-500">
+              {durationFilter
+                ? `No suggested trips with a duration of ${durationFilter} days. Try a different filter.`
+                : "No suggested trip periods available yet. Once your group members add their availability, you'll see suggestions here."}
+            </p>
           )}
+        </div>
       </div>
     </div>
   );

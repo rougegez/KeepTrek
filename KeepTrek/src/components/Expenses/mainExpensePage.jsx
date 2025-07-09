@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AppSidebar from "../Sidebar/Sidebar.jsx";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import {ExpensesLeftside} from "./leftside/ExpensesLeftside.jsx";
@@ -17,6 +17,18 @@ import { LoadingSkeleton } from '@/components/ui/loadingAnimation';
 
 function MainExpenseContent({ tripID, isMobile, isRightSideOpen, setIsRightSideOpen, canModify }) {
   const { isLoadingMain } = useExpenses();
+  useEffect(() => {
+    // Only run if gtag is available
+    if (window.gtag) {
+      window.gtag('js', new Date());
+      window.gtag('config', 'G-50Y0Q2BGEQ');
+    } else if (window.dataLayer) {
+      // fallback for when gtag is not defined but dataLayer is
+      function gtag(){window.dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-50Y0Q2BGEQ');
+    }
+  }, []);
 
   if (isLoadingMain) {
     return (
