@@ -1,5 +1,5 @@
 // src/components/TripCard.jsx
-import React, { useState, useEffect , memo} from "react";
+import React, { useState, useEffect, memo } from "react";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { NavLink } from "react-router-dom";
 import { CalendarIcon, MapPin } from "lucide-react";
@@ -33,6 +33,8 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useAuth } from "@/contexts/AuthProvider";
 import ShareModal from "@/components/ShareTrips/ShareModal";
 import GoogleMapImage from "@/components/MapboxMap/GoogleMapImage";
+import { createDraftGuide } from "@/APIs/guides";
+import toastPromise from "@/utils/toastPromise";
 
 export default function TripCard({ trip, onDelete }) {
   const navigate = useNavigate();
@@ -162,6 +164,31 @@ export default function TripCard({ trip, onDelete }) {
     }
   }
 
+  const handleCreateGuide = async () => {
+    try {
+      const response = await toastPromise(
+        createDraftGuide(trip.tripID), {
+        loading: "Creating guide...",
+        success: { 
+          message: "Guide created successfully!", 
+          action: { 
+            label: "View Guide", 
+            onClick: () => navigate(`/guides/view/${response.data.id}`)
+          }
+        },
+        error: (error) => {
+          return {
+            message: "Failed to create guide",
+            description: error?.message || "An unexpected error occurred"
+          }
+        }
+      }
+      )
+    } catch (error) {
+      console.error("Failed to create guide:", error);
+    }
+  }
+
   // calculate days
   const days =
     Math.ceil(
@@ -269,6 +296,12 @@ export default function TripCard({ trip, onDelete }) {
                       </DropdownMenuItem>
                       {isAdmin && (
                         <>
+                          <DropdownMenuItem
+                            onClick={handleCreateGuide}
+                          >
+                            <Share2 className="h-4 w-4 mr-2" />
+                            Create Guide
+                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={(e) => {

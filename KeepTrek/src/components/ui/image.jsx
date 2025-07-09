@@ -5,6 +5,7 @@ import dummy_image from '/assets/dummy-image.jpg'
 const Image = memo(function Image({ 
     src, 
     alt = dummy_image, 
+    className,
     onError, 
     ...props }) {
     const [imageSrc, setImageSrc] = useState(src);
@@ -22,6 +23,7 @@ const Image = memo(function Image({
         <img
             src={imageSrc}
             onError={handleError}
+            className={className}
             {...props}
         />
     );
