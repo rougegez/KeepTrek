@@ -1,5 +1,6 @@
 import React from "react";
-import { Clock, MapPin, MoreVertical } from "lucide-react";
+import { Clock, MapPin, MoreHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import CarouselView from "@/components/Blog/Carousel/CarouselView";
 import CarouselDialog from "@/components/Guides/components/CarouselDialog";
@@ -18,6 +19,7 @@ import {
 import { useMediaQuery } from "react-responsive";
 import { getItinerary, updateItinerary } from "@/APIs/itinerary";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 function GuideViewActivityCard({ activity, position, selected, onClick, tripsWithDays, selectedTrip, setSelectedTrip, selectedTripDays, setSelectedTripDays }) {
 
@@ -56,7 +58,7 @@ function GuideViewActivityCard({ activity, position, selected, onClick, tripsWit
 
     return (
         <>
-            <div
+            <motion.div
                 className={`group flex ${isMobile ? 'flex-col' : 'items-start'} min-h-48 space-x-4 p-4 rounded-xl transition-all hover:bg-gray-50 border border-transparent hover:border-gray-200 relative ${selected ? "bg-teal-50 ring-2 ring-teal-200 border-teal-200" : ""}`}
             >
                 {/* Activity Number Badge */}
@@ -182,14 +184,13 @@ function GuideViewActivityCard({ activity, position, selected, onClick, tripsWit
                 <div className="absolute top-2 right-2 z-10">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <button className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none flex items-center justify-center" style={{ minWidth: 32, minHeight: 32 }}>
-                          {/* Horizontal three-dot icon */}
-                          <span style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#888', display: 'inline-block' }} />
-                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#888', display: 'inline-block' }} />
-                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#888', display: 'inline-block' }} />
-                          </span>
-                        </button>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8 rounded-full [&_svg]:size-5"
+                        >
+                            <MoreHorizontal className=" text-gray-500 hover:text-gray-800" />
+                        </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Add to your trip</DropdownMenuLabel>
@@ -225,7 +226,7 @@ function GuideViewActivityCard({ activity, position, selected, onClick, tripsWit
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-            </div>
+            </motion.div>
 
             <CarouselDialog
                 open={isDialogOpen}

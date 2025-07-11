@@ -39,6 +39,11 @@ import EditableText from "../ui/EditableText.jsx"
 import toastPromise from "@/utils/toastPromise.js"
 import DeleteAlert from "../ui/DeleteAlert.jsx"
 import { useNavigate } from "react-router-dom"
+import GuideAddActivityModal from "./components/GuideAddActivityModal.jsx";
+import { Plus } from "lucide-react";
+import { motion, AnimatePresence, Reorder } from "framer-motion"
+import { Switch } from "../ui/switch.jsx"
+import { Label } from "../ui/label.jsx"
 
 function GuideEdit({ }) {
     const { guideID } = useParams()
@@ -61,10 +66,11 @@ function GuideEdit({ }) {
     const { user: userID } = useAuth()
 
     const [guide, setGuide] = useState(guideData)
-
     const [isSheetOpen, setIsSheetOpen] = useState(false)
     const [selectedPlace, setSelectedPlace] = useState({ random: null, clickLocation: {} })
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+    const [addModalState, setAddModalState] = useState({ isOpen: false, selectedDay: null, location: null });
+    const [reorderMode, setReorderMode] = useState(false);
 
     const handleChangeHeroImage = (images) => {
         if (!images || images.length === 0) {
@@ -121,9 +127,9 @@ function GuideEdit({ }) {
                 reject(err);
             }
         }), {
-            loading: "Saving draft...",
-            success: "Draft saved successfully!",
-            error: (e) => { return { message: "Failed to save draft.", description: e.message || "Unexpected error occurred." } }
+            loading: "Saving guide",
+            success: "Guide saved successfully!",
+            error: (e) => { return { message: "Failed to save changes.", description: e.message || "Unexpected error occurred." } }
         })
     }
 
@@ -181,12 +187,65 @@ function GuideEdit({ }) {
         }
     }
 
+    // Handler to add a new activity
+    const handleAddActivity = (newActivity, selectedDay) => {
+        console.log("Adding activity:", newActivity, "to day:", selectedDay);
+        const activityToAdd = {
+            ...newActivity,
+            id: newActivity.id || `${Date.now()}`
+        };
+        setGuide((prev) => {
+            const updatedDays = prev.days.map((day) => {
+                if (day.date === selectedDay) {
+                    return { ...day, activities: [...day.activities, activityToAdd] };
+                }
+                return day;
+            });
+            return { ...prev, days: updatedDays };
+        });
+        setAddModalState({ isOpen: false, selectedDay: null, location: null });
+    };
+
+    // Handler to add a new day
+    const handleAddDay = () => {
+        setGuide((prev) => ({
+            ...prev,
+            days: [
+                ...prev.days,
+                { date: `Day ${prev.days.length + 1}`, activities: [] }
+            ]
+        }));
+    };
+
+    // Handler for map click to add activity
+    const handleMapAddActivity = (place, selectedDay) => {
+        const newActivity = {
+            id: `${Date.now()}`,
+            title: place ? place.name : "",
+            placeId: place ? place.placeId : "",
+            location: place ? place.location : "",
+            coordinates: place ? place.coordinates : [],
+            rating: place ? place.rating : "",
+            image: place ? [place.image] : ["/assets/dummy-image.jpg"],
+            openingHours: place ? place.openingHours : "",
+            website: place ? place.website : "",
+            link: place ? place.link : "",
+        };
+        setGuide((prev) => {
+            const updatedDays = prev.days.map((day) => {
+                if (day.date === selectedDay) {
+                    return { ...day, activities: [...day.activities, newActivity] };
+                }
+                return day;
+            });
+            return { ...prev, days: updatedDays };
+        });
+    };
+
     return (
         <>
             <TopNavbar />
-            <div className="min-h-screen bg-gray-50">
-
-
+            <div className="bg-gray-50">
                 <div className="max-w-full mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-2">
                         {/* Left Panel - Itinerary Details */}
@@ -226,7 +285,7 @@ function GuideEdit({ }) {
                                                 onClick={handleSaveGuide}
                                             >
                                                 <Save className="w-4 h-4 text-green-500" />
-                                                Save Draft
+                                                Save {!guide.published && "Draft"}
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
                                                 className={`${guide.published ? "text-yellow-500 hover:!text-yellow-500" : "text-purple-500 hover:!text-purple-500"} cursor-pointer`}
@@ -272,7 +331,7 @@ function GuideEdit({ }) {
                                     </div>
                                     <div className="text-sm text-white/80">
                                         {guideData.published ?
-                                            <span>Posted on {guideData.publish_date[guideData.publish_date.length-1]} • {guideData.views} views</span>
+                                            <span>Posted on {guideData.publish_date[guideData.publish_date.length - 1]} • {guideData.views} views</span>
                                             :
                                             <span className="text-yellow-400">Created on {guideData.created_at} • {guideData.views} views • Not Published</span>
                                         }
@@ -290,57 +349,143 @@ function GuideEdit({ }) {
                                     disabledExtensions={["image", "link", "heading", "horizontalRule", "textalign"]}
                                     className="text-gray-700 leading-relaxed mb-6"
                                 />
-
+                                <div className="flex items-center gap-2 py-4">
+                                    <Switch
+                                        id="reorderMode"
+                                        checked={reorderMode}
+                                        onCheckedChange={setReorderMode}
+                                    />
+                                    <Label
+                                        htmlFor="reorderMode">
+                                        Reorder Activities
+                                    </Label>
+                                </div>
                                 {/* Days */}
                                 <div className="space-y-8">
-                                    {guide.days.map((day, dayIndex) => (
-                                        <div key={day.date}>
-                                            <h2 className="text-2xl font-bold text-gray-900 mb-6">{day.date}</h2>
-
-                                            <div className="space-y-4">
-                                                {day.activities.map((activity, activityIndex) => (
-                                                    <GuideEditActivityCard
-                                                        key={activityIndex}
-                                                        activity={activity}
-                                                        position={activityIndex + 1}
-                                                        selected={selectedPlace.clickLocation.title === activity.title}
-                                                        onSave={(updatedActivity) => {
-                                                            setGuide((prev) => {
-                                                                const updatedDays = [...prev.days];
-                                                                updatedDays[dayIndex].activities[activityIndex] = updatedActivity;
-                                                                return { ...prev, days: updatedDays };
-                                                            });
-                                                            console.log(guide)
-                                                        }}
-                                                        onClick={() => handleActivityLocationClick(activity)}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
+                                    <AnimatePresence>
+                                        {guide.days.map((day, dayIndex) => (
+                                            <motion.div
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                key={day.date}
+                                                className="mb-8">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <h2 className="text-2xl font-bold text-gray-900">{day.date}</h2>
+                                                    <div className="flex gap-2">
+                                                        {day.activities.length === 0 && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    setGuide((prev) => {
+                                                                        const updatedDays = [...prev.days];
+                                                                        updatedDays.splice(dayIndex, 1);
+                                                                        const renumberedDays = updatedDays.map((day, index) => ({
+                                                                            ...day,
+                                                                            date: `Day ${index + 1}`
+                                                                        }));
+                                                                        return { ...prev, days: renumberedDays };
+                                                                    });
+                                                                }}
+                                                                aria-label="Delete Day"
+                                                                className="text-red-500 hover:!text-red-500"
+                                                            >
+                                                                <Trash className="w-4 h-4" />
+                                                                Delete Day
+                                                            </Button>
+                                                        )}
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date, location: null })}
+                                                            aria-label="Add Activity"
+                                                        >
+                                                            <Plus className="w-4 h-4 mr-1" /> Add Activity
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                                {/* <div className="space-y-4"> */}
+                                                <Reorder.Group
+                                                    axis="y"
+                                                    values={day.activities}
+                                                    onReorder={(newActivities) => {
+                                                        setGuide((prev) => {
+                                                            let updatedDays = [...prev.days];
+                                                            updatedDays[dayIndex].activities = newActivities;
+                                                            return { ...prev, days: updatedDays };
+                                                        });
+                                                        console.log(guide)
+                                                    }}
+                                                    className="space-y-4"
+                                                >
+                                                    {day.activities.map((activity, activityIndex) => (
+                                                        <GuideEditActivityCard
+                                                            key={activity.id}
+                                                            activity={activity}
+                                                            position={activityIndex + 1}
+                                                            selected={selectedPlace.clickLocation.title === activity.title}
+                                                            onSave={(updatedActivity) => {
+                                                                setGuide((prev) => {
+                                                                    const updatedDays = [...prev.days];
+                                                                    updatedDays[dayIndex].activities[activityIndex] = updatedActivity;
+                                                                    return { ...prev, days: updatedDays };
+                                                                });
+                                                                console.log(guide)
+                                                            }}
+                                                            onDelete={() => {
+                                                                setGuide((prev) => {
+                                                                    const updatedDays = [...prev.days];
+                                                                    updatedDays[dayIndex].activities.splice(activityIndex, 1);
+                                                                    return { ...prev, days: updatedDays };
+                                                                })
+                                                                console.log(guide)
+                                                            }}
+                                                            onClick={() => handleActivityLocationClick(activity)}
+                                                            reorderMode={reorderMode}
+                                                        />
+                                                    ))}
+                                                </Reorder.Group>
+                                            </motion.div>
+                                        ))}
+                                    </AnimatePresence>
+                                    <Button
+                                        variant="outline"
+                                        className="w-full mt-4 mb-6 rounded-lg shadow"
+                                        onClick={handleAddDay}
+                                        aria-label="Add Day"
+                                    >
+                                        <Plus className="w-4 h-4 mr-2" /> Add Day
+                                    </Button>
                                 </div>
                             </div>
                         </div>
-
                         {/* Right Panel - Map */}
-                        <div className="bg-gray-100 min-h-screen sticky top-16">
-                            {/* <MapView places={allPlaces} selectedPlace={selectedPlace} onPlaceSelect={setSelectedPlace} /> */}
+                        <div className="bg-gray-100 sticky top-16 h-[calc(100vh-4rem)]">
                             <MapboxMap
                                 height="100%"
                                 width="100%"
-                                itineraryDays={guideData.days}
-                                initCenter={guideData?.coordinates}
-                                initViewport={guideData?.viewport}
+                                itineraryDays={guide.days.map(day => day.date)}
+                                initCenter={guide?.coordinates}
+                                initViewport={guide?.viewport}
                                 handlePanTo={selectedPlace}
-                                disableSaveLocation={true}
-                                disableSearchBar={true}
-                                markers={normalizeMarkers(guideData.days)}
+                                disableSaveLocation={false}
+                                disableSearchBar={false}
+                                markers={normalizeMarkers(guide.days)}
+                                onSaveLocation={handleMapAddActivity}
                             />
                         </div>
                     </div>
                 </div>
             </div>
-
+            {/* Add Activity Modal */}
+            <GuideAddActivityModal
+                open={addModalState.isOpen}
+                selectedDay={addModalState.selectedDay}
+                onOpenChange={(open) => setAddModalState({ isOpen: open, selectedDay: open ? addModalState.selectedDay : null, location: open ? addModalState.location : null })}
+                onAddActivity={handleAddActivity}
+                location={addModalState.location}
+            />
             <ImageUploadSheet
                 open={isSheetOpen}
                 onOpenChange={setIsSheetOpen}
