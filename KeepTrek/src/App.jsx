@@ -58,18 +58,16 @@ function App() {
                       <Route path="/" element={<AuthRedirect />} />
                       <Route path="/join/:inviteCode" element={<InvitePage />} />
                       <Route path="/AgodaPartnerVerification.html" element={<AgodaVerificationPage />} />
-                      <Route path="/guides" element={<ItineraryView/>}/>
+                      <Route path="/guides">
+                        <Route index element={<GuidePage />} />
+                        <Route path="view/:guideID" element={<GuideView />} />
+                      </Route>
                       <Route path="/blog" element={<BlogEditor/>} />
                       {/* Protected Routes */}
                       <Route element={<PrivateRoute />}>
                         <Route path="/home" element={<Homepage />} />
                         <Route path="/yourTrips" element={<YourTrips />} />
-                        <Route path="/guides">
-                          <Route index element={<GuidePage />} />
-                          <Route path="sample" element={<ItineraryView />} />
-                          <Route path="view/:guideID" element={<GuideView />} />
-                          <Route path="edit/:guideID" element={<GuideEdit />} />
-                        </Route>
+                        <Route path="/guides/edit/:guideID" element={<GuideEdit />} />
                         <Route element={<WhosOnlineWrapper />}>
                           <Route element={<ItinerarySocketWrapper />}>
                             <Route

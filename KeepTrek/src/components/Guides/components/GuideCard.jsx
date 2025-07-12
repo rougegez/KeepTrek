@@ -34,17 +34,18 @@ import {
 } from '../../ui/dropdown-menu';
 import { Button } from '../../ui/button';
 import DeleteAlert from '../../ui/DeleteAlert';
-import { deleteGuide } from '@/APIs/guides';
+import { deleteGuide , exportGuide } from '@/APIs/guides';
 import toastPromise from '@/utils/toastPromise';
 import { likeGuide, saveGuide } from '@/APIs/guides';
 import { useQuery } from 'react-query';
 import { useAuth } from '@/contexts/AuthProvider';
 import { getUserProfile } from '@/APIs/users';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { toast } from 'sonner';
 
 export default function GuideCard({ guide, self = false, onDelete }) {
 
-    const { user } = useAuth();
+    const { user, isLoggedIn } = useAuth();
     const { data: userData } = useQuery(
         ['userProfile', user],
         () => getUserProfile(user),
@@ -53,7 +54,7 @@ export default function GuideCard({ guide, self = false, onDelete }) {
         }
     );
 
-    const { data: creatorData, isLoading: isCreatorLoading} = useQuery(
+    const { data: creatorData, isLoading: isCreatorLoading } = useQuery(
         ['userProfile', guide.creatorID],
         () => getUserProfile(guide.creatorID),
         {
@@ -78,6 +79,7 @@ export default function GuideCard({ guide, self = false, onDelete }) {
     const [isLiked, setIsLiked] = useState(userData?.likes.includes(guide.id));
     const [isSaved, setIsSaved] = useState(userData?.saved.includes(guide.id));
 
+    const navigate = useNavigate();
 
     const handleDeleteGuide = async (e) => {
         const response = await toastPromise(
@@ -100,6 +102,10 @@ export default function GuideCard({ guide, self = false, onDelete }) {
     const handleLike = async (e) => {
         e.stopPropagation();
         e.preventDefault();
+        if (!isLoggedIn) {
+            toast.error("You must be logged in to like a guide.");
+            return;
+        }
         if (likePending) return;
         setLikePending(true);
         const currentLike = isLiked;
@@ -109,7 +115,6 @@ export default function GuideCard({ guide, self = false, onDelete }) {
                 description: error?.message || `An error occurred while ${!currentLike ? "liking" : "unliking"} the guide.`
             });
             setIsLiked(currentLike);
-            setLikeCount(currentLikeCount);
         });
         setLikePending(false);
     }
@@ -117,6 +122,11 @@ export default function GuideCard({ guide, self = false, onDelete }) {
     const handleSave = async (e) => {
         e.stopPropagation();
         e.preventDefault();
+        if (!isLoggedIn) {
+            toast.error("You must be logged in to save a guide.");
+            return;
+        }
+
         if (savePending) return;
         setSavePending(true);
         const currentSaved = isSaved;
@@ -130,6 +140,33 @@ export default function GuideCard({ guide, self = false, onDelete }) {
         setSavePending(false);
     }
 
+    const handleExportTrip = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!isLoggedIn) {
+            toast.error("You must be logged in to export a guide as a trip.");
+            return;
+        }
+        const response = await toastPromise(
+            exportGuide(guide.id),
+            {
+                loading: 'Exporting guide as trip...',
+                success: {
+                        message: 'Guide exported as trip successfully!',
+                        action: {
+                            label: 'View Trip',
+                            onClick: () => {navigate(`/itinerary/${response.data.id}`)},
+                        }
+                },
+                error: (error) => {
+                    return {
+                        message: "Failed to export guide as trip",
+                        description: error?.message || 'An error occurred while exporting the guide as a trip.'
+                    }
+                }
+            }
+        );    
+    }
 
     return (
         <>
@@ -212,13 +249,13 @@ export default function GuideCard({ guide, self = false, onDelete }) {
                         <CardFooter className="flex justify-between items-center">
                             <div className="flex items-center">
                                 <Avatar className="h-8 w-8">
-                                    <AvatarImage src={creatorData?.image}/>
+                                    <AvatarImage src={creatorData?.image} />
                                     <AvatarFallback className="text-gray-500">
-                                        {creatorData?.username?.charAt(0).toUpperCase() || <User className="size-4"/>}
+                                        {creatorData?.username?.charAt(0).toUpperCase() || <User className="size-4" />}
                                     </AvatarFallback>
                                 </Avatar>
                                 <span className="ml-2 text-sm text-gray-600">
-                                    { isCreatorLoading ? "Loading..." : creatorData?.username || "Unknown"}
+                                    {isCreatorLoading ? "Loading..." : creatorData?.username || "Unknown"}
                                 </span>
                             </div>
                             <DropdownMenu>
@@ -241,7 +278,9 @@ export default function GuideCard({ guide, self = false, onDelete }) {
                                         <ExternalLink className="h-4 w-4 mr-2" />
                                         View in new tab
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={handleExportTrip}
+                                    >
                                         <Copy className="h-4 w-4 mr-2" />
                                         Export as Trip
                                     </DropdownMenuItem>

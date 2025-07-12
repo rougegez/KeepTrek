@@ -22,7 +22,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 function GuideView() {
 
-    const { user } = useAuth()
+    const { user , isLoggedIn } = useAuth()
     const { guideID } = useParams()
     const { data: guideData } = useQuery(
         ["guide", guideID], () =>
@@ -41,6 +41,7 @@ function GuideView() {
     const { data: userData } = useQuery(
         ["userProfile", user],
         () => getUserProfile(user), {
+        enabled: isLoggedIn,
         refetchOnWindowFocus: false,
         suspense: true
     })
@@ -48,7 +49,7 @@ function GuideView() {
     const [selectedPlace, setSelectedPlace] = useState({ random: null, clickLocation: {} })
     const [likeCount, setLikeCount] = useState(guideData.likes)
     const [isLiked, setIsLiked] = useState(userData?.likes.includes(guideID))
-    const [isSaved, setIsSaved] = useState(userData.saved.includes(guideID))
+    const [isSaved, setIsSaved] = useState(userData?.saved.includes(guideID))
     const [tripsWithDays, setTripsWithDays] = useState([])
     const [selectedTrip, setSelectedTrip] = useState(null)
     const [selectedTripDays, setSelectedTripDays] = useState([])
@@ -80,6 +81,10 @@ function GuideView() {
 
 
     const handleLike = async () => {
+        if (!isLoggedIn) {
+            toast.error("You must be logged in to like a guide.");
+            return;
+        }
         if (likePending) return;
         setLikePending(true);
         const currentLike = isLiked;
@@ -97,6 +102,10 @@ function GuideView() {
     }
 
     const handleSave = async () => {
+        if (!isLoggedIn) {
+            toast.error("You must be logged in to save a guide.");
+            return;
+        }
         if (savePending) return;
         setSavePending(true);
         const currentSaved = isSaved;
@@ -108,6 +117,11 @@ function GuideView() {
             setIsSaved(currentSaved);
         });
         setSavePending(false);
+    }
+
+    const handleShare = () => {
+        navigator.clipboard.writeText(window.location.href)
+        toast.success("Guide link copied to clipboard!");
     }
 
     const handleActivityLocationClick = (activity) => {
@@ -188,7 +202,12 @@ function GuideView() {
                                                 >
                                                     <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
                                                 </Button>
-                                                <Button variant="secondary" size="sm" className="bg-white/90 backdrop-blur-sm text-gray-700">
+                                                <Button 
+                                                    variant="secondary" 
+                                                    size="sm"
+                                                    onClick={handleShare} 
+                                                    className="bg-white/90 backdrop-blur-sm text-gray-700"
+                                                >
                                                     <Share2 className="h-4 w-4" />
                                                 </Button>
                                             </div>
@@ -262,6 +281,7 @@ function GuideView() {
                                             variant="secondary"
                                             size="sm"
                                             onClick={handleLike}
+                                            disabled={likePending}
                                             className={`bg-white/90 backdrop-blur-sm ${isLiked ? "text-red-500" : "text-gray-700"}`}
                                         >
                                             <Heart className={`h-4 w-4 mr-1 ${isLiked ? "fill-current" : ""}`} />
@@ -271,11 +291,17 @@ function GuideView() {
                                             variant="secondary"
                                             size="sm"
                                             onClick={handleSave}
+                                            disabled={savePending}
                                             className={`bg-white/90 backdrop-blur-sm ${isSaved ? "text-teal-600" : "text-gray-700"}`}
                                         >
                                             <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
                                         </Button>
-                                        <Button variant="secondary" size="sm" className="bg-white/90 backdrop-blur-sm text-gray-700">
+                                        <Button 
+                                            variant="secondary" 
+                                            size="sm"
+                                            onClick={handleShare} 
+                                            className="bg-white/90 backdrop-blur-sm text-gray-700"
+                                        >
                                             <Share2 className="h-4 w-4" />
                                         </Button>
                                     </div>

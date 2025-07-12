@@ -39,6 +39,7 @@ import { getFilterData, getGuides } from "@/APIs/guides.js"
 import { getUserProfile } from "@/APIs/users.js"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthProvider.jsx"
+import { toast } from "sonner"
 
 
 export default function GuidePage() {
@@ -61,7 +62,7 @@ export default function GuidePage() {
     const navigate = useNavigate()
 
     // Auth
-    const { user } = useAuth()
+    const { user, isLoggedIn } = useAuth()
 
     // Debounced search
     const debouncedSetSearchQuery = useDebouncedCallback((val) => {
@@ -183,9 +184,12 @@ export default function GuidePage() {
         return filtered
     }, [searchedGuidesData, sortBy])
 
-    const handleLocationToggle = (location) => {
-        setSelectedLocations((prev) => (prev.includes(location) ? prev.filter((l) => l !== location) : [...prev, location]))
-        setCurrentPage(1) // Reset to first page when filters change
+    const handleCreateGuide = () => {
+        if (!isLoggedIn) {
+            toast.error("You must be logged in to create a guide.")
+            return
+        }
+        navigate("/yourTrips")
     }
 
     const clearFilters = () => {
@@ -225,7 +229,7 @@ export default function GuidePage() {
                             <h1 className="text-4xl font-bold text-gray-900 mb-2">Travel Guides</h1>
                             <p className="text-gray-600 text-lg">Discover amazing destinations through community-created guides</p>
                         </div>
-                        <Button size="sm" className="font-semibold" onClick={() => navigate("/yourTrips")}>
+                        <Button size="sm" className="font-semibold" onClick={handleCreateGuide}>
                             <Plus className="w-5 h-5" />
                             Create Guide
                         </Button>
@@ -268,7 +272,7 @@ export default function GuidePage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-gray-600 text-sm">Liked Guides</p>
-                                <p className="text-2xl font-bold text-gray-900">{userProfile?.likes?.length}</p>
+                                <p className="text-2xl font-bold text-gray-900">{userProfile?.likes?.length || 0}</p>
                             </div>
                             <Heart className="w-8 h-8 text-gray-400" />
                         </div>
@@ -522,11 +526,14 @@ export default function GuidePage() {
                             ) : (
                                 <Card className="p-12 text-center">
                                     <div className="text-gray-400 mb-4">
-                                        <Plus className="w-16 h-16 mx-auto mb-4" />
+                                        <Users className="w-16 h-16 mx-auto mb-4" />
                                     </div>
                                     <h3 className="text-xl font-semibold text-gray-900 mb-2">No guides yet</h3>
                                     <p className="text-gray-600 mb-4">Create your first guide to share your travel experiences</p>
-                                    <Button className="bg-primary-500 hover:bg-primary-600" onClick={() => navigate("/yourTrips")}>
+                                    <Button
+                                        variant="outline"
+                                        onClick={handleCreateGuide}
+                                    >
                                         <Plus className="w-4 h-4 mr-2" />
                                         Create Your First Guide
                                     </Button>
@@ -574,7 +581,7 @@ export default function GuidePage() {
 const GuideListLoadingSkeleton = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[1, 2, 3, 4, 5, 6].map((index) => (
-            <Card key={index} className="overflow-hidden">  
+            <Card key={index} className="overflow-hidden">
                 <div className="animate-pulse">
                     <div className="w-full h-48 bg-gray-200" />
                     <div className="p-6 space-y-3">

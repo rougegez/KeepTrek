@@ -103,6 +103,11 @@ export const saveGuide = async (guideID) => {
     return response;
 }
 
+export const exportGuide = async (guideID) => {
+    const response = await axios.post(`/guides/export/${guideID}`);
+    return response;
+}
+
 export const getMyTripsWithDays = async () => {
     const response = await axios.get('/trip/my-trips-with-days');
     return response.data;
