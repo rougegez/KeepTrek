@@ -8,17 +8,21 @@ import {
     CardDescription
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-    MapPin, 
-    Clock, 
+import {
+    MapPin,
+    Clock,
     Calendar,
-    MoreVertical, 
-    ExternalLink, 
-    Pencil, 
-    Trash, 
-    Copy 
+    MoreVertical,
+    ExternalLink,
+    Pencil,
+    Trash,
+    Copy,
+    Heart,
+    Bookmark,
+    Eye,
+    User
 } from 'lucide-react';
-import { NavLink , useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import Image from '../../ui/image';
 import { motion } from 'framer-motion';
 import {
@@ -32,8 +36,30 @@ import { Button } from '../../ui/button';
 import DeleteAlert from '../../ui/DeleteAlert';
 import { deleteGuide } from '@/APIs/guides';
 import toastPromise from '@/utils/toastPromise';
+import { likeGuide, saveGuide } from '@/APIs/guides';
+import { useQuery } from 'react-query';
+import { useAuth } from '@/contexts/AuthProvider';
+import { getUserProfile } from '@/APIs/users';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function GuideCard({ guide, self = false, onDelete }) {
+
+    const { user } = useAuth();
+    const { data: userData } = useQuery(
+        ['userProfile', user],
+        () => getUserProfile(user),
+        {
+            refetchOnWindowFocus: false
+        }
+    );
+
+    const { data: creatorData, isLoading: isCreatorLoading} = useQuery(
+        ['userProfile', guide.creatorID],
+        () => getUserProfile(guide.creatorID),
+        {
+            refetchOnWindowFocus: false
+        }
+    )
 
     let status = guide.published
     if (guide.publish_date.length > 0 && !guide.published) {
@@ -47,6 +73,11 @@ export default function GuideCard({ guide, self = false, onDelete }) {
     };
 
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+    const [likePending, setLikePending] = useState(false);
+    const [savePending, setSavePending] = useState(false);
+    const [isLiked, setIsLiked] = useState(userData?.likes.includes(guide.id));
+    const [isSaved, setIsSaved] = useState(userData?.saved.includes(guide.id));
+
 
     const handleDeleteGuide = async (e) => {
         const response = await toastPromise(
@@ -66,36 +97,105 @@ export default function GuideCard({ guide, self = false, onDelete }) {
         }
     }
 
+    const handleLike = async (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (likePending) return;
+        setLikePending(true);
+        const currentLike = isLiked;
+        setIsLiked(!currentLike);
+        await likeGuide(guide.id).catch((error) => {
+            toast.error(`Failed to ${!currentLike ? "like" : "unlike"} the guide`, {
+                description: error?.message || `An error occurred while ${!currentLike ? "liking" : "unliking"} the guide.`
+            });
+            setIsLiked(currentLike);
+            setLikeCount(currentLikeCount);
+        });
+        setLikePending(false);
+    }
+
+    const handleSave = async (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (savePending) return;
+        setSavePending(true);
+        const currentSaved = isSaved;
+        setIsSaved(!currentSaved);
+        await saveGuide(guide.id).catch((error) => {
+            toast.error(`Failed to ${!currentSaved ? "save" : "unsave"} the guide`, {
+                description: error?.message || `An error occurred while ${!currentSaved ? "saving" : "unsaving"} the guide.`
+            })
+            setIsSaved(currentSaved);
+        });
+        setSavePending(false);
+    }
+
 
     return (
         <>
             <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                whileHover={{ scale: 1.02 }}
             >
-                <Card className="overflow-hidden m-2">
+                <Card className="overflow-hidden m-2 hover:shadow-xl">
                     <NavLink to={`/guides/view/${guide.id}`}>
                         <div className="relative h-48">
                             <Image
                                 src={guide.hero_image}
                                 className="w-full h-full object-cover"
                             />
-                            {self && (
+                            {self ? (
                                 <Badge className={`absolute top-2 right-2 ${statusColors[status]}`}>
                                     {guide.published ? 'Published' : guide.publish_date.length > 0 ? 'Unlisted' : 'Draft'}
                                 </Badge>
+                            ) : (
+                                <div className="absolute top-2 right-2 flex gap-x-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleLike}
+                                        disabled={likePending}
+                                        className={`group bg-white/40 border-none backdrop-blur-sm hover:bg-white/60 ${isLiked ? "text-red-500" : "text-gray-700 hover:text-red-500"}`}
+                                    >
+                                        <Heart className={`h-4 w-4 ${isLiked ? "fill-current group-hover:fill-none" : "group-hover:fill-current"}`} />
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleSave}
+                                        disabled={savePending}
+                                        className={`group bg-white/40 border-none backdrop-blur-sm hover:bg-white/60 ${isSaved ? "text-teal-600" : "text-gray-700 hover:text-teal-600"}`}
+                                    >
+                                        <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current group-hover:fill-none" : "group-hover:fill-current"}`} />
+                                    </Button>
+                                </div>
                             )}
                         </div>
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-2xl font-semibold">{guide.title}</CardTitle>
+                            <div className="flex justify-between gap-x-2">
+                                <CardTitle className="text-2xl font-semibold line-clamp-1">
+                                    {guide.title}
+                                </CardTitle>
+                                <div className="flex items-center gap-3 text-sm text-gray-600">
+                                    <div className="flex items-center gap-2">
+                                        <Heart className="h-4 w-4" />
+                                        {guide.likes || 0}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Eye className="h-4 w-4" />
+                                        {guide.views || 0}
+                                    </div>
+                                </div>
+                            </div>
                             <CardDescription className="text-gray-700 text-sm line-clamp-1">
-                                {guide.description ? 
-                                    <div dangerouslySetInnerHTML={{__html : guide.description}} /> 
+                                {guide.description ?
+                                    <div dangerouslySetInnerHTML={{ __html: guide.description }} />
                                     : <span className="italic text-gray-500">No description yet</span>}
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="pb-2">
                             <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
                                 <MapPin className="w-4 h-4" />
                                 <span>{guide.location}</span>
@@ -103,17 +203,24 @@ export default function GuideCard({ guide, self = false, onDelete }) {
                             <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
                                 <Clock className="w-4 h-4" />
                                 <span>
-                                  {guide.duration?.days != null ? `${guide.duration.days}D` : "-"}
-                                  {" "}
-                                  {guide.duration?.nights != null ? `${guide.duration.nights}N` : ""}
+                                    {guide.duration?.days != null ? `${guide.duration.days}D` : "-"}
+                                    {" "}
+                                    {guide.duration?.nights != null ? `${guide.duration.nights}N` : ""}
                                 </span>
                             </div>
-                            <div className="flex items-center space-x-2 text-sm text-gray-500">
-                                <Calendar className="w-4 h-4" />
-                                <span>Created at: {guide.created_at}</span>
-                            </div>
                         </CardContent>
-                        <CardFooter className="flex justify-end items-center">
+                        <CardFooter className="flex justify-between items-center">
+                            <div className="flex items-center">
+                                <Avatar className="h-8 w-8">
+                                    <AvatarImage src={creatorData?.image}/>
+                                    <AvatarFallback className="text-gray-500">
+                                        {creatorData?.username?.charAt(0).toUpperCase() || <User className="size-4"/>}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <span className="ml-2 text-sm text-gray-600">
+                                    { isCreatorLoading ? "Loading..." : creatorData?.username || "Unknown"}
+                                </span>
+                            </div>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button
@@ -172,7 +279,7 @@ export default function GuideCard({ guide, self = false, onDelete }) {
                 onConfirm={handleDeleteGuide}
                 itemName="Guide"
                 itemType="guide"
-                />
+            />
         </>
     )
 }
