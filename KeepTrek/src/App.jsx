@@ -22,7 +22,6 @@ import { MapProvider } from "react-map-gl/mapbox";
 import ItinerarySocketWrapper from "@/components/Itinerary/ItinerarySocketWrapper";
 import { Analytics } from "@vercel/analytics/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { SidebarProvider } from "./components/ui/sidebar";
 import BrowseActivity from "./components/BrowseActivity/BrowseActivity.jsx";
 import BlogEditor from "./components/Blog/BlogEditor";
 // import { SpeedInsights } from "@vercel/speed-insights/next"
@@ -64,7 +63,7 @@ function App() {
                       <Route path="/admin/login" element={<AdminLoginPage />} />
                       {/* <Route path="/blog" element={<BlogEditor/>} /> */}
                       {/* Protected Routes */}
-                      <Route element={<SidebarProvider><PrivateRoute /></SidebarProvider>}>
+                      <Route element={<PrivateRoute />}>
                         <Route path="/yourTrips" element={<YourTrips />} />
                         <Route element={<WhosOnlineWrapper />}>
                           <Route element={<ItinerarySocketWrapper />}>

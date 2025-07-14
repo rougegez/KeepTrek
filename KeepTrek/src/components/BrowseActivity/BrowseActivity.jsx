@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/card';
 import AppSidebar from "@/components/Sidebar/Sidebar.jsx";
 import { getTrip } from "@/APIs/trip.js";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useMediaQuery } from "react-responsive";
 import { useItinerary } from "@/hooks/useItinerary.jsx";
 import { toast } from "sonner";
@@ -159,7 +159,7 @@ const BrowseActivity = () => {
   };
 
   return (
-    <>
+    <SidebarProvider>
       <AppSidebar tripID={tripID} />
       {!isMobile && <SidebarTrigger />}
       {isMobile && <MobileHeader title="Browse Activities" />}
@@ -173,104 +173,104 @@ const BrowseActivity = () => {
               </p>
           </header>
 
-          <div className="flex flex-col md:flex-row gap-4 mb-4 px-1">
+        <div className="flex flex-col md:flex-row gap-4 mb-4 px-1">
+          <Input
+            placeholder="Search activities..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-grow"
+          />
+          <div className="flex items-center gap-4">
+            <Select value={sortOrder} onValueChange={setSortOrder}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="default">Default</SelectItem>
+                <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                <SelectItem value="name-asc">Name: A-Z</SelectItem>
+                <SelectItem value="name-desc">Name: Z-A</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="flex items-center gap-2">
               <Input
-                  placeholder="Search activities..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="flex-grow"
+                type="number"
+                placeholder="Min Price"
+                value={priceRange[0]}
+                onChange={(e) => setPriceRange([e.target.value, priceRange[1]])}
+                className="w-24"
               />
-              <div className="flex items-center gap-4">
-                  <Select value={sortOrder} onValueChange={setSortOrder}>
-                  <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                      <SelectItem value="default">Default</SelectItem>
-                      <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                      <SelectItem value="price-desc">Price: High to Low</SelectItem>
-                      <SelectItem value="name-asc">Name: A-Z</SelectItem>
-                      <SelectItem value="name-desc">Name: Z-A</SelectItem>
-                  </SelectContent>
-                  </Select>
-                  <div className="flex items-center gap-2">
-                  <Input
-                      type="number"
-                      placeholder="Min Price"
-                      value={priceRange[0]}
-                      onChange={(e) => setPriceRange([e.target.value, priceRange[1]])}
-                      className="w-24"
-                  />
-                  <span>-</span>
-                  <Input
-                      type="number"
-                      placeholder="Max Price"
-                      value={priceRange[1]}
-                      onChange={(e) => setPriceRange([priceRange[0], e.target.value])}
-                      className="w-24"
-                  />
-                  </div>
-              </div>
+              <span>-</span>
+              <Input
+                type="number"
+                placeholder="Max Price"
+                value={priceRange[1]}
+                onChange={(e) => setPriceRange([priceRange[0], e.target.value])}
+                className="w-24"
+              />
+            </div>
           </div>
+        </div>
 
-          {isLoading ? (
+        {isLoading ? (
           <div className="flex justify-center items-center">
-              <LoadingSpinner />
+            <LoadingSpinner />
           </div>
-          ) : error ? (
+        ) : error ? (
           <div className="text-red-500">Error: {error.message}</div>
-          ) : filteredAndSortedLinks && filteredAndSortedLinks.length > 0 ? (
+        ) : filteredAndSortedLinks && filteredAndSortedLinks.length > 0 ? (
           <div className="overflow-y-auto p-1">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredAndSortedLinks.map((link) => (
                 <Card key={link.id} className="flex flex-col">
                   <CardContent className="p-0">
-                      <a
+                    <a
                       href={link.deep_link}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block h-64 overflow-hidden rounded-t-lg"
-                      >
+                    >
                       <img
-                          src={link.image || placeholderImage}
-                          alt={link.activity}
-                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                        src={link.image || placeholderImage}
+                        alt={link.activity}
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                       />
-                      </a>
+                    </a>
                   </CardContent>
                   <CardHeader className="flex-grow">
-                      <CardTitle className="text-base h-12 overflow-hidden">
+                    <CardTitle className="text-base h-12 overflow-hidden">
                       {link.activity}
-                      </CardTitle>
+                    </CardTitle>
                   </CardHeader>
                   <CardFooter className="flex justify-between items-center pt-4">
-                      {link.price ? (
+                    {link.price ? (
                       <div className="text-lg font-bold text-gray-900">
-                          RM{link.price.toFixed(2)}
+                        RM{link.price.toFixed(2)}
                       </div>
-                      ) : (
+                    ) : (
                       <div />
-                      )}
+                    )}
                       <div className="flex gap-2">
                         <Button onClick={() => handleOpenModal(link)}>Add to Itinerary</Button>
-                        <Button asChild>
-                            <a
-                                href={link.deep_link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                View Deal
-                            </a>
-                        </Button>
+                    <Button asChild>
+                      <a
+                        href={link.deep_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View Deal
+                      </a>
+                    </Button>
                       </div>
                   </CardFooter>
                 </Card>
               ))}
             </div>
           </div>
-          ) : (
-            <div>No activities found matching your criteria.</div>
-          )}
+        ) : (
+          <div>No activities found matching your criteria.</div>
+        )}
       </main>
       <AddToItineraryModal
         isOpen={isModalOpen}
@@ -279,8 +279,8 @@ const BrowseActivity = () => {
         days={itineraryDays}
         activityTitle={activityToAdd?.activity}
       />
-    </>
+    </SidebarProvider>
   );
 };
 
-export default BrowseActivity; 
+export default BrowseActivity;
