@@ -22,6 +22,7 @@ import { MapProvider } from "react-map-gl/mapbox";
 import ItinerarySocketWrapper from "@/components/Itinerary/ItinerarySocketWrapper";
 import { Analytics } from "@vercel/analytics/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import BrowseActivity from "./components/BrowseActivity/BrowseActivity.jsx";
 import BlogEditor from "./components/Blog/BlogEditor";
 // import { SpeedInsights } from "@vercel/speed-insights/next"
 import AddActivityPage from "./components/Admin/AddActivityPage";
@@ -82,6 +83,10 @@ function App() {
                             <Route
                               path="/wishlist/:tripID"
                               element={<Wishlist />}
+                            />
+                            <Route
+                              path="/browse-activities/:tripID"
+                              element={<BrowseActivity />}
                             />
                           </Route>
                         </Route>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import styles from './Sidebar.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
-import { ChevronDown, Menu, Home, Hotel, Users, FileText, Paperclip, Calendar, PiggyBank, Heart, CalendarClock, Map, X } from 'lucide-react';
+import { ChevronDown, Menu, Home, Hotel, Users, FileText, Paperclip, Calendar, PiggyBank, Heart, CalendarClock, Map, X, ShoppingBag } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -14,6 +14,7 @@ import {
   SidebarMenuItem,
   SidebarHeader,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   Collapsible,
@@ -22,6 +23,9 @@ import {
 } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useQuery } from 'react-query';
+import { getTrip } from '@/APIs/trip.js';
+
 
 // Overview items with icons
 const OverviewItems = [
@@ -33,11 +37,24 @@ const OverviewItems = [
 ];
 
 export const AppSidebar = ({ tripID }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { state: sidebarState } = useSidebar();
+  const isCollapsed = sidebarState === 'collapsed';
 
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+  const { data: tripDetails } = useQuery(
+    ["trip", tripID],
+    () => getTrip(tripID),
+    {
+      // Basic suspense and stale time for this shared component
+      suspense: false, 
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    }
+  );
+
+  const displayLocation =
+  tripDetails?.location?.toLowerCase() === "langkawi"
+    ? "Langkawi Island"
+    : tripDetails?.location;
+
   const sidebarClassName = cn(
     "h-screen bg-white drop-shadow-keepTrek overflow-y-auto z-50 transition-all duration-300",
     isCollapsed ? "w-16" : "w-60", // Adjust width when collapsed or expanded
@@ -122,6 +139,7 @@ export const AppSidebar = ({ tripID }) => {
           { title: "Expenses", icon: PiggyBank, path: `/expenses/${tripID}` },
           { title: "Suggest", icon: Heart, path: `/wishlist/${tripID}` },
           { title: "Can't Find a Date?", icon: CalendarClock, path: `/schedule/${tripID}` },
+          { title: "Browse Activities", icon: ShoppingBag, path: `/browse-activities/${tripID}` },
         ].map((item) => (
           <motion.div
             key={item.title}

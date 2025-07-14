@@ -1,15 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from 'react-query';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogDescription,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
@@ -20,17 +12,23 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import AppSidebar from "@/components/Sidebar/Sidebar.jsx";
+import { getTrip } from "@/APIs/trip.js";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { useMediaQuery } from "react-responsive";
+import { useItinerary } from "@/hooks/useItinerary.jsx";
+import { toast } from "sonner";
+import AddToItineraryModal from './AddToItineraryModal';
+import MobileHeader from '../MobileHeader';
 
-// Use the API URL from Vite's environment variables. Fallback to localhost for development
-// and the Render URL for production.
 const API_BASE_URL = import.meta.env.VITE_API_URL || 
   (import.meta.env.DEV ? 'http://localhost:8000' : 'https://keeptrek-backend.onrender.com');
 
 const fetchAffiliateLinks = async (city) => {
+  if (!city) return [];
   const url = `${API_BASE_URL}/affiliate?city=${encodeURIComponent(city)}`;
   const response = await fetch(url);
   
-  // If no affiliate links are found, backend returns a 404.
   if (response.status === 404) {
     return [];
   }
@@ -50,18 +48,34 @@ const fetchAffiliateLinks = async (city) => {
 
 const placeholderImage = 'https://via.placeholder.com/400x200?text=No+Image';
 
-const BrowseActivity = ({ location }) => {
-  const [open, setOpen] = useState(false);
+const BrowseActivity = () => {
+  const { tripID } = useParams();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('default');
   const [priceRange, setPriceRange] = useState(['', '']);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activityToAdd, setActivityToAdd] = useState(null);
+  const isMobile = useMediaQuery({ query: "(max-width: 1170px)" });
+  const { days: itineraryDays, setDays } = useItinerary();
 
+  const { data: tripDetails } = useQuery(
+    ["trip", tripID],
+    () => getTrip(tripID),
+    { suspense: true }
+  );
 
-  // Fetch affiliate links regardless of location.
+  const displayLocation = useMemo(() => 
+    tripDetails?.location?.toLowerCase() === "langkawi"
+      ? "Langkawi Island"
+      : tripDetails?.location,
+    [tripDetails]
+  );
+
   const { data: affiliateLinks, isLoading, error } = useQuery(
-    ['affiliateLinks', location],
-    () => fetchAffiliateLinks(location),
-    { enabled: open && Boolean(location) }
+    ['affiliateLinks', displayLocation],
+    () => fetchAffiliateLinks(displayLocation),
+    { enabled: !!displayLocation }
   );
 
   const filteredAndSortedLinks = useMemo(() => {
@@ -69,14 +83,12 @@ const BrowseActivity = ({ location }) => {
 
     let links = [...affiliateLinks];
 
-    // 1. Filter by search term
     if (searchTerm) {
       links = links.filter(link =>
         link.activity.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    // 2. Filter by price range
     links = links.filter(link => {
       const price = link.price || 0;
       const minPrice = priceRange[0] === '' ? 0 : parseFloat(priceRange[0]);
@@ -84,7 +96,6 @@ const BrowseActivity = ({ location }) => {
       return price >= minPrice && price <= maxPrice;
     });
 
-    // 3. Sort
     switch (sortOrder) {
       case 'price-asc':
         links.sort((a, b) => (a.price || 0) - (b.price || 0));
@@ -105,23 +116,62 @@ const BrowseActivity = ({ location }) => {
     return links;
   }, [affiliateLinks, searchTerm, sortOrder, priceRange]);
 
+  const handleOpenModal = (activity) => {
+    setActivityToAdd(activity);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setActivityToAdd(null);
+  };
+
+  const handleConfirmAdd = (selectedDay) => {
+    const updatedDays = itineraryDays.map((day) => {
+      if (day.date === selectedDay) {
+        return {
+          ...day,
+          activities: [
+            ...day.activities,
+            {
+              id: `${Date.now()}`,
+              title: activityToAdd.activity,
+              location: activityToAdd.city,
+              coordinates: [], // Affiliate links don't have coordinates
+              image: activityToAdd.image || placeholderImage,
+              link: activityToAdd.deep_link,
+              notes: `Price: RM${activityToAdd.price?.toFixed(2)}`,
+            },
+          ],
+        };
+      }
+      return day;
+    });
+
+    setDays(updatedDays);
+    handleCloseModal();
+    toast.success(`Added "${activityToAdd.activity}" to itinerary!`, {
+      action: {
+        label: "View Itinerary",
+        onClick: () => navigate(`/itinerary/${tripID}`),
+      },
+    });
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <Search className="mr-2 h-4 w-4" />
-          Browse Activities
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-7xl duration-500 backface-hidden transform-preserve-3d">
-        <DialogHeader>
-          <DialogTitle>Browse Activities</DialogTitle>
-          <DialogDescription>
-            {location
-              ? `Explore activities available in ${location}.`
-              : 'No location provided.'}
-          </DialogDescription>
-        </DialogHeader>
+    <SidebarProvider>
+      <AppSidebar tripID={tripID} />
+      {!isMobile && <SidebarTrigger />}
+      {isMobile && <MobileHeader title="Browse Activities" />}
+      <main className={`p-8 ${isMobile ? 'mt-14' : ''}`}>
+          <header className="mb-8">
+              <h1 className="text-4xl font-bold">Browse Activities</h1>
+              <p className="text-muted-foreground">
+                  {displayLocation
+                  ? `Explore activities available in ${displayLocation}.`
+                  : 'Loading location...'}
+              </p>
+          </header>
 
         <div className="flex flex-col md:flex-row gap-4 mb-4 px-1">
           <Input
@@ -170,7 +220,7 @@ const BrowseActivity = ({ location }) => {
         ) : error ? (
           <div className="text-red-500">Error: {error.message}</div>
         ) : filteredAndSortedLinks && filteredAndSortedLinks.length > 0 ? (
-          <div className="overflow-y-auto max-h-[60vh] p-1">
+          <div className="overflow-y-auto p-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredAndSortedLinks.map((link) => (
                 <Card key={link.id} className="flex flex-col">
@@ -201,6 +251,8 @@ const BrowseActivity = ({ location }) => {
                     ) : (
                       <div />
                     )}
+                      <div className="flex gap-2">
+                        <Button onClick={() => handleOpenModal(link)}>Add to Itinerary</Button>
                     <Button asChild>
                       <a
                         href={link.deep_link}
@@ -210,6 +262,7 @@ const BrowseActivity = ({ location }) => {
                         View Deal
                       </a>
                     </Button>
+                      </div>
                   </CardFooter>
                 </Card>
               ))}
@@ -218,8 +271,15 @@ const BrowseActivity = ({ location }) => {
         ) : (
           <div>No activities found matching your criteria.</div>
         )}
-      </DialogContent>
-    </Dialog>
+      </main>
+      <AddToItineraryModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onConfirm={handleConfirmAdd}
+        days={itineraryDays}
+        activityTitle={activityToAdd?.activity}
+      />
+    </SidebarProvider>
   );
 };
 
