@@ -148,10 +148,9 @@ function GuideView() {
                     {isMobile ? (
                         <>
                             <motion.div
-                                className="fixed w-full z-40 bg-background"
+                                className="fixed flex-shrink top-14 w-full z-40 bg-background"
                                 initial={{ height: "75vh" }}
                                 animate={{ height: getMapHeight(), transition: { duration: 0.2, ease: "easeInOut" } }}
-                                style={{ top: "3.5rem", flexShrink: 1 }}
                             >
                                 <MapboxMap
                                     height="100%"
@@ -167,14 +166,12 @@ function GuideView() {
                                 <MapToggleButton />
                             </motion.div>
                             <motion.div
-                                className="w-full bg-background relative z-30 overflow-y-auto"
-                                animate={{ marginTop: `calc(${getMapHeight()} + 3.5rem)`, transition: { duration: 0.3, ease: "easeInOut" } }}
-                                style={{ flexShrink: 0, height: "calc(100vh - 3.5rem)" }}
+                                className="flex-shrink-0 w-full bg-background relative z-30 overflow-y-auto"
+                                animate={{ marginTop: getMapHeight(), transition: { duration: 0.3, ease: "easeInOut" } }}
                             >
-                                <ScrollArea className="h-[calc(100vh-3.5rem)] px-2 pt-6">
-                                    <div className="space-y-8">
+                                    <div className="p-4">
                                         {/* Hero Section */}
-                                        <div className="relative h-56 overflow-hidden rounded-lg">
+                                        <div className="relative h-56 overflow-hidden rounded-lg mb-4">
                                             <Image
                                                 key={guideData.hero_image}
                                                 src={guideData.hero_image}
@@ -238,15 +235,15 @@ function GuideView() {
                                         {/* Days */}
                                         <div className="space-y-6">
                                             {guideData.days.map((day) => (
-                                                <div key={day.date}>
-                                                    <h2 className="text-xl font-bold text-gray-900 mb-4">{day.date}</h2>
-                                                    <div className="space-y-3">
+                                                <div key={day.date} className="mb-2">
+                                                    <h2 className="text-xl font-bold text-gray-900 mb-2">{day.date}</h2>
+                                                    <div className="space-y-4">
                                                         {day.activities.map((activity, index) => (
                                                             <GuideViewActivityCard
                                                                 key={index}
                                                                 activity={activity}
                                                                 position={index + 1}
-                                                                selected={selectedPlace?.title === activity.title}
+                                                                selected={selectedPlace?.clickLocation.title === activity.title}
                                                                 onClick={() => handleActivityLocationClick(activity)}
                                                                 tripsWithDays={tripsWithDays}
                                                                 selectedTrip={selectedTrip}
@@ -260,7 +257,6 @@ function GuideView() {
                                             ))}
                                         </div>
                                     </div>
-                                </ScrollArea>
                             </motion.div>
                         </>
                     ) : (
@@ -342,11 +338,11 @@ function GuideView() {
                                                             key={index}
                                                             activity={activity}
                                                             position={index + 1}
-                                                            selected={selectedPlace?.title === activity.title}
+                                                            selected={selectedPlace?.clickLocation.title === activity.title}
                                                             onClick={() => handleActivityLocationClick(activity)}
                                                             tripsWithDays={tripsWithDays}
                                                             selectedTrip={selectedTrip}
-                                                            setSelectedTrip={setSelectedTrip}
+                                                            setSelectedTrip={setSelectedTrip}       
                                                             selectedTripDays={selectedTripDays}
                                                             setSelectedTripDays={setSelectedTripDays}
                                                         />
@@ -358,7 +354,7 @@ function GuideView() {
                                 </div>
                             </div>
                             {/* Right Panel - Map */}
-                            <div className="bg-gray-100 min-h-screen sticky top-16">
+                            <div className="bg-gray-100 sticky top-16 h-[calc(100vh-4rem)]">
                                 <MapboxMap
                                     height="100%"
                                     width="100%"

@@ -12,7 +12,8 @@ import {
     Trash,
     ImageIcon,
     Save,
-    Share
+    Share,
+    ChevronDown
 } from "lucide-react"
 import TopNavbar from "../topNavBar/TopNavbar.jsx"
 import { useQuery } from "react-query"
@@ -44,6 +45,7 @@ import { Plus } from "lucide-react";
 import { motion, AnimatePresence, Reorder } from "framer-motion"
 import { Switch } from "../ui/switch.jsx"
 import { Label } from "../ui/label.jsx"
+import { useIsMobile } from "@/hooks/use-mobile";
 
 function GuideEdit({ }) {
     const { guideID } = useParams()
@@ -71,6 +73,27 @@ function GuideEdit({ }) {
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
     const [addModalState, setAddModalState] = useState({ isOpen: false, selectedDay: null, location: null });
     const [reorderMode, setReorderMode] = useState(false);
+
+    const isMobile = useIsMobile();
+    const [isMapExpanded, setIsMapExpanded] = useState(true);
+    const getMapHeight = () => (isMapExpanded ? "65vh" : "10vh");
+    const MapToggleButton = () => (
+        <Button
+            className="absolute right-4 -bottom-5 z-[100] rounded-full p-2 bg-white border border-gray-200 text-muted-foreground shadow-lg transition-transform"
+            onClick={(e) => {
+                e.stopPropagation();
+                setIsMapExpanded(!isMapExpanded);
+            }}
+            style={{ width: isMobile ? "44px" : "36px", height: isMobile ? "44px" : "36px", boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)" }}
+            aria-label={isMapExpanded ? "Collapse Map" : "Expand Map"}
+            title={isMapExpanded ? "Collapse Map" : "Expand Map"}
+        >
+            <ChevronDown
+                size={isMobile ? 24 : 20}
+                className={`transition-transform duration-300 ${isMapExpanded ? "rotate-180" : "rotate-0"}`}
+            />
+        </Button>
+    );
 
     const handleChangeHeroImage = (images) => {
         if (!images || images.length === 0) {
@@ -247,235 +270,454 @@ function GuideEdit({ }) {
             <TopNavbar />
             <div className="bg-gray-50">
                 <div className="max-w-full mx-auto">
-                    <div className="grid grid-cols-1 lg:grid-cols-2">
-                        {/* Left Panel - Itinerary Details */}
-                        <div className="bg-white">
-                            {/* Hero Section */}
-                            <div className="relative h-80 overflow-hidden">
-                                <Image
-                                    key={guide.hero_image}
-                                    src={guide.hero_image}
-                                    className="w-full h-full object-cover"
+                    {isMobile ? (
+                        <>
+                            <motion.div
+                                className="fixed flex-shrink top-14 w-full z-40 bg-background"
+                                initial={{ height: "75vh" }}
+                                animate={{ height: getMapHeight(), transition: { duration: 0.2, ease: "easeInOut" } }}
+                            >
+                                <MapboxMap
+                                    height="100%"
+                                    width="100%"
+                                    itineraryDays={guide.days.map(day => day.date)}
+                                    initCenter={guide?.coordinates}
+                                    initViewport={guide?.viewport}
+                                    handlePanTo={selectedPlace}
+                                    disableSaveLocation={false}
+                                    disableSearchBar={false}
+                                    markers={normalizeMarkers(guide.days)}
+                                    onSaveLocation={handleMapAddActivity}
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                                <MapToggleButton />
+                            </motion.div>
+                            <motion.div
+                                className="flex-shrink-0 w-full bg-background relative z-30 overflow-y-auto"
+                                animate={{ marginTop: getMapHeight(), transition: { duration: 0.3, ease: "easeInOut" } }}
+                            >
+                                <div className="p-4">
+                                    {/* Hero Section */}
+                                    <div className="relative h-56 overflow-hidden rounded-lg mb-4">
+                                        <Image
+                                            key={guide.hero_image}
+                                            src={guide.hero_image}
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                                        {/* Action Buttons */}
+                                        <div className="absolute top-4 right-4 flex items-center space-x-2">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-6 w-6 p-0 bg-white/80 rounded-full cursor-pointer"
+                                                    >
+                                                        <MoreHorizontal className="h-3 w-3" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem
+                                                        className="cursor-pointer"
+                                                        onClick={() => setIsSheetOpen(true)}
+                                                    >
+                                                        <ImageIcon className="w-4 h-4 " />
+                                                        Change Banner
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem
+                                                        className="text-green-500 hover:!text-green-500 cursor-pointer"
+                                                        onClick={handleSaveGuide}
+                                                    >
+                                                        <Save className="w-4 h-4 text-green-500" />
+                                                        Save {!guide.published && "Draft"}
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        className={`${guide.published ? "text-yellow-500 hover:!text-yellow-500" : "text-purple-500 hover:!text-purple-500"} cursor-pointer`}
+                                                        onClick={handlePublishGuide}
+                                                    >
+                                                        <Share className={`w-4 h-4 ${guide.published ? "text-yellow-500" : "text-purple-500"}`} />
+                                                        {guide.published ? "Unlist" : "Publish"}
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem
+                                                        className="text-red-500 hover:!text-red-500 cursor-pointer"
+                                                        onClick={() => setShowDeleteAlert(true)}
+                                                    >
+                                                        <Trash className="w-4 h-4 text-red-500" />
+                                                        Discard Draft
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
 
-                                {/* Action Buttons */}
-                                <div className="absolute top-4 right-4 flex items-center space-x-2">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-6 w-6 p-0 bg-white/80 rounded-full cursor-pointer"
-                                            >
-                                                <MoreHorizontal className="h-3 w-3" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem
-                                                className="cursor-pointer"
-                                                onClick={() => setIsSheetOpen(true)}
-                                            >
-                                                <ImageIcon className="w-4 h-4 " />
-                                                Change Banner
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem
-                                                className="text-green-500 hover:!text-green-500 cursor-pointer"
-                                                onClick={handleSaveGuide}
-                                            >
-                                                <Save className="w-4 h-4 text-green-500" />
-                                                Save {!guide.published && "Draft"}
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                className={`${guide.published ? "text-yellow-500 hover:!text-yellow-500" : "text-purple-500 hover:!text-purple-500"} cursor-pointer`}
-                                                onClick={handlePublishGuide}
-                                            >
-                                                <Share className={`w-4 h-4 ${guide.published ? "text-yellow-500" : "text-purple-500"}`} />
-                                                {guide.published ? "Unlist" : "Publish"}
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem
-                                                className="text-red-500 hover:!text-red-500 cursor-pointer"
-                                                onClick={() => setShowDeleteAlert(true)}
-                                            >
-                                                <Trash className="w-4 h-4 text-red-500" />
-                                                Discard Draft
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-
-                                {/* Title Overlay */}
-                                <div className="absolute bottom-6 left-6 text-white">
-                                    <EditableText
-                                        initialValue={guide.title}
-                                        placeholder="Click to edit the title"
-                                        onSave={(value) => setGuide((prev) => ({ ...prev, title: value }))}
-                                        className="w-full text-4xl font-bold mb-2"
-                                        classNames={{
-                                            textArea: "md:text-4xl",
-                                            placeholder: "text-white/70"
-                                        }}
-                                    />
-                                    <div className="flex items-center space-x-3 text-sm mb-2">
-                                        <Avatar className="h-6 w-6">
-                                            <AvatarImage
-                                                src={creatorData.image}
+                                        {/* Title Overlay */}
+                                        <div className="absolute bottom-4 left-4 text-white">
+                                            <EditableText
+                                                initialValue={guide.title}
+                                                placeholder="Click to edit the title"
+                                                onSave={(value) => setGuide((prev) => ({ ...prev, title: value }))}
+                                                className="w-full text-2xl font-bold mb-1"
+                                                classNames={{
+                                                    textArea: "md:text-2xl",
+                                                    placeholder: "text-white/70"
+                                                }}
                                             />
-                                            <AvatarFallback>
-                                                {creatorData.username}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <span className="font-medium">{creatorData.username}</span>
+                                            <div className="flex items-center space-x-2 text-sm mb-1">
+                                                <Avatar className="h-5 w-5">
+                                                    <AvatarImage
+                                                        src={creatorData.image}
+                                                    />
+                                                    <AvatarFallback>
+                                                        {creatorData.username}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <span className="font-medium">{creatorData.username}</span>
+                                            </div>
+                                            <div className="text-xs text-white/80">
+                                                {guideData.published ?
+                                                    <span>Posted on {guideData.publish_date[guideData.publish_date.length - 1]} • {guideData.views} views</span>
+                                                    :
+                                                    <span className="text-yellow-400">Created on {guideData.created_at} • {guideData.views} views • Not Published</span>
+                                                }
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="text-sm text-white/80">
-                                        {guideData.published ?
-                                            <span>Posted on {guideData.publish_date[guideData.publish_date.length - 1]} • {guideData.views} views</span>
-                                            :
-                                            <span className="text-yellow-400">Created on {guideData.created_at} • {guideData.views} views • Not Published</span>
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Content */}
-                            <div className="p-6">
-                                {/* Description */}
-                                <EditableRichText
-                                    initialContent={guideData.description}
-                                    onSave={(content) => setGuide((prev) => ({ ...prev, description: content }))}
-                                    placeholder="Click to edit the description"
-                                    disabledExtensions={["image", "link", "heading", "horizontalRule", "textalign"]}
-                                    className="text-gray-700 leading-relaxed mb-6"
-                                />
-                                <div className="flex items-center gap-2 py-4">
-                                    <Switch
-                                        id="reorderMode"
-                                        checked={reorderMode}
-                                        onCheckedChange={setReorderMode}
+                                    {/* Description */}
+                                    <EditableRichText
+                                        initialContent={guideData.description}
+                                        onSave={(content) => setGuide((prev) => ({ ...prev, description: content }))}
+                                        placeholder="Click to edit the description"
+                                        disabledExtensions={["image", "link", "heading", "horizontalRule", "textalign"]}
+                                        className="text-gray-700 leading-relaxed mb-4"
                                     />
-                                    <Label
-                                        htmlFor="reorderMode">
-                                        Reorder Activities
-                                    </Label>
-                                </div>
-                                {/* Days */}
-                                <div className="space-y-8">
-                                    <AnimatePresence>
-                                        {guide.days.map((day, dayIndex) => (
-                                            <motion.div
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                exit={{ opacity: 0 }}
-                                                key={day.date}
-                                                className="mb-8">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <h2 className="text-2xl font-bold text-gray-900">{day.date}</h2>
-                                                    <div className="flex gap-2">
-                                                        {day.activities.length === 0 && (
+                                    {/* Days */}
+                                    <div className="space-y-6">
+                                        <AnimatePresence>
+                                            {guide.days.map((day, dayIndex) => (
+                                                <motion.div
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    exit={{ opacity: 0 }}
+                                                    key={day.date}
+                                                    className="mb-8">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <h2 className="text-xl font-bold text-gray-900">{day.date}</h2>
+                                                        <div className="flex gap-2">
+                                                            {day.activities.length === 0 && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => {
+                                                                        setGuide((prev) => {
+                                                                            const updatedDays = [...prev.days];
+                                                                            updatedDays.splice(dayIndex, 1);
+                                                                            const renumberedDays = updatedDays.map((day, index) => ({
+                                                                                ...day,
+                                                                                date: `Day ${index + 1}`
+                                                                            }));
+                                                                            return { ...prev, days: renumberedDays };
+                                                                        });
+                                                                    }}
+                                                                    aria-label="Delete Day"
+                                                                    className="text-red-500 hover:!text-red-500"
+                                                                >
+                                                                    <Trash className="w-4 h-4" />
+                                                                    Delete Day
+                                                                </Button>
+                                                            )}
                                                             <Button
-                                                                variant="ghost"
+                                                                variant="outline"
                                                                 size="sm"
-                                                                onClick={() => {
+                                                                onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date, location: null })}
+                                                                aria-label="Add Activity"
+                                                            >
+                                                                <Plus className="w-4 h-4 mr-1" /> Add Activity
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                    <Reorder.Group
+                                                        axis="y"
+                                                        values={day.activities}
+                                                        onReorder={(newActivities) => {
+                                                            setGuide((prev) => {
+                                                                let updatedDays = [...prev.days];
+                                                                updatedDays[dayIndex].activities = newActivities;
+                                                                return { ...prev, days: updatedDays };
+                                                            });
+                                                        }}
+                                                        className="space-y-4"
+                                                    >
+                                                        {day.activities.map((activity, activityIndex) => (
+                                                            <GuideEditActivityCard
+                                                                key={activity.id}
+                                                                activity={activity}
+                                                                position={activityIndex + 1}
+                                                                selected={selectedPlace.clickLocation.title === activity.title}
+                                                                onSave={(updatedActivity) => {
                                                                     setGuide((prev) => {
                                                                         const updatedDays = [...prev.days];
-                                                                        updatedDays.splice(dayIndex, 1);
-                                                                        const renumberedDays = updatedDays.map((day, index) => ({
-                                                                            ...day,
-                                                                            date: `Day ${index + 1}`
-                                                                        }));
-                                                                        return { ...prev, days: renumberedDays };
+                                                                        updatedDays[dayIndex].activities[activityIndex] = updatedActivity;
+                                                                        return { ...prev, days: updatedDays };
                                                                     });
                                                                 }}
-                                                                aria-label="Delete Day"
-                                                                className="text-red-500 hover:!text-red-500"
-                                                            >
-                                                                <Trash className="w-4 h-4" />
-                                                                Delete Day
-                                                            </Button>
-                                                        )}
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date, location: null })}
-                                                            aria-label="Add Activity"
-                                                        >
-                                                            <Plus className="w-4 h-4 mr-1" /> Add Activity
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                                {/* <div className="space-y-4"> */}
-                                                <Reorder.Group
-                                                    axis="y"
-                                                    values={day.activities}
-                                                    onReorder={(newActivities) => {
-                                                        setGuide((prev) => {
-                                                            let updatedDays = [...prev.days];
-                                                            updatedDays[dayIndex].activities = newActivities;
-                                                            return { ...prev, days: updatedDays };
-                                                        });
-                                                        console.log(guide)
-                                                    }}
-                                                    className="space-y-4"
+                                                                onDelete={() => {
+                                                                    setGuide((prev) => {
+                                                                        const updatedDays = [...prev.days];
+                                                                        updatedDays[dayIndex].activities.splice(activityIndex, 1);
+                                                                        return { ...prev, days: updatedDays };
+                                                                    })
+                                                                }}
+                                                                onClick={() => { handleActivityLocationClick(activity); console.log("oiiaio") }}
+                                                                reorderMode={reorderMode}
+                                                            />
+                                                        ))}
+                                                    </Reorder.Group>
+                                                </motion.div>
+                                            ))}
+                                        </AnimatePresence>
+                                        <Button
+                                            variant="outline"
+                                            className="w-full mt-4 mb-6 rounded-lg shadow"
+                                            onClick={handleAddDay}
+                                            aria-label="Add Day"
+                                        >
+                                            <Plus className="w-4 h-4 mr-2" /> Add Day
+                                        </Button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </>
+                    ) : (
+                        <div className="grid grid-cols-1 lg:grid-cols-2">
+                            {/* Left Panel - Itinerary Details */}
+                            <div className="bg-white">
+                                {/* Hero Section */}
+                                <div className="relative h-80 overflow-hidden">
+                                    <Image
+                                        key={guide.hero_image}
+                                        src={guide.hero_image}
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+
+                                    {/* Action Buttons */}
+                                    <div className="absolute top-4 right-4 flex items-center space-x-2">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-6 w-6 p-0 bg-white/80 rounded-full cursor-pointer"
                                                 >
-                                                    {day.activities.map((activity, activityIndex) => (
-                                                        <GuideEditActivityCard
-                                                            key={activity.id}
-                                                            activity={activity}
-                                                            position={activityIndex + 1}
-                                                            selected={selectedPlace.clickLocation.title === activity.title}
-                                                            onSave={(updatedActivity) => {
-                                                                setGuide((prev) => {
-                                                                    const updatedDays = [...prev.days];
-                                                                    updatedDays[dayIndex].activities[activityIndex] = updatedActivity;
-                                                                    return { ...prev, days: updatedDays };
-                                                                });
-                                                                console.log(guide)
-                                                            }}
-                                                            onDelete={() => {
-                                                                setGuide((prev) => {
-                                                                    const updatedDays = [...prev.days];
-                                                                    updatedDays[dayIndex].activities.splice(activityIndex, 1);
-                                                                    return { ...prev, days: updatedDays };
-                                                                })
-                                                                console.log(guide)
-                                                            }}
-                                                            onClick={() => handleActivityLocationClick(activity)}
-                                                            reorderMode={reorderMode}
-                                                        />
-                                                    ))}
-                                                </Reorder.Group>
-                                            </motion.div>
-                                        ))}
-                                    </AnimatePresence>
-                                    <Button
-                                        variant="outline"
-                                        className="w-full mt-4 mb-6 rounded-lg shadow"
-                                        onClick={handleAddDay}
-                                        aria-label="Add Day"
-                                    >
-                                        <Plus className="w-4 h-4 mr-2" /> Add Day
-                                    </Button>
+                                                    <MoreHorizontal className="h-3 w-3" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem
+                                                    className="cursor-pointer"
+                                                    onClick={() => setIsSheetOpen(true)}
+                                                >
+                                                    <ImageIcon className="w-4 h-4 " />
+                                                    Change Banner
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem
+                                                    className="text-green-500 hover:!text-green-500 cursor-pointer"
+                                                    onClick={handleSaveGuide}
+                                                >
+                                                    <Save className="w-4 h-4 text-green-500" />
+                                                    Save {!guide.published && "Draft"}
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    className={`${guide.published ? "text-yellow-500 hover:!text-yellow-500" : "text-purple-500 hover:!text-purple-500"} cursor-pointer`}
+                                                    onClick={handlePublishGuide}
+                                                >
+                                                    <Share className={`w-4 h-4 ${guide.published ? "text-yellow-500" : "text-purple-500"}`} />
+                                                    {guide.published ? "Unlist" : "Publish"}
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem
+                                                    className="text-red-500 hover:!text-red-500 cursor-pointer"
+                                                    onClick={() => setShowDeleteAlert(true)}
+                                                >
+                                                    <Trash className="w-4 h-4 text-red-500" />
+                                                    Discard Draft
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+
+                                    {/* Title Overlay */}
+                                    <div className="absolute bottom-6 left-6 text-white">
+                                        <EditableText
+                                            initialValue={guide.title}
+                                            placeholder="Click to edit the title"
+                                            onSave={(value) => setGuide((prev) => ({ ...prev, title: value }))}
+                                            className="w-full text-4xl font-bold mb-2"
+                                            classNames={{
+                                                textArea: "md:text-4xl",
+                                                placeholder: "text-white/70"
+                                            }}
+                                        />
+                                        <div className="flex items-center space-x-3 text-sm mb-2">
+                                            <Avatar className="h-6 w-6">
+                                                <AvatarImage
+                                                    src={creatorData.image}
+                                                />
+                                                <AvatarFallback>
+                                                    {creatorData.username}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <span className="font-medium">{creatorData.username}</span>
+                                        </div>
+                                        <div className="text-sm text-white/80">
+                                            {guideData.published ?
+                                                <span>Posted on {guideData.publish_date[guideData.publish_date.length - 1]} • {guideData.views} views</span>
+                                                :
+                                                <span className="text-yellow-400">Created on {guideData.created_at} • {guideData.views} views • Not Published</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Content */}
+                                <div className="p-6">
+                                    {/* Description */}
+                                    <EditableRichText
+                                        initialContent={guideData.description}
+                                        onSave={(content) => setGuide((prev) => ({ ...prev, description: content }))}
+                                        placeholder="Click to edit the description"
+                                        disabledExtensions={["image", "link", "heading", "horizontalRule", "textalign"]}
+                                        className="text-gray-700 leading-relaxed mb-6"
+                                    />
+                                    <div className="flex items-center gap-2 py-4">
+                                        <Switch
+                                            id="reorderMode"
+                                            checked={reorderMode}
+                                            onCheckedChange={setReorderMode}
+                                        />
+                                        <Label
+                                            htmlFor="reorderMode">
+                                            Reorder Activities
+                                        </Label>
+                                    </div>
+                                    {/* Days */}
+                                    <div className="space-y-8">
+                                        <AnimatePresence>
+                                            {guide.days.map((day, dayIndex) => (
+                                                <motion.div
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    exit={{ opacity: 0 }}
+                                                    key={day.date}
+                                                    className="mb-8">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <h2 className="text-2xl font-bold text-gray-900">{day.date}</h2>
+                                                        <div className="flex gap-2">
+                                                            {day.activities.length === 0 && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => {
+                                                                        setGuide((prev) => {
+                                                                            const updatedDays = [...prev.days];
+                                                                            updatedDays.splice(dayIndex, 1);
+                                                                            const renumberedDays = updatedDays.map((day, index) => ({
+                                                                                ...day,
+                                                                                date: `Day ${index + 1}`
+                                                                            }));
+                                                                            return { ...prev, days: renumberedDays };
+                                                                        });
+                                                                    }}
+                                                                    aria-label="Delete Day"
+                                                                    className="text-red-500 hover:!text-red-500"
+                                                                >
+                                                                    <Trash className="w-4 h-4" />
+                                                                    Delete Day
+                                                                </Button>
+                                                            )}
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => setAddModalState({ isOpen: true, selectedDay: day.date, location: null })}
+                                                                aria-label="Add Activity"
+                                                            >
+                                                                <Plus className="w-4 h-4 mr-1" /> Add Activity
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                    <Reorder.Group
+                                                        axis="y"
+                                                        values={day.activities}
+                                                        onReorder={(newActivities) => {
+                                                            setGuide((prev) => {
+                                                                let updatedDays = [...prev.days];
+                                                                updatedDays[dayIndex].activities = newActivities;
+                                                                return { ...prev, days: updatedDays };
+                                                            });
+                                                            console.log(guide)
+                                                        }}
+                                                        className="space-y-4"
+                                                    >
+                                                        {day.activities.map((activity, activityIndex) => (
+                                                            <GuideEditActivityCard
+                                                                key={activity.id}
+                                                                activity={activity}
+                                                                position={activityIndex + 1}
+                                                                selected={selectedPlace.clickLocation.title === activity.title}
+                                                                onSave={(updatedActivity) => {
+                                                                    setGuide((prev) => {
+                                                                        const updatedDays = [...prev.days];
+                                                                        updatedDays[dayIndex].activities[activityIndex] = updatedActivity;
+                                                                        return { ...prev, days: updatedDays };
+                                                                    });
+                                                                    console.log(guide)
+                                                                }}
+                                                                onDelete={() => {
+                                                                    setGuide((prev) => {
+                                                                        const updatedDays = [...prev.days];
+                                                                        updatedDays[dayIndex].activities.splice(activityIndex, 1);
+                                                                        return { ...prev, days: updatedDays };
+                                                                    })
+                                                                    console.log(guide)
+                                                                }}
+                                                                onClick={() => handleActivityLocationClick(activity)}
+                                                                reorderMode={reorderMode}
+                                                            />
+                                                        ))}
+                                                    </Reorder.Group>
+                                                </motion.div>
+                                            ))}
+                                        </AnimatePresence>
+                                        <Button
+                                            variant="outline"
+                                            className="w-full mt-4 mb-6 rounded-lg shadow"
+                                            onClick={handleAddDay}
+                                            aria-label="Add Day"
+                                        >
+                                            <Plus className="w-4 h-4 mr-2" /> Add Day
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
+                            {/* Right Panel - Map */}
+                            <div className="bg-gray-100 sticky top-16 h-[calc(100vh-4rem)]">
+                                <MapboxMap
+                                    height="100%"
+                                    width="100%"
+                                    itineraryDays={guide.days.map(day => day.date)}
+                                    initCenter={guide?.coordinates}
+                                    initViewport={guide?.viewport}
+                                    handlePanTo={selectedPlace}
+                                    disableSaveLocation={false}
+                                    disableSearchBar={false}
+                                    markers={normalizeMarkers(guide.days)}
+                                    onSaveLocation={handleMapAddActivity}
+                                />
+                            </div>
                         </div>
-                        {/* Right Panel - Map */}
-                        <div className="bg-gray-100 sticky top-16 h-[calc(100vh-4rem)]">
-                            <MapboxMap
-                                height="100%"
-                                width="100%"
-                                itineraryDays={guide.days.map(day => day.date)}
-                                initCenter={guide?.coordinates}
-                                initViewport={guide?.viewport}
-                                handlePanTo={selectedPlace}
-                                disableSaveLocation={false}
-                                disableSearchBar={false}
-                                markers={normalizeMarkers(guide.days)}
-                                onSaveLocation={handleMapAddActivity}
-                            />
-                        </div>
-                    </div>
+                    )}
                 </div>
             </div>
             {/* Add Activity Modal */}

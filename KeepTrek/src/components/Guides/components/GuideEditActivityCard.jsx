@@ -10,11 +10,13 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { Button } from "@/components/ui/button";
 import GuideEditActivityModal from "./GuideEditActivityModal";
 import { Reorder, useDragControls } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 function GuideEditActivityCard({ activity, position, selected, onClick, onSave , onDelete, reorderMode}) {
 
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const isMobile = useIsMobile();
 
     const handleSaveImage = (images) => {
         if (!images || images.length === 0) {
@@ -43,7 +45,7 @@ function GuideEditActivityCard({ activity, position, selected, onClick, onSave ,
             dragListener={false}
             dragControls={controls}
             whileDrag={{ scale: 1.02}}
-            className={`group flex relative items-start space-x-4 p-4 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-200 ${selected ? "bg-teal-50 ring-2 ring-teal-200 border-teal-200" : ""}`}
+            className={`group flex relative ${isMobile ? 'flex-col space-x-0 space-y-3' : 'items-start space-x-4'} p-4 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-200 ${selected ? "bg-teal-50 ring-2 ring-teal-200 border-teal-200" : ""}`}
             >
             {/* Drag Handle (only in reorder mode) */}
             {reorderMode && (
@@ -62,68 +64,131 @@ function GuideEditActivityCard({ activity, position, selected, onClick, onSave ,
                 </div>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between mb-2 ">
-                    <EditableText
-                        initialValue={activity.title}
-                        placeholder="Click to edit activity title"
-                        onSave={(value) => onSave({ ...activity, title: value })}
-                        className="w-full font-semibold text-gray-900 leading-tight cursor-pointer"
-                    />
-                    {/* Time & Duration - Only show if available */}
-                    {(activity.time || activity.duration) && (
-                        <div className="flex-shrink-0 ml-4">
-                            <div className="flex items-center space-x-2 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                                <Clock className="h-3 w-3" />
-                                <span>
-                                    {activity.time && activity.duration
-                                        ? `${formatTime(activity.time)} • ${activity.duration} hours`
-                                        : `${activity.duration} hours` || formatTime(activity.time)}
-                                </span>
-                            </div>
+            {/* Content & Image Responsive Layout */}
+            {isMobile ? (
+                <>
+                    {/* Image at top, full width, short height */}
+                    <div className="w-full mb-2">
+                        <CarouselView
+                            classNames={{
+                                carousel: "w-full h-32 max-w-full max-h-32",
+                                item: "basis-full",
+                                imageDiv: "aspect-auto",
+                                image: "w-full h-32 max-w-full max-h-32 rounded-lg shadow-sm object-cover",
+                                leftArrow: "opacity-65",
+                                rightArrow: "opacity-65"
+                            }}
+                            carouselProps={{
+                                plugins: [],
+                                opts: {
+                                    loop: true,
+                                    align: 'start',
+                                    watchDrag: Array.isArray(activity.image) && activity.image.length > 1
+                                }
+                            }}
+                            images={Array.isArray(activity.image) ? activity.image.map((img) => img.src || img) : activity.image}
+                            onImageClick={() => setIsSheetOpen(true)}
+                        />
+                    </div>
+                    {/* Title and content below image */}
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between mb-1">
+                            <EditableText
+                                initialValue={activity.title}
+                                placeholder="Click to edit activity title"
+                                onSave={(value) => onSave({ ...activity, title: value })}
+                                className="w-full font-semibold text-gray-900 leading-tight cursor-pointer text-base"
+                            />
+                            {(activity.time || activity.duration) && (
+                                <div className="flex-shrink-0 ml-2">
+                                    <div className="flex items-center space-x-2 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                                        <Clock className="h-3 w-3" />
+                                        <span>
+                                            {activity.time && activity.duration
+                                                ? `${formatTime(activity.time)} • ${activity.duration} hours`
+                                                : `${activity.duration} hours` || formatTime(activity.time)}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    )}
-                </div>
-
-                <EditableRichText
-                    initialContent={activity.description}
-                    onSave={(content) => onSave({ ...activity, description: content })}
-                    placeholder="Click to edit the description"
-                    disabledExtensions={["image", "link", "heading", "horizontalRule", "textalign"]}
-                    className="text-sm text-gray-600 leading-relaxed mb-2"
-                />
-
-                <Badge
-                    className="cursor-pointer"
-                    onClick={onClick}
-                >
-                    <MapPin className="h-3 w-3 mr-1" />
-                    <span>Click to view on map</span>
-                </Badge>
-            </div>
-
-            {/* Image */}
-            <div className="">
-                <CarouselView
-                    classNames={{
-                        carousel: "w-64 h-40 max-w-64 max-h-40",
-                        item: "basis-full",
-                        image: "w-64 h-40 max-w-64 max-h-40 rounded-lg",
-                        leftArrow: "opacity-65",
-                        rightArrow: "opacity-65"
-                    }}
-                    carouselProps={{
-                        plugins: [],
-                        opts: {
-                            loop: true,
-                            align: 'start'
-                        }
-                    }}
-                    images={Array.isArray(activity.image) ? activity.image.map((img) => { return img.src || img }) : activity.image}
-                    onImageClick={() => setIsSheetOpen(true)}
-                />
-            </div>
+                        <EditableRichText
+                            initialContent={activity.description}
+                            onSave={(content) => onSave({ ...activity, description: content })}
+                            placeholder="Click to edit the description"
+                            disabledExtensions={["image", "link", "heading", "horizontalRule", "textalign"]}
+                            className="text-sm text-gray-600 leading-relaxed mb-2"
+                        />
+                        <Badge
+                            className="cursor-pointer"
+                            onClick={onClick}
+                        >
+                            <MapPin className="h-3 w-3 mr-1" />
+                            <span>Click to view on map</span>
+                        </Badge>
+                    </div>
+                </>
+            ) : (
+                <>
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between mb-2 ">
+                            <EditableText
+                                initialValue={activity.title}
+                                placeholder="Click to edit activity title"
+                                onSave={(value) => onSave({ ...activity, title: value })}
+                                className="w-full font-semibold text-gray-900 leading-tight cursor-pointer"
+                            />
+                            {(activity.time || activity.duration) && (
+                                <div className="flex-shrink-0 ml-4">
+                                    <div className="flex items-center space-x-2 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                                        <Clock className="h-3 w-3" />
+                                        <span>
+                                            {activity.time && activity.duration
+                                                ? `${formatTime(activity.time)} • ${activity.duration} hours`
+                                                : `${activity.duration} hours` || formatTime(activity.time)}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        <EditableRichText
+                            initialContent={activity.description}
+                            onSave={(content) => onSave({ ...activity, description: content })}
+                            placeholder="Click to edit the description"
+                            disabledExtensions={["image", "link", "heading", "horizontalRule", "textalign"]}
+                            className="text-sm text-gray-600 leading-relaxed mb-2"
+                        />
+                        <Badge
+                            className="cursor-pointer"
+                            onClick={onClick}
+                        >
+                            <MapPin className="h-3 w-3 mr-1" />
+                            <span>Click to view on map</span>
+                        </Badge>
+                    </div>
+                    <div className="">
+                        <CarouselView
+                            classNames={{
+                                carousel: "w-64 h-40 max-w-64 max-h-40",
+                                item: "basis-full",
+                                image: "w-64 h-40 max-w-64 max-h-40 rounded-lg",
+                                leftArrow: "opacity-65",
+                                rightArrow: "opacity-65"
+                            }}
+                            carouselProps={{
+                                plugins: [],
+                                opts: {
+                                    loop: true,
+                                    align: 'start',
+                                    watchDrag: Array.isArray(activity.image) && activity.image.length > 1
+                                }
+                            }}
+                            images={Array.isArray(activity.image) ? activity.image.map((img) => img.src || img) : activity.image}
+                            onImageClick={() => setIsSheetOpen(true)}
+                        />
+                    </div>
+                </>
+            )}
 
             <div className="absolute top-2 right-2 z-49">
                 <DropdownMenu>

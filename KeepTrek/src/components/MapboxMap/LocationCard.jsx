@@ -55,9 +55,10 @@ function LocationCard({ place, onClick, onSaveLocation, disableSaveLocation, iti
                 </Button>
                 {/* Image Container - Mobile */}
                 {place.image && (
-                    <div className="md:hidden absolute bottom-14 right-4 w-28 h-20 overflow-hidden rounded-md flex-shrink-0">
+                    <div className="md:hidden w-full h-20 overflow-hidden rounded-md flex-shrink-0">
                         <a href={place.link} target="_blank" rel="noopener noreferrer">
                             <Image
+                                key={place.image}
                                 src={place.image}
                                 className="w-full h-full object-cover"
                                 loading="lazy"

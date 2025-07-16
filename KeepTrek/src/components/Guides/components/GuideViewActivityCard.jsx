@@ -59,7 +59,7 @@ function GuideViewActivityCard({ activity, position, selected, onClick, tripsWit
     return (
         <>
             <motion.div
-                className={`group flex ${isMobile ? 'flex-col' : 'items-start'} min-h-48 space-x-4 p-4 rounded-xl transition-all hover:bg-gray-50 border border-transparent hover:border-gray-200 relative ${selected ? "bg-teal-50 ring-2 ring-teal-200 border-teal-200" : ""}`}
+                className={`group flex relative ${isMobile ? 'flex-col space-x-0 space-y-3' : 'items-start space-x-4'} p-4 min-h-48 rounded-xl transition-all hover:bg-gray-50 border border-transparent hover:border-gray-200 ${selected ? "bg-teal-50 ring-2 ring-teal-200 border-teal-200" : ""}`}
             >
                 {/* Activity Number Badge */}
                 <div className="flex-shrink-0">
@@ -77,6 +77,7 @@ function GuideViewActivityCard({ activity, position, selected, onClick, tripsWit
                         classNames={{
                           carousel: "w-full h-32 max-w-full max-h-32",
                           item: "basis-full",
+                          imageDiv: "aspect-auto",
                           image: "w-full h-32 max-w-full max-h-32 rounded-lg shadow-sm object-cover",
                           leftArrow: "opacity-65",
                           rightArrow: "opacity-65"
@@ -86,7 +87,7 @@ function GuideViewActivityCard({ activity, position, selected, onClick, tripsWit
                           opts: {
                             loop: true,
                             align: 'start',
-                            watchDrag: activity.image.length > 1
+                            watchDrag: activity.image.length > 1  
                           }
                         }}
                         images={Array.isArray(activity.image) ? activity.image : [activity.image]}
