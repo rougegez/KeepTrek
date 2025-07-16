@@ -94,6 +94,11 @@ function Itinerary() {
     }
   );
 
+  const displayLocation =
+    tripDetails?.location?.toLowerCase() === "langkawi"
+      ? "Langkawi Island"
+      : tripDetails?.location;
+
   const { days, setDays, readyState, getDayAndActivity, getDays, addActivity } =
     useItinerary();
   const { whosOnline } = useWhosOnline();
@@ -409,7 +414,7 @@ function Itinerary() {
                   {canModify && (
                     <>
                       <InviteButton tripID={tripID} userRole={userRole} />
-                      <BrowseActivity location={tripDetails.location} />
+                      
                     </>
                   )}
                   {userRole === UserRole.ADMIN && (

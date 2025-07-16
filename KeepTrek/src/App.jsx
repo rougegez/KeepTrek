@@ -22,6 +22,7 @@ import { MapProvider } from "react-map-gl/mapbox";
 import ItinerarySocketWrapper from "@/components/Itinerary/ItinerarySocketWrapper";
 import { Analytics } from "@vercel/analytics/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import BrowseActivity from "./components/BrowseActivity/BrowseActivity.jsx";
 import BlogEditor from "./components/Blog/BlogEditor";
 import ItineraryView from "./components/Guides/guides.jsx";
 import GuideView from "./components/Guides/GuideView.jsx";
@@ -32,6 +33,9 @@ import MapboxMap from "./components/MapboxMap/MapboxMapGoogleSearch";
 import Homepage from "./components/homepage/homepage.jsx";
 import AuthRedirect from "./components/AuthRedirect.jsx";
 // import { SpeedInsights } from "@vercel/speed-insights/next"
+import AddActivityPage from "./components/Admin/AddActivityPage";
+import AdminLoginPage from "./components/Admin/AdminLoginPage";
+import AdminDashboard from "./components/Admin/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -62,7 +66,12 @@ function App() {
                         <Route index element={<GuidePage />} />
                         <Route path="view/:guideID" element={<GuideView />} />
                       </Route>
-                      <Route path="/blog" element={<BlogEditor/>} />
+                      <Route
+                        path="/AgodaPartnerVerification.html"
+                        element={<AgodaVerificationPage />}
+                      />
+                      <Route path="/admin/login" element={<AdminLoginPage />} />
+                      {/* <Route path="/blog" element={<BlogEditor/>} /> */}
                       {/* Protected Routes */}
                       <Route element={<PrivateRoute />}>
                         <Route path="/home" element={<Homepage />} />
@@ -87,10 +96,19 @@ function App() {
                               path="/wishlist/:tripID"
                               element={<Wishlist />}
                             />
+                            <Route
+                              path="/browse-activities/:tripID"
+                              element={<BrowseActivity />}
+                            />
                           </Route>
                         </Route>
                         <Route path="/create-trip" element={<CreateTrip />} />
                         <Route path="/profile/:userID" element={<ProfilePage />} />
+                      </Route>
+                      {/* Admin Route */}
+                      <Route element={<PrivateRoute adminOnly={true} />}>
+                        <Route path="/admin" element={<AdminDashboard />} />
+                        <Route path="/admin/add-activity" element={<AddActivityPage />} />
                       </Route>
                     </Routes>
                   </div>

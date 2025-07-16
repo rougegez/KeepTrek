@@ -82,3 +82,10 @@ export const getTripDuration = async (tripID) => {
   const response = await axios.get(`/date-finder/trip/${tripID}/duration`);
   return response.data.duration;
 };
+
+export const getUsersWithoutAvailability = async (tripID) => {
+  const response = await axios.get(
+    `/date-finder/trip/${tripID}/users-without-availability`
+  );
+  return response.data.usernames;
+};

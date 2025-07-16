@@ -10,6 +10,7 @@ import {
   getRangeAvailabilityUsernames,
   updateTripPeriod,
   getSelectedPeriod,
+  getUsersWithoutAvailability,
 } from "@/APIs/dateFinder";
 import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -345,6 +346,17 @@ const AvailableTrips = ({
   const [displayLimit, setDisplayLimit] = useState(13);
   const [currentPage, setCurrentPage] = useState(1);
 
+  const {
+    data: usersWithoutAvailability,
+    isLoading: isLoadingUsersWithoutAvailability,
+  } = useQuery(
+    ["usersWithoutAvailability", tripID],
+    () => getUsersWithoutAvailability(tripID),
+    {
+      enabled: !isParentLoading,
+    }
+  );
+
   // Single query to get all periods (no pagination on backend)
   const { data: allPeriodsData, isLoading: isLoadingPeriods } = useQuery(
     ["allSuggestedPeriods", tripID, durationFilter],
@@ -535,6 +547,24 @@ const AvailableTrips = ({
       <h3 className="text-xl font-bold text-center mb-4">
         Available trip dates
       </h3>
+      {isLoadingUsersWithoutAvailability ? (
+        <div className="text-center text-sm text-gray-500 mb-4">
+          <LoadingSpinner />
+        </div>
+      ) : (
+        usersWithoutAvailability &&
+        usersWithoutAvailability.length > 0 && (
+          <div
+            className="bg-yellow-100 border border-yellow-300 text-yellow-800 text-sm font-medium px-4 py-3 rounded-md text-center mb-4"
+            role="alert"
+          >
+            <p>
+              <span className="font-bold">Waiting for:</span>{" "}
+              {usersWithoutAvailability.join(", ")}
+            </p>
+          </div>
+        )
+      )}
       <div className="flex justify-center items-center space-x-2 mb-4">
         <span className="text-sm font-medium">Filter by duration (days):</span>
         <select
