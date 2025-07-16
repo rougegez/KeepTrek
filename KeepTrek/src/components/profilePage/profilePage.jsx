@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useEffect} from "react";
 import { UserAvatar } from "./avatar";
 import EditProfileModal from "./EditProfileModal";
 import { getUserProfile, updateUserProfile } from "@/APIs/users";
