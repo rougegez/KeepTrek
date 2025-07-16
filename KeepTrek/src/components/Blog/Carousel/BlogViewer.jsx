@@ -9,12 +9,18 @@ const BlogViewer = () => {
     return (
         <>
             <TopNavbar />
-            <CarouselView images={images}/>
+            <CarouselView
+                images={images}
+                classNames={
+                    {
+                        item: "md:basis-1/2 lg:basis-1/3",
+                    }
+                } />
             <div className="mx-48">
-                <TipTap 
-                    content={content} 
-                    editable={false}  />
-            </div>  
+                <TipTap
+                    content={content}
+                    editable={false} />
+            </div>
         </>
     )
 }

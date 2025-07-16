@@ -120,7 +120,7 @@ export default function TopNavbar() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-48 mt-2">
-                      <DropdownMenuItem onClick={() => navigate("/profile")} className="cursor-pointer">
+                      <DropdownMenuItem onClick={() => navigate(`/profile/${user}`)} className="cursor-pointer">
                         <UserIcon className="mr-2 h-4 w-4" />
                         Profile
                       </DropdownMenuItem>

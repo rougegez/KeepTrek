@@ -1,7 +1,5 @@
-'use client'
 
 import React, { useEffect, useState, useMemo, useRef } from 'react'
-import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import MapSearchBar from './GoogleMapsSearchbar'
 import { fetchPlaceDetails } from '@/APIs/fetchPlaceDetails.js'
@@ -19,7 +17,7 @@ import PinControl from '@/components/MapboxMap/PinControl.jsx'
 import LocationCard from '@/components/MapboxMap/LocationCard.jsx'
 import ResetMapButton from '@/components/MapboxMap/ResetMapButton.jsx'
 
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API_KEY
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_API_KEY
 
 const MapboxMap = ({
     height = '100%',
@@ -67,8 +65,11 @@ const MapboxMap = ({
     const selectedDay = useRef(null);
 
     useEffect(() => {
-        if (handlePanTo?.viewport) {
-            const { high, low } = handlePanTo.viewport
+        let location = handlePanTo
+        if (location?.clickLocation) location = location.clickLocation
+
+        if (location?.viewport) {
+            const { high, low } = location.viewport
             const bounds = [
                 [high.longitude, high.latitude],
                 [low.longitude, low.latitude],
@@ -77,20 +78,15 @@ const MapboxMap = ({
                 padding: 100,
                 maxZoom: 15,
             })
-        } else if (handlePanTo) {
-            goToLocation(handlePanTo?.clickLocation ?? handlePanTo)
-        }
-    }, [handlePanTo])
-
-    const goToLocation = (place) => {
-        if (mapRef && place.coordinates) {
+            setPlace(location)
+        } else if (location?.coordinates) {
             mapRef.flyTo({
-                center: place.coordinates,
+                center: location.coordinates,
                 zoom: initZoom,
             })
-            setPlace(place)
+            setPlace(location)
         }
-    }
+    }, [handlePanTo])
 
     const handlePlaceUpdate = (newPlace) => {
         if (mapRef && newPlace.coordinates) {
@@ -286,6 +282,7 @@ const MapboxMap = ({
                 onMove={evt => setViewState(evt.viewState)}
                 style={{ width: width, height: height }}
                 mapStyle="mapbox://styles/mapbox/streets-v12"
+                mapboxAccessToken={MAPBOX_TOKEN}
             >
 
                 <GeolocateControl position="bottom-right" />
