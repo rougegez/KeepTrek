@@ -66,8 +66,8 @@ const BrowseActivity = () => {
   );
 
   const displayLocation = useMemo(() => 
-    tripDetails?.location?.toLowerCase() === "langkawi"
-      ? "Langkawi Island"
+    tripDetails?.location?.toLowerCase().includes("langkawi")
+      ? "Langkawi"
       : tripDetails?.location,
     [tripDetails]
   );
