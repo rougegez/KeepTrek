@@ -31,7 +31,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useAuth } from "@/contexts/AuthProvider";
-import ShareModal from "@/components/ShareTrips/ShareModal";
 import GoogleMapImage from "@/components/MapboxMap/GoogleMapImage";
 import { createDraftGuide } from "@/APIs/guides";
 import toastPromise from "@/utils/toastPromise";
@@ -173,7 +172,7 @@ export default function TripCard({ trip, onDelete }) {
           message: "Guide created successfully!", 
           action: { 
             label: "View Guide", 
-            onClick: () => navigate(`/guides/view/${response.data.id}`)
+            onClick: () => navigate(`/guides/edit/${response.data.id}`)
           }
         },
         error: (error) => {
