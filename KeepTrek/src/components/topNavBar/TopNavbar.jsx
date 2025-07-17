@@ -31,42 +31,29 @@ export default function TopNavbar() {
 
   const NavItems = ({ onClick = () => {} }) => (
     <>
-      {isLoggedIn && (
+      <NavLink
+          to="/"
+          className="border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+          onClick={onClick}
+        >
+          Home
+        </NavLink>
+
         <NavLink
           to="/yourTrips"
           className="border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
           onClick={onClick}
         >
-          Trips
+          Your Trips
         </NavLink>
-      )}
-      <button
-        onClick={() => {
-          navigateAndScroll("features")
-          onClick()
-        }}
-        className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-      >
-        Features
-      </button>
-      <button
-        onClick={() => {
-          navigateAndScroll("why-keeptrek")
-          onClick()
-        }}
-        className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-      >
-        Why
-      </button>
-      <button
-        onClick={() => {
-          navigateAndScroll("newsletter")
-          onClick()
-        }}
-        className="cursor-pointer border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-      >
-        Newsletter
-      </button>
+    
+      <NavLink
+          to="/guides"
+          className="border-transparent hover:border-gray-400 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+          onClick={onClick}
+        >
+          Travel Guides
+        </NavLink>
     </>
   )
   
