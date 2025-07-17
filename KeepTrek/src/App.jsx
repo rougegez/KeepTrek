@@ -12,7 +12,7 @@ import MainExpensePage from "./components/Expenses/mainExpensePage.jsx";
 import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx";
 import Itinerary from "./components/Itinerary/Itinerary.jsx";
 import Wishlist from "./components/Wishlist/Wishlist.jsx";
-import { ProfilePage } from "./components/profilePage/profilePage.jsx";
+import ProfilePage from "./components/profilePage/profilePage.jsx";
 // import { TripDetailsPage } from "./components/TripDetails/TripDetailsPage.jsx";
 import { GrpSchedule } from "./components/GrpSchedule/GrpSchedule.jsx";
 import InvitePage from "./components/Invite/InvitePage";
@@ -24,6 +24,14 @@ import { Analytics } from "@vercel/analytics/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import BrowseActivity from "./components/BrowseActivity/BrowseActivity.jsx";
 import BlogEditor from "./components/Blog/BlogEditor";
+import ItineraryView from "./components/Guides/guides.jsx";
+import GuideView from "./components/Guides/GuideView.jsx";
+import GuidePage from "./components/Guides/GuidePage";
+import GuideEdit from "./components/Guides/GuideEdit.jsx";
+import MapboxMap from "./components/MapboxMap/MapboxMapGoogleSearch";
+
+import Homepage from "./components/homepage/homepage.jsx";
+import AuthRedirect from "./components/AuthRedirect.jsx";
 // import { SpeedInsights } from "@vercel/speed-insights/next"
 import AddActivityPage from "./components/Admin/AddActivityPage";
 import AdminLoginPage from "./components/Admin/AdminLoginPage";
@@ -51,11 +59,13 @@ function App() {
                   <div className="flex-grow">
                     <Routes>
                       {/* Public Routes */}
-                      <Route path="/" element={<LandingPage />} />
-                      <Route
-                        path="/join/:inviteCode"
-                        element={<InvitePage />}
-                      />
+                      <Route path="/" element={<AuthRedirect />} />
+                      <Route path="/join/:inviteCode" element={<InvitePage />} />
+                      <Route path="/AgodaPartnerVerification.html" element={<AgodaVerificationPage />} />
+                      <Route path="/guides">
+                        <Route index element={<GuidePage />} />
+                        <Route path="view/:guideID" element={<GuideView />} />
+                      </Route>
                       <Route
                         path="/AgodaPartnerVerification.html"
                         element={<AgodaVerificationPage />}
@@ -64,7 +74,9 @@ function App() {
                       {/* <Route path="/blog" element={<BlogEditor/>} /> */}
                       {/* Protected Routes */}
                       <Route element={<PrivateRoute />}>
+                        <Route path="/home" element={<Homepage />} />
                         <Route path="/yourTrips" element={<YourTrips />} />
+                        <Route path="/guides/edit/:guideID" element={<GuideEdit />} />
                         <Route element={<WhosOnlineWrapper />}>
                           <Route element={<ItinerarySocketWrapper />}>
                             <Route
@@ -91,7 +103,7 @@ function App() {
                           </Route>
                         </Route>
                         <Route path="/create-trip" element={<CreateTrip />} />
-                        <Route path="/profile" element={<ProfilePage />} />
+                        <Route path="/profile/:userID" element={<ProfilePage />} />
                       </Route>
                       {/* Admin Route */}
                       <Route element={<PrivateRoute adminOnly={true} />}>

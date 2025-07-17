@@ -12,11 +12,11 @@ function InfoTip({
     tooltipProps
 }) {
   return (
-      <Tooltip {...tooltipProps.root}>
+      <Tooltip {...tooltipProps?.root}>
         <TooltipTrigger asChild>
           <Info {...iconProps} className={cn("ml-1 h-3 w-3", iconProps?.className)} />
         </TooltipTrigger>
-        <TooltipContent side="right" {...tooltipProps.content}>
+        <TooltipContent side="right" {...tooltipProps?.content}>
           {children}
         </TooltipContent>
       </Tooltip>

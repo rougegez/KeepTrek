@@ -280,8 +280,6 @@ function Itinerary() {
   };
 
   const handleLocationClick = (clickLocation) => {
-    clickLocation.address = clickLocation.location;
-    clickLocation.name = clickLocation.title;
     const random = new Date().getTime();
     setSearchedPlace({ random, clickLocation });
   };
@@ -410,7 +408,8 @@ function Itinerary() {
                     isIdle={whosOnline}
                     size={isMobile ? 8 : 10}
                     maxUsers={isMobile ? 2 : 3}
-                    className={isMobile ? "scale-90" : ""}
+                    className="z-50"
+                    hover={true}
                   />
                   {canModify && (
                     <>
