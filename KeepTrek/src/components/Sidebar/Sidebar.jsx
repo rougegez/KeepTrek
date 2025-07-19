@@ -151,12 +151,24 @@ export const AppSidebar = ({ tripID }) => {
                 <SidebarMenuButton>
                   <NavLink
                     to={item.path}
-                    className={({ isActive }) =>
-                      cn(
-                        "flex items-center text-lg font-semibold text-gray-900 rounded-md p-2",
+                    className={({ isActive }) => {
+                      const baseClasses =
+                        "flex items-center text-lg font-semibold rounded-md p-2";
+
+                      if (item.title === "Browse Activities") {
+                        return cn(
+                          baseClasses,
+                          "bg-gradient-to-br from-teal-500 to-purple-600 text-white shadow-md hover:text-white",
+                          styles.activeLink
+                        );
+                      }
+
+                      return cn(
+                        baseClasses,
+                        "text-gray-900",
                         isActive && styles.activeLink
-                      )
-                    }
+                      );
+                    }}
                   >
                     <item.icon className={styles.icon} />
                     {item.title}
