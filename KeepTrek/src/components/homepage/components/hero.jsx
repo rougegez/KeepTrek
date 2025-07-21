@@ -26,7 +26,10 @@ export default function Hero() {
               <Plus className="mr-2 h-5 w-5" />
               Create New Trip
             </button>
-            <button className="border border-white text-white hover:bg-white hover:text-teal-600 text-lg px-8 py-4 rounded-full bg-transparent font-medium flex items-center justify-center transition-colors">
+            <button 
+              className="border border-white text-white hover:bg-white hover:text-teal-600 text-lg px-8 py-4 rounded-full bg-transparent font-medium flex items-center justify-center transition-colors"
+              onClick={() => navigate('/guides')}
+            >
               <MapPin className="mr-2 h-5 w-5" />
               Explore Destinations
             </button>

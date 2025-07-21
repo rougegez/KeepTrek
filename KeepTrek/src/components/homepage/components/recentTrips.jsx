@@ -107,7 +107,7 @@ export default function RecentTrips() {
               key={trip.tripID}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+              // transition={{ duration: 0.5, delay: index * 0.1 }}
               whileHover={{ scale: 1.02 }}
               className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300"
             >
@@ -120,11 +120,6 @@ export default function RecentTrips() {
                   onNewImage={(newImage) => handleNewImage(trip.tripID, newImage)}
                 />
                 <div className="absolute inset-0 "></div>
-                <div className="absolute top-4 right-4">
-                  <button className="p-2 text-white hover:bg-white/20 rounded transition-colors">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </button>
-                </div>
                 <div className="absolute bottom-4 left-4 text-white">
                   <h3 className="text-xl font-bold mb-1">{trip.tripName}</h3>
                   <div className="flex items-center text-sm opacity-90">
