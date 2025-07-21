@@ -13,7 +13,7 @@ export default function Homepage() {
       <Hero />
       <RecentTrips />
       <Guides />
-      <Stats />
+      {/* <Stats /> */}
     </div>
   )
 }

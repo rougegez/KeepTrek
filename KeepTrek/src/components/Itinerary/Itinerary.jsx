@@ -209,9 +209,9 @@ function Itinerary() {
   const handleSaveLocation = (place, selectedDay) => {
     const newActivity = {
       id: `${Date.now()}`,
-      title: place ? place.name : "",
+      title: place ? place.title : "",
       placeId: place ? place.placeId : "",
-      location: place ? place.address : "",
+      location: place ? place.location : "",
       coordinates: place ? place.coordinates : [],
       rating: place ? place.rating : "",
       image: place ? place.image : "/assets/dummy-image.jpg",
