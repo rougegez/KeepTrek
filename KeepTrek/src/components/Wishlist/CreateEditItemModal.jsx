@@ -69,9 +69,9 @@ export default function CreateEditItemModal({
       setNewItem(prev => ({
         ...prev,
         category: initialCategory,
-        title: location ? location.name : "",
+        title: location ? location.title : "",
         placeId: location ? location.placeId : "",
-        location: location ? location.address : "",
+        location: location ? location.location : "",
         coordinates: location ? location.coordinates : [],
         rating: location ? location.rating : "",
         image: location ? location.image : "",
@@ -87,9 +87,9 @@ export default function CreateEditItemModal({
       const suggestion = await fetchPlaceDetails(newLocation.placePrediction.placeId)
       setNewItem(prev => ({
           ...prev,
-          title: suggestion?.name ?? newLocation.placePrediction.structuredFormat.mainText.text,
+          title: suggestion?.title ?? newLocation.placePrediction.structuredFormat.mainText.text,
           placeId: suggestion?.placeId ?? "",
-          location: suggestion?.address ?? newLocation,
+          location: suggestion?.location ?? newLocation,
           coordinates: suggestion?.coordinates ?? [],
           rating: suggestion?.rating ?? "",
           openingHours: suggestion?.openingHours ?? "",
