@@ -176,6 +176,7 @@ function GuideEdit({ }) {
     };
 
     const handlePublishGuide = async () => {
+        await handleSaveGuide();
         if (guideData.published) {
             const response = await toastPromise(
                 publishGuide(guideID),

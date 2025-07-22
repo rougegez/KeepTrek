@@ -33,14 +33,12 @@ function normalizeMarkers(data) {
     if (Array.isArray(data) && data.length > 0) {
         return data.reduce((acc, dayObj) => {
             const markersForDay = dayObj.activities.map((item, index) => {
-                const { location, title, coordinates, day, ...rest } = item;
+                const { coordinates, day, ...rest } = item;
                 const newData = {
                     day: dayObj.date,
                     order: index + 1, // item's order within that day
-                    address: location,
                     latitude: coordinates[1],
                     longitude: coordinates[0],
-                    name: title,
                     ...rest
                 };
                 return newData
@@ -52,12 +50,10 @@ function normalizeMarkers(data) {
     else if (data && typeof data === 'object') {
         return Object.values(data).reduce((acc, group) => {
             const normalized = group.map(item => {
-                const { location, title, coordinates, ...rest } = item;
+                const { coordinates, ...rest } = item;
                 return {
-                    address: location,
                     latitude: coordinates[1],
                     longitude: coordinates[0],
-                    name: title,
                     ...rest
                 }
             });

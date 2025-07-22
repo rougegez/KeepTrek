@@ -23,7 +23,7 @@ const EditActivityModal = ({ isOpen, onClose, activityId, locationBias}) => {
       updateActivity({
         ...activity,
         placeId : suggestion?.placeId ?? "",
-        location: suggestion?.address ?? "",
+        location: suggestion?.location ?? "",
         coordinates: suggestion?.coordinates ?? [],
         viewport: suggestion?.viewport ?? null,
         rating: suggestion?.rating ?? "",
@@ -48,36 +48,13 @@ const EditActivityModal = ({ isOpen, onClose, activityId, locationBias}) => {
     }
   }
 
-  const handleDurationChange = (e) => {
-    const inputValue = e.target.value;
-
-    // Allow empty input
-    if (inputValue === '') {
-      updateActivity({ ...activity, duration: '' })
-      return;
-    }
-
-    // Convert to number for validation
-    const numberValue = parseFloat(inputValue);
-
-    // Check if the value is a valid number, positive, within range, and in 0.5 increments
-    if (
-      !isNaN(numberValue) &&
-      numberValue >= 0 &&
-      numberValue <= 99.5 &&
-      numberValue * 2 === Math.round(numberValue * 2) // Check for increments of 0.5
-    ) {
-      updateActivity({ ...activity, duration: inputValue });
-    }
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
       if (!open) {
         onClose();
       }
     }}>
-      <DialogContent className="rounded-lg max-w-lg sm:max-w-lg w-[90vw] max-w-sm p-4 sm:p-6 max-h-[80vh] sm:max-h-[90vh] overflow-hidden">
+      <DialogContent className="rounded-lg sm:max-w-lg w-[90vw] max-w-sm p-4 sm:p-6 max-h-[80vh] sm:max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>Edit Activity</DialogTitle>
         </DialogHeader>

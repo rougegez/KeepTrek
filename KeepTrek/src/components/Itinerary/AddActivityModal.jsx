@@ -9,9 +9,9 @@ import { fetchPlaceDetails } from "@/APIs/fetchPlaceDetails.js";
 
 const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, location, days , locationBias}) => {
     const [newActivity, setNewActivity] = useState(location ? {
-        title: location ? location.name : "",
+        title: location ? location.title : "",
         placeId: location ? location.placeId : "",
-        location: location ? location.address : "",
+        location: location ? location.location : "",
         coordinates: location ? location.coordinates : [],
         rating: location ? location.rating : "",
         image: location ? location.image : "../src/assets/dummy-image.jpg",
@@ -41,7 +41,7 @@ const AddActivityModal = ({ isOpen, selectedDay, onClose, onAddActivity, locatio
             setNewActivity(prev => ({
                 ...prev,
                 placeId: suggestion.placeId,
-                location: suggestion?.address ?? "",
+                location: suggestion?.location ?? "",
                 coordinates: suggestion?.coordinates ?? [],
                 viewport: suggestion?.viewport ?? null,
                 rating: suggestion?.rating ?? "",
