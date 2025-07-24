@@ -5,6 +5,11 @@ export const createDraftGuide = async (tripID) => {
     return response
 }
 
+export const createGuide = async (guideData) => {
+    const response = await axios.post('/guides/create', guideData);
+    return response;
+}
+
 export const updateGuide = async (guideID, guideData) => {
     const response = await axios.put(`/guides/update/${guideID}`, guideData);
     return response;

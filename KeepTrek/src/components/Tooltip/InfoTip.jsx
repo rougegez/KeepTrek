@@ -14,7 +14,7 @@ function InfoTip({
   return (
       <Tooltip {...tooltipProps?.root}>
         <TooltipTrigger asChild>
-          <Info {...iconProps} className={cn("ml-1 h-3 w-3", iconProps?.className)} />
+          <Info {...iconProps} className={cn("ml-1 -mt-1 h-3 w-3", iconProps?.className)} />
         </TooltipTrigger>
         <TooltipContent side="right" {...tooltipProps?.content}>
           {children}

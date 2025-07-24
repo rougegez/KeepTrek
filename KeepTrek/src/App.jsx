@@ -23,12 +23,9 @@ import ItinerarySocketWrapper from "@/components/Itinerary/ItinerarySocketWrappe
 import { Analytics } from "@vercel/analytics/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import BrowseActivity from "./components/BrowseActivity/BrowseActivity.jsx";
-import BlogEditor from "./components/Blog/BlogEditor";
-import ItineraryView from "./components/Guides/guides.jsx";
 import GuideView from "./components/Guides/GuideView.jsx";
 import GuidePage from "./components/Guides/GuidePage";
 import GuideEdit from "./components/Guides/GuideEdit.jsx";
-import MapboxMap from "./components/MapboxMap/MapboxMapGoogleSearch";
 
 import Homepage from "./components/homepage/homepage.jsx";
 import AuthRedirect from "./components/AuthRedirect.jsx";
@@ -36,6 +33,7 @@ import AuthRedirect from "./components/AuthRedirect.jsx";
 import AddActivityPage from "./components/Admin/AddActivityPage";
 import AdminLoginPage from "./components/Admin/AdminLoginPage";
 import AdminDashboard from "./components/Admin/AdminDashboard";
+import GuideCreate from "./components/Guides/GuideCreate";
 
 const queryClient = new QueryClient();
 
@@ -76,7 +74,10 @@ function App() {
                       <Route element={<PrivateRoute />}>
                         <Route path="/home" element={<Homepage />} />
                         <Route path="/yourTrips" element={<YourTrips />} />
-                        <Route path="/guides/edit/:guideID" element={<GuideEdit />} />
+                        <Route path="/guides">
+                          <Route path="edit/:guideID" element={<GuideEdit />} />
+                          <Route path="create" element={<GuideCreate/>} />
+                        </Route>
                         <Route element={<WhosOnlineWrapper />}>
                           <Route element={<ItinerarySocketWrapper />}>
                             <Route
