@@ -142,7 +142,7 @@ export default function CreateTrip() {
 
               {/* Trip Dates */}
               <div className="space-y-2">
-                <div className="flex">
+                <div className="flex items-center">
                   <label className="text-sm font-medium text-gray-700">
                     Trip Dates
                   </label>

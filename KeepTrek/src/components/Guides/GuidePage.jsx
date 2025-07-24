@@ -28,6 +28,7 @@ import { Card } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu.jsx"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Slider } from "@/components/ui/slider"
 import { Separator } from "@/components/ui/separator"
@@ -40,7 +41,6 @@ import { getUserProfile } from "@/APIs/users.js"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthProvider.jsx"
 import { toast } from "sonner"
-
 
 export default function GuidePage() {
     // State management
@@ -184,14 +184,6 @@ export default function GuidePage() {
         return filtered
     }, [searchedGuidesData, sortBy])
 
-    const handleCreateGuide = () => {
-        if (!isLoggedIn) {
-            toast.error("You must be logged in to create a guide.")
-            return
-        }
-        navigate("/yourTrips")
-    }
-
     const clearFilters = () => {
         setSearchInput("")
         setPendingLocations([])
@@ -218,7 +210,9 @@ export default function GuidePage() {
     const hasPrevPage = currentPage > 1
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+        <div
+            className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100"
+        >
             <TopNavbar />
 
             <div className="container mx-auto px-4 py-8">
@@ -229,10 +223,34 @@ export default function GuidePage() {
                             <h1 className="text-4xl font-bold text-gray-900 mb-2">Travel Guides</h1>
                             <p className="text-gray-600 text-lg">Discover amazing destinations through community-created guides</p>
                         </div>
-                        <Button size="sm" className="font-semibold" onClick={handleCreateGuide}>
-                            <Plus className="w-5 h-5" />
-                            Create Guide
-                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button size="sm" className="font-semibold">
+                                    <Plus className="w-5 h-5" />
+                                    Create Guide
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-48">
+                                <DropdownMenuItem onClick={() => {
+                                    if (!isLoggedIn) {
+                                        toast.error("You must be logged in to create a guide.")
+                                        return
+                                    }
+                                    navigate("/yourTrips")
+                                }}>
+                                    Create from existing trip
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => {
+                                    if (!isLoggedIn) {
+                                        toast.error("You must be logged in to create a guide.")
+                                        return
+                                    }
+                                    navigate("/guides/create")
+                                }}>
+                                    Create blank guide
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
 
